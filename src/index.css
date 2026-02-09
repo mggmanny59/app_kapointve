@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #39E079;
+  --color-accent: #ff8c00;
+  --color-navy-dark: #0a121e;
+  --color-navy-card: #162235;
+  --color-background-light: #f6f8f7;
+  --color-background-dark: #0a121e;
+
+  --font-display: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+}
+
+@layer base {
+  body {
+    @apply font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-white transition-colors duration-300;
+    min-height: max(884px, 100dvh);
+  }
+}
+
+@layer components {
+  .chart-gradient {
+    background: linear-gradient(180deg, rgba(57, 224, 121, 0.2) 0%, rgba(57, 224, 121, 0) 100%);
+  }
+}
