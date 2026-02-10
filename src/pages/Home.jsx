@@ -2,33 +2,254 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 
 const Home = () => {
     const { user, signOut } = useAuth();
     const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
+    const [stats, setStats] = useState({ sales: 0, points: 0, newClients: 0 });
+    const [weeklyActivity, setWeeklyActivity] = useState([0, 0, 0, 0, 0, 0, 0]); // Lun to Dom
+    const [activities, setActivities] = useState([]);
+    const [business, setBusiness] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // Sale Registration State
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [saleStep, setSaleStep] = useState(1); // 1: Amount, 2: Scanner
+    const [amount, setAmount] = useState('');
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [scanError, setScanError] = useState(null);
+    const [searchEmail, setSearchEmail] = useState('');
+    const [manualSearchError, setManualSearchError] = useState(null);
+
+    const businessId = profile?.business_members?.[0]?.business_id || '00000000-0000-0000-0000-000000000001';
+
     useEffect(() => {
-        const fetchProfile = async () => {
+        const fetchDashboardData = async () => {
             try {
-                const { data, error } = await supabase
+                // 1. Fetch Profile and Business ID
+                const { data: profileData, error: profileError } = await supabase
                     .from('profiles')
-                    .select('*')
+                    .select('*, business_members(business_id, businesses(name))')
                     .eq('id', user.id)
                     .single();
 
-                if (error) throw error;
-                setProfile(data);
+                if (profileError) throw profileError;
+                setProfile(profileData);
+                setBusiness(profileData.business_members?.[0]?.businesses || null);
+
+                const currentBizId = profileData.business_members?.[0]?.business_id || '00000000-0000-0000-0000-000000000001';
+
+                // 2. Fetch Stats (Today)
+                const now = new Date();
+                const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+
+                // Transactions Today
+                const { data: transactionsToday } = await supabase
+                    .from('transactions')
+                    .select('amount_fiat, points_amount, type')
+                    .eq('business_id', currentBizId)
+                    .gte('created_at', startOfToday);
+
+                const totalSales = transactionsToday
+                    ?.filter(tx => tx.type === 'EARN')
+                    ?.reduce((acc, curr) => acc + (Number(curr.amount_fiat) || 0), 0) || 0;
+
+                const totalPoints = transactionsToday
+                    ?.reduce((acc, curr) => acc + (Number(curr.points_amount) || 0), 0) || 0;
+
+                const totalTx = transactionsToday?.length || 0;
+
+                // New Clients Today
+                const { count: newClientsCount } = await supabase
+                    .from('loyalty_cards')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('business_id', currentBizId)
+                    .gte('last_activity', startOfToday);
+
+                setStats({
+                    sales: totalSales,
+                    points: totalPoints,
+                    newClients: newClientsCount || 0,
+                    transactions: totalTx
+                });
+
+                // 3. Recent Activity
+                const { data: activityData } = await supabase
+                    .from('transactions')
+                    .select('*, profiles(full_name)')
+                    .eq('business_id', currentBizId)
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+
+                setActivities(activityData || []);
+
+                // 4. Weekly Activity
+                const startOfWeek = new Date(now);
+                const day = startOfWeek.getDay();
+                const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+                const monday = new Date(startOfWeek.setDate(diff));
+                monday.setHours(0, 0, 0, 0);
+
+                const { data: weekData } = await supabase
+                    .from('transactions')
+                    .select('amount_fiat, created_at')
+                    .eq('business_id', currentBizId)
+                    .eq('type', 'EARN')
+                    .gte('created_at', monday.toISOString());
+
+                const dailyTotals = [0, 0, 0, 0, 0, 0, 0];
+                weekData?.forEach(tx => {
+                    const txDate = new Date(tx.created_at);
+                    let txDay = txDate.getDay();
+                    const index = txDay === 0 ? 6 : txDay - 1;
+                    dailyTotals[index] += (Number(tx.amount_fiat) || 0);
+                });
+                setWeeklyActivity(dailyTotals);
+
             } catch (err) {
-                console.error('Error fetching profile:', err);
+                console.error('Error fetching dashboard data:', err);
             } finally {
                 setLoading(false);
             }
         };
 
-        if (user) fetchProfile();
-    }, [user]);
+        if (user) fetchDashboardData();
+    }, [user]); // Removed profile?.id to prevent loop
+
+    const startScanner = () => {
+        setSaleStep(2);
+        // Small delay to ensure container exists
+        setTimeout(() => {
+            const scanner = new Html5QrcodeScanner(
+                "reader",
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1.0
+                },
+                /* verbose= */ false
+            );
+
+            scanner.render(onScanSuccess, onScanFailure);
+
+            // Store scanner in window to clear it later if needed
+            window.scanner = scanner;
+        }, 300);
+    };
+
+    const onScanSuccess = async (decodedText) => {
+        try {
+            if (window.scanner) window.scanner.clear();
+            setIsProcessing(true);
+
+            const clientId = decodedText; // UUID of the client
+
+            // Create Transaction
+            const { error: txError } = await supabase
+                .from('transactions')
+                .insert({
+                    business_id: businessId,
+                    profile_id: clientId,
+                    amount_fiat: parseFloat(amount),
+                    type: 'EARN',
+                    description: `Compra por $${amount}`
+                });
+
+            if (txError) throw txError;
+
+            // Success! Close everything and refresh
+            setIsModalOpen(false);
+            setAmount('');
+            setSaleStep(1);
+            alert('¡Puntos asignados con éxito!');
+            window.location.reload(); // Quick refresh to update stats
+        } catch (err) {
+            console.error('Error processing sale:', err);
+            setScanError('Error al procesar la venta. Verifique el código QR.');
+            setSaleStep(1); // Go back to amount step
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const onScanFailure = (error) => {
+        // Just ignore failures (too frequent)
+    };
+
+    const handleManualSearch = async () => {
+        try {
+            setIsProcessing(true);
+            setManualSearchError(null);
+
+            // 1. Validate if user exists in profiles
+            const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('id, full_name')
+                .eq('email', searchEmail.toLowerCase().trim())
+                .maybeSingle();
+
+            if (!profileData || profileError) {
+                throw new Error('El correo ingresado no pertenece a ningún cliente registrado.');
+            }
+
+            // 3. Validate Amount
+            if (!amount || parseFloat(amount) <= 0) {
+                throw new Error('Por favor, ingresa un monto válido para la compra antes de validar.');
+            }
+
+            // 4. Validate if associated with this business
+            const { data: cardData, error: cardError } = await supabase
+                .from('loyalty_cards')
+                .select('id')
+                .eq('profile_id', profileData.id)
+                .eq('business_id', businessId)
+                .maybeSingle();
+
+            if (!cardData || cardError) {
+                throw new Error(`El cliente ${profileData.full_name} no está afiliado a este comercio.`);
+            }
+
+            // 5. Process Transaction
+            const { error: txError } = await supabase
+                .from('transactions')
+                .insert({
+                    business_id: businessId,
+                    profile_id: profileData.id,
+                    amount_fiat: parseFloat(amount),
+                    type: 'EARN',
+                    description: `Compra manual por $${amount}`
+                });
+
+            if (txError) throw txError;
+
+            // Success!
+            setIsModalOpen(false);
+            setAmount('');
+            setSearchEmail('');
+            setSaleStep(1);
+            alert('¡Venta registrada y puntos asignados con éxito!');
+            window.location.reload();
+        } catch (err) {
+            setManualSearchError(err.message);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const closeModal = () => {
+        if (window.scanner) {
+            window.scanner.clear().catch(e => console.log(e));
+        }
+        setIsModalOpen(false);
+        setSaleStep(1);
+        setAmount('');
+        setSearchEmail('');
+        setScanError(null);
+        setManualSearchError(null);
+    };
+
 
     if (loading) {
         return (
@@ -37,6 +258,17 @@ const Home = () => {
             </div>
         );
     }
+
+    const formatTime = (dateStr) => {
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diffInMinutes = Math.floor((now - date) / 60000);
+        if (diffInMinutes < 1) return 'Ahora';
+        if (diffInMinutes < 60) return `${diffInMinutes}m`;
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        if (diffInHours < 24) return `${diffInHours}h`;
+        return date.toLocaleDateString();
+    };
 
     return (
         <div className="relative flex min-h-screen w-full flex-col pb-24 bg-navy-dark font-display text-white antialiased">
@@ -65,46 +297,76 @@ const Home = () => {
             </header>
 
             <main className="px-6 space-y-6">
-                {/* Welcome Section (Optional addition to the provided design for UX) */}
                 <div className="flex flex-col">
-                    <h2 className="text-xl font-extrabold text-white">
-                        Hola, <span className="text-primary">{profile?.full_name?.split(' ')[0] || 'Kioskero'}</span> 👋
+                    <h2 className="text-2xl font-black text-white flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary !text-3xl">store</span>
+                        {business?.name || 'Mi Negocio'}
                     </h2>
+                    <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1 ml-1">Panel de Control</p>
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-navy-card p-3 rounded-2xl border border-white/5 shadow-lg">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Ventas Hoy</p>
-                        <p className="text-lg font-extrabold text-white">$142</p>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gradient-to-br from-navy-card to-navy-dark p-5 rounded-3xl border border-white/5 shadow-xl relative overflow-hidden group">
+                        <div className="absolute -right-2 -top-2 bg-primary/10 size-16 rounded-full blur-2xl group-hover:bg-primary/20 transition-all"></div>
+                        <span className="material-symbols-outlined text-primary mb-2 block">payments</span>
+                        <p className="text-[11px] text-slate-400 font-black uppercase tracking-widest mb-1">Ventas Hoy</p>
+                        <div className="flex items-baseline gap-1">
+                            <p className="text-2xl font-black text-white">${stats.sales}</p>
+                            <p className="text-[10px] text-slate-500 font-bold">{stats.transactions} tx</p>
+                        </div>
                     </div>
-                    <div className="bg-navy-card p-3 rounded-2xl border border-white/5 shadow-lg">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Puntos</p>
-                        <p className="text-lg font-extrabold text-primary">2.4k</p>
+
+                    <div className="bg-gradient-to-br from-navy-card to-navy-dark p-5 rounded-3xl border border-white/5 shadow-xl relative overflow-hidden group">
+                        <div className="absolute -right-2 -top-2 bg-accent/10 size-16 rounded-full blur-2xl group-hover:bg-accent/20 transition-all"></div>
+                        <span className="material-symbols-outlined text-accent mb-2 block">stars</span>
+                        <p className="text-[11px] text-slate-400 font-black uppercase tracking-widest mb-1">Puntos Dados</p>
+                        <p className="text-2xl font-black text-white">
+                            {stats.points >= 1000 ? (stats.points / 1000).toFixed(1) + 'k' : stats.points}
+                        </p>
                     </div>
-                    <div className="bg-navy-card p-3 rounded-2xl border border-white/5 shadow-lg">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Nuevos</p>
-                        <p className="text-lg font-extrabold text-accent">12</p>
+
+                    <div className="bg-gradient-to-br from-navy-card to-navy-dark p-5 rounded-3xl border border-white/5 shadow-xl relative overflow-hidden group col-span-2">
+                        <div className="absolute -right-4 -top-4 bg-primary/5 size-24 rounded-full blur-3xl group-hover:bg-primary/10 transition-all"></div>
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <span className="material-symbols-outlined text-primary/80 mb-1 block">group</span>
+                                <p className="text-[11px] text-slate-400 font-black uppercase tracking-widest mb-1">Clientes Activos Hoy</p>
+                                <p className="text-2xl font-black text-white">{stats.newClients}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] text-primary font-black bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                                    + {stats.newClients} hoy
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 {/* Chart Section */}
                 <div className="bg-navy-card p-5 rounded-3xl border border-white/5 shadow-xl">
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Actividad 7 Días</h2>
-                        <span className="text-[10px] bg-primary/20 text-primary px-2 py-1 rounded-full font-bold">+15% vs sem. ant.</span>
+                        <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Actividad de la Semana</h2>
+                        <span className="text-[10px] bg-primary/20 text-primary px-2 py-1 rounded-full font-bold">Ventas ($)</span>
                     </div>
-                    <div className="relative h-40 w-full flex items-end justify-between gap-1">
-                        <div className="absolute inset-0 chart-gradient rounded-xl overflow-hidden"></div>
-                        <div className="w-2 bg-primary rounded-t-full h-[40%] opacity-40 z-10"></div>
-                        <div className="w-2 bg-primary rounded-t-full h-[60%] opacity-60 z-10"></div>
-                        <div className="w-2 bg-primary rounded-t-full h-[85%] opacity-80 z-10"></div>
-                        <div className="w-2 bg-accent rounded-t-full h-[100%] z-10"></div>
-                        <div className="w-2 bg-primary rounded-t-full h-[70%] opacity-80 z-10"></div>
-                        <div className="w-2 bg-primary rounded-t-full h-[55%] opacity-60 z-10"></div>
-                        <div className="w-2 bg-primary rounded-t-full h-[90%] opacity-90 z-10"></div>
+                    <div className="relative h-40 w-full flex items-end justify-between px-2">
+                        <div className="absolute inset-0 chart-gradient rounded-xl overflow-hidden opacity-50"></div>
+                        {weeklyActivity.map((value, index) => {
+                            const maxVal = Math.max(...weeklyActivity, 1);
+                            const height = (value / (maxVal * 1.1)) * 100;
+                            const isToday = (new Date().getDay() === (index === 6 ? 0 : index + 1));
+
+                            return (
+                                <div key={index} className="flex flex-col items-center justify-end h-full flex-1 group relative z-10 px-1">
+                                    <div
+                                        className={`w-full max-w-[12px] rounded-t-lg transition-all duration-1000 ease-out ${isToday ? 'bg-accent shadow-[0_0_20px_rgba(255,160,0,0.6)]' : 'bg-primary/40 group-hover:bg-primary/80'}`}
+                                        style={{ height: `${Math.max(height, 5)}%` }}
+                                    ></div>
+                                </div>
+                            );
+                        })}
                     </div>
-                    <div className="flex justify-between mt-4 text-[10px] font-bold text-slate-500 uppercase">
+                    <div className="flex justify-between mt-4 text-[10px] font-bold text-slate-500 uppercase px-1">
                         <span>Lun</span>
                         <span>Mar</span>
                         <span>Mié</span>
@@ -116,9 +378,12 @@ const Home = () => {
                 </div>
 
                 {/* Action Button */}
-                <button className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-2xl flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(57,224,121,0.3)] active:scale-[0.98] transition-all">
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-2xl flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(57,224,121,0.3)] active:scale-[0.98] transition-all"
+                >
                     <span className="material-symbols-outlined font-black !text-3xl">qr_code_scanner</span>
-                    <span className="text-lg font-extrabold uppercase tracking-tight">Escanear QR de Cliente</span>
+                    <span className="text-lg font-extrabold uppercase tracking-tight">Registrar Venta (Scan)</span>
                 </button>
 
                 {/* Activity Section */}
@@ -129,44 +394,26 @@ const Home = () => {
                     </div>
 
                     <div className="space-y-3">
-                        <div className="flex items-center justify-between p-4 bg-navy-card rounded-2xl border border-white/5">
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-primary !text-xl">add_task</span>
+                        {activities.length > 0 ? activities.map((activity) => (
+                            <div key={activity.id} className="flex items-center justify-between p-4 bg-navy-card rounded-2xl border border-white/5">
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-10 h-10 rounded-full ${activity.type === 'EARN' ? 'bg-primary/10' : 'bg-accent/10'} flex items-center justify-center`}>
+                                        <span className={`material-symbols-outlined ${activity.type === 'EARN' ? 'text-primary' : 'text-accent'} !text-xl`}>
+                                            {activity.type === 'EARN' ? 'add_task' : 'stars'}
+                                        </span>
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-bold truncate">{activity.profiles?.full_name || 'Cliente'}</p>
+                                        <p className="text-[11px] text-slate-400">{formatTime(activity.created_at)}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-sm font-bold">Carlos Mendoza</p>
-                                    <p className="text-[11px] text-slate-400">Hace 2 minutos</p>
-                                </div>
+                                <p className={`text-sm font-extrabold ${activity.type === 'EARN' ? 'text-primary' : 'text-accent'}`}>
+                                    {activity.points_amount > 0 ? '+' : ''}{activity.points_amount} pts
+                                </p>
                             </div>
-                            <p className="text-sm font-extrabold text-primary">+25 pts</p>
-                        </div>
-
-                        <div className="flex items-center justify-between p-4 bg-navy-card rounded-2xl border border-white/5">
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-accent !text-xl">stars</span>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold">Maria Silva</p>
-                                    <p className="text-[11px] text-slate-400">Hace 15 minutos</p>
-                                </div>
-                            </div>
-                            <p className="text-sm font-extrabold text-accent">+50 pts</p>
-                        </div>
-
-                        <div className="flex items-center justify-between p-4 bg-navy-card rounded-2xl border border-white/5">
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-primary !text-xl">add_task</span>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold">Jose Rodriguez</p>
-                                    <p className="text-[11px] text-slate-400">Hace 42 minutos</p>
-                                </div>
-                            </div>
-                            <p className="text-sm font-extrabold text-primary">+15 pts</p>
-                        </div>
+                        )) : (
+                            <p className="text-center text-slate-500 py-4 text-sm font-medium italic">Sin actividad reciente</p>
+                        )}
                     </div>
                 </div>
             </main>
@@ -187,7 +434,10 @@ const Home = () => {
                     <span className="material-symbols-outlined">group</span>
                     <span className="text-[10px] font-bold uppercase tracking-wider">Clientes</span>
                 </button>
-                <button className="flex flex-col items-center gap-1 text-slate-500">
+                <button
+                    onClick={() => navigate('/prizes')}
+                    className="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors"
+                >
                     <span className="material-symbols-outlined">featured_seasonal_and_gifts</span>
                     <span className="text-[10px] font-bold uppercase tracking-wider">Premios</span>
                 </button>
@@ -196,8 +446,144 @@ const Home = () => {
                     <span className="text-[10px] font-bold uppercase tracking-wider">Ajustes</span>
                 </button>
             </nav>
+
+            {/* REGISTER SALE MODAL */}
+            {isModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
+                    <div className="absolute inset-0 bg-navy-dark/95 backdrop-blur-md" onClick={closeModal}></div>
+
+                    <div className="relative w-full max-w-md bg-navy-card border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+                        <div className="p-8">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-xl font-black text-white">Registrar Compra</h2>
+                                <button onClick={closeModal} className="size-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400">
+                                    <span className="material-symbols-outlined">close</span>
+                                </button>
+                            </div>
+
+                            {saleStep === 1 ? (
+                                <div className="space-y-6">
+                                    <div>
+                                        <label className="text-sm font-bold text-slate-400 mb-2 block ml-1">Monto de la Compra ($)</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-primary">$</span>
+                                            <input
+                                                type="number"
+                                                autoFocus
+                                                value={amount}
+                                                onChange={(e) => setAmount(e.target.value)}
+                                                className="w-full bg-navy-dark border border-white/10 h-20 rounded-3xl text-4xl font-black text-white pl-12 pr-4 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                                placeholder="0.00"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {scanError && (
+                                        <p className="text-red-400 text-xs font-bold text-center bg-red-500/10 py-3 rounded-xl border border-red-500/20">
+                                            {scanError}
+                                        </p>
+                                    )}
+
+                                    <div className="flex flex-col gap-3">
+                                        <button
+                                            disabled={!amount || parseFloat(amount) <= 0}
+                                            onClick={startScanner}
+                                            className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-2xl font-black text-lg uppercase shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:grayscale transition-all"
+                                        >
+                                            Escanear QR
+                                            <span className="material-symbols-outlined">qr_code_scanner</span>
+                                        </button>
+
+                                        <button
+                                            onClick={() => setSaleStep(3)}
+                                            className="w-full bg-white/5 hover:bg-white/10 text-white h-14 rounded-xl font-bold text-sm uppercase transition-all flex items-center justify-center gap-2 border border-white/10"
+                                        >
+                                            O buscar por correo
+                                            <span className="material-symbols-outlined text-base">mail</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : saleStep === 2 ? (
+                                <div className="space-y-6 text-center">
+                                    <div className="bg-navy-dark rounded-3xl overflow-hidden border border-white/10 relative min-h-[300px] flex items-center justify-center">
+                                        {isProcessing ? (
+                                            <div className="flex flex-col items-center gap-4">
+                                                <span className="animate-spin material-symbols-outlined text-primary text-5xl">refresh</span>
+                                                <p className="font-bold text-sm text-primary">Procesando puntos...</p>
+                                            </div>
+                                        ) : (
+                                            <div id="reader" className="w-full"></div>
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-col items-center gap-2">
+                                        <p className="text-slate-200 font-bold">Monto: <span className="text-primary text-xl">${amount}</span></p>
+                                        <button
+                                            onClick={() => {
+                                                if (window.scanner) window.scanner.clear().catch(e => console.log(e));
+                                                setSaleStep(1);
+                                            }}
+                                            className="text-slate-400 text-sm font-bold flex items-center gap-1 hover:text-white"
+                                        >
+                                            <span className="material-symbols-outlined text-base">edit</span>
+                                            Cambiar Monto
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                // Step 3: Manual Search
+                                <div className="space-y-6">
+                                    <div className="text-center">
+                                        <p className="text-primary text-xl font-black mb-1">${amount}</p>
+                                        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Monto a registrar</p>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-sm font-bold text-slate-400 mb-2 block ml-1">Correo del Cliente</label>
+                                        <div className="relative">
+                                            <input
+                                                type="email"
+                                                autoFocus
+                                                value={searchEmail}
+                                                onChange={(e) => setSearchEmail(e.target.value)}
+                                                className="w-full bg-navy-dark border border-white/10 h-14 rounded-2xl text-white px-4 focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium"
+                                                placeholder="ejemplo@correo.com"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {manualSearchError && (
+                                        <p className="text-red-400 text-xs font-bold text-center bg-red-500/10 py-3 rounded-xl border border-red-500/20 px-4">
+                                            {manualSearchError}
+                                        </p>
+                                    )}
+
+                                    <div className="flex flex-col gap-3">
+                                        <button
+                                            disabled={!searchEmail || isProcessing}
+                                            onClick={handleManualSearch}
+                                            className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-2xl font-black text-lg uppercase shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
+                                        >
+                                            {isProcessing ? 'Validando...' : 'Validar y Registrar'}
+                                            <span className="material-symbols-outlined">how_to_reg</span>
+                                        </button>
+
+                                        <button
+                                            onClick={() => setSaleStep(1)}
+                                            className="w-full text-slate-400 text-sm font-bold hover:text-white py-2"
+                                        >
+                                            Volver
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
+
 
 export default Home;

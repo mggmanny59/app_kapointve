@@ -3,6 +3,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
 import Clients from './pages/Clients';
+import MyPoints from './pages/MyPoints';
+import PrizeDesigner from './pages/PrizeDesigner';
 import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
@@ -31,6 +33,22 @@ function App() {
           element={
             <ProtectedRoute>
               <Clients />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-points"
+          element={
+            <ProtectedRoute>
+              <MyPoints />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/prizes"
+          element={
+            <ProtectedRoute>
+              <PrizeDesigner />
             </ProtectedRoute>
           }
         />
