@@ -3,10 +3,12 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { Html5QrcodeScanner } from 'html5-qrcode';
+import { useNotification } from '../context/NotificationContext';
 
 const Home = () => {
     const { user, signOut } = useAuth();
     const navigate = useNavigate();
+    const { showNotification } = useNotification();
     const [profile, setProfile] = useState(null);
     const [stats, setStats] = useState({ sales: 0, points: 0, newClients: 0 });
     const [weeklyActivity, setWeeklyActivity] = useState([0, 0, 0, 0, 0, 0, 0]); // Lun to Dom
@@ -18,10 +20,10 @@ const Home = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [saleStep, setSaleStep] = useState(1); // 1: Amount, 2: Scanner
     const [amount, setAmount] = useState('');
+    const [amountBs, setAmountBs] = useState('');
+    const [exchangeRate, setExchangeRate] = useState(60.00); // Default or fetch later
     const [isProcessing, setIsProcessing] = useState(false);
-    const [scanError, setScanError] = useState(null);
     const [searchEmail, setSearchEmail] = useState('');
-    const [manualSearchError, setManualSearchError] = useState(null);
 
     const businessId = profile?.business_members?.[0]?.business_id || '00000000-0000-0000-0000-000000000001';
 
@@ -163,12 +165,12 @@ const Home = () => {
             setIsModalOpen(false);
             setAmount('');
             setSaleStep(1);
-            alert('¡Puntos asignados con éxito!');
-            window.location.reload(); // Quick refresh to update stats
+            showNotification('success', '¡Puntos Asignados!', 'La venta se ha procesado y los puntos han sido cargados al cliente.');
+            setTimeout(() => window.location.reload(), 1500); // Wait for user to see the message
         } catch (err) {
             console.error('Error processing sale:', err);
-            setScanError('Error al procesar la venta. Verifique el código QR.');
-            setSaleStep(1); // Go back to amount step
+            showNotification('error', 'Error de Escaneo', 'No se pudo procesar la venta. Verifique el código QR.');
+            setSaleStep(1);
         } finally {
             setIsProcessing(false);
         }
@@ -181,7 +183,6 @@ const Home = () => {
     const handleManualSearch = async () => {
         try {
             setIsProcessing(true);
-            setManualSearchError(null);
 
             // 1. Validate if user exists in profiles
             const { data: profileData, error: profileError } = await supabase
@@ -229,10 +230,10 @@ const Home = () => {
             setAmount('');
             setSearchEmail('');
             setSaleStep(1);
-            alert('¡Venta registrada y puntos asignados con éxito!');
-            window.location.reload();
+            showNotification('success', '¡Venta Registrada!', 'Los puntos han sido asignados correctamente al cliente.');
+            setTimeout(() => window.location.reload(), 1500);
         } catch (err) {
-            setManualSearchError(err.message);
+            showNotification('error', 'Error en Registro', err.message);
         } finally {
             setIsProcessing(false);
         }
@@ -243,11 +244,10 @@ const Home = () => {
             window.scanner.clear().catch(e => console.log(e));
         }
         setIsModalOpen(false);
-        setSaleStep(1);
-        setAmount('');
         setSearchEmail('');
-        setScanError(null);
-        setManualSearchError(null);
+        setAmount('');
+        setAmountBs('');
+        setSaleStep(1);
     };
 
 
@@ -380,7 +380,7 @@ const Home = () => {
                 {/* Action Button */}
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-2xl flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(57,224,121,0.3)] active:scale-[0.98] transition-all"
+                    className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-full flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(57,224,121,0.3)] active:scale-[0.98] transition-all"
                 >
                     <span className="material-symbols-outlined font-black !text-3xl">qr_code_scanner</span>
                     <span className="text-lg font-extrabold uppercase tracking-tight">Registrar Venta (Scan)</span>
@@ -395,7 +395,7 @@ const Home = () => {
 
                     <div className="space-y-3">
                         {activities.length > 0 ? activities.map((activity) => (
-                            <div key={activity.id} className="flex items-center justify-between p-4 bg-navy-card rounded-2xl border border-white/5">
+                            <div key={activity.id} className="flex items-center justify-between p-4 bg-navy-card rounded-full border border-white/5">
                                 <div className="flex items-center gap-4">
                                     <div className={`w-10 h-10 rounded-full ${activity.type === 'EARN' ? 'bg-primary/10' : 'bg-accent/10'} flex items-center justify-center`}>
                                         <span className={`material-symbols-outlined ${activity.type === 'EARN' ? 'text-primary' : 'text-accent'} !text-xl`}>
@@ -441,7 +441,10 @@ const Home = () => {
                     <span className="material-symbols-outlined">featured_seasonal_and_gifts</span>
                     <span className="text-[10px] font-bold uppercase tracking-wider">Premios</span>
                 </button>
-                <button className="flex flex-col items-center gap-1 text-slate-500">
+                <button
+                    onClick={() => navigate('/settings')}
+                    className="flex flex-col items-center gap-1 text-slate-500"
+                >
                     <span className="material-symbols-outlined">settings</span>
                     <span className="text-[10px] font-bold uppercase tracking-wider">Ajustes</span>
                 </button>
@@ -454,41 +457,101 @@ const Home = () => {
 
                     <div className="relative w-full max-w-md bg-navy-card border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
                         <div className="p-8">
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-xl font-black text-white">Registrar Compra</h2>
-                                <button onClick={closeModal} className="size-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400">
-                                    <span className="material-symbols-outlined">close</span>
+                            <div className="relative flex items-center gap-4 mb-10 pt-2">
+                                <div className="size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary border border-primary/30 shadow-[0_0_20px_rgba(57,224,121,0.2)]">
+                                    <span className="material-symbols-outlined !text-3xl font-bold">point_of_sale</span>
+                                </div>
+                                <div className="flex-1">
+                                    <h2 className="text-2xl font-black text-white leading-tight tracking-tight">Asignación de Puntos</h2>
+                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mt-1">REGISTRAR NUEVA VENTA</p>
+                                </div>
+                                <button
+                                    onClick={closeModal}
+                                    className="absolute -top-4 -right-4 size-12 rounded-full bg-navy-card border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 shadow-2xl transition-all active:scale-95 group"
+                                >
+                                    <span className="material-symbols-outlined group-hover:rotate-90 transition-transform">close</span>
                                 </button>
                             </div>
 
                             {saleStep === 1 ? (
                                 <div className="space-y-6">
-                                    <div>
-                                        <label className="text-sm font-bold text-slate-400 mb-2 block ml-1">Monto de la Compra ($)</label>
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-primary">$</span>
-                                            <input
-                                                type="number"
-                                                autoFocus
-                                                value={amount}
-                                                onChange={(e) => setAmount(e.target.value)}
-                                                className="w-full bg-navy-dark border border-white/10 h-20 rounded-3xl text-4xl font-black text-white pl-12 pr-4 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                                placeholder="0.00"
-                                            />
+                                    <div className="grid grid-cols-1 gap-5">
+                                        {/* exchange Rate (Prominent) */}
+                                        <div className="bg-navy-dark/80 border border-white/5 rounded-3xl p-5 flex items-center justify-between shadow-inner">
+                                            <div className="flex items-center gap-3">
+                                                <div className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400">
+                                                    <span className="material-symbols-outlined text-xl">currency_exchange</span>
+                                                </div>
+                                                <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Tasa de Cambio</span>
+                                            </div>
+                                            <div className="relative group">
+                                                <input
+                                                    type="number"
+                                                    value={exchangeRate}
+                                                    onChange={(e) => {
+                                                        const rate = e.target.value;
+                                                        setExchangeRate(rate);
+                                                        const numRate = parseFloat(rate);
+                                                        if (amountBs && numRate > 0) {
+                                                            setAmount((parseFloat(amountBs) / numRate).toFixed(2));
+                                                        }
+                                                    }}
+                                                    className="w-24 bg-navy-card border border-primary/30 h-10 rounded-xl px-3 text-right text-lg font-black text-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all group-hover:border-primary"
+                                                />
+                                                <span className="absolute -left-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-[10px] text-primary/40">edit</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            {/* Amount Bolivares */}
+                                            <div className="relative group">
+                                                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-lg font-black text-slate-500 group-focus-within:text-white transition-colors">Bs.</span>
+                                                <input
+                                                    type="number"
+                                                    value={amountBs}
+                                                    onChange={(e) => {
+                                                        const bs = e.target.value;
+                                                        setAmountBs(bs);
+                                                        if (bs && exchangeRate) {
+                                                            setAmount((parseFloat(bs) / exchangeRate).toFixed(2));
+                                                        } else {
+                                                            setAmount('');
+                                                        }
+                                                    }}
+                                                    className="w-full bg-navy-dark/50 border border-white/10 h-16 rounded-full text-2xl font-black text-white pl-14 pr-4 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                                    placeholder="Monto en Bolívares"
+                                                />
+                                            </div>
+
+                                            {/* Amount Dollars (Main) */}
+                                            <div className="relative group">
+                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-3xl font-black text-primary"> $ </span>
+                                                <input
+                                                    type="number"
+                                                    autoFocus
+                                                    value={amount}
+                                                    onChange={(e) => {
+                                                        const usd = e.target.value;
+                                                        setAmount(usd);
+                                                        if (usd && exchangeRate) {
+                                                            setAmountBs((parseFloat(usd) * exchangeRate).toFixed(2));
+                                                        } else {
+                                                            setAmountBs('');
+                                                        }
+                                                    }}
+                                                    className="w-full bg-navy-dark border-2 border-primary/20 h-24 rounded-3xl text-5xl font-black text-white pl-16 pr-4 focus:ring-4 focus:ring-primary/10 focus:border-primary/40 outline-none transition-all shadow-2xl"
+                                                    placeholder="0.00"
+                                                />
+                                                <label className="absolute -top-3 left-6 bg-navy-card px-3 text-[10px] font-black text-primary uppercase tracking-widest border border-primary/20 rounded-full">Recibir en USD</label>
+                                            </div>
                                         </div>
                                     </div>
-
-                                    {scanError && (
-                                        <p className="text-red-400 text-xs font-bold text-center bg-red-500/10 py-3 rounded-xl border border-red-500/20">
-                                            {scanError}
-                                        </p>
-                                    )}
 
                                     <div className="flex flex-col gap-3">
                                         <button
                                             disabled={!amount || parseFloat(amount) <= 0}
                                             onClick={startScanner}
-                                            className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-2xl font-black text-lg uppercase shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:grayscale transition-all"
+                                            className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-full font-black text-lg uppercase shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:grayscale transition-all"
                                         >
                                             Escanear QR
                                             <span className="material-symbols-outlined">qr_code_scanner</span>
@@ -496,7 +559,7 @@ const Home = () => {
 
                                         <button
                                             onClick={() => setSaleStep(3)}
-                                            className="w-full bg-white/5 hover:bg-white/10 text-white h-14 rounded-xl font-bold text-sm uppercase transition-all flex items-center justify-center gap-2 border border-white/10"
+                                            className="w-full bg-white/5 hover:bg-white/10 text-white h-14 rounded-full font-bold text-sm uppercase transition-all flex items-center justify-center gap-2 border border-white/10"
                                         >
                                             O buscar por correo
                                             <span className="material-symbols-outlined text-base">mail</span>
@@ -546,23 +609,17 @@ const Home = () => {
                                                 autoFocus
                                                 value={searchEmail}
                                                 onChange={(e) => setSearchEmail(e.target.value)}
-                                                className="w-full bg-navy-dark border border-white/10 h-14 rounded-2xl text-white px-4 focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium"
+                                                className="w-full bg-navy-dark border border-white/10 h-14 rounded-full text-white px-4 focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium"
                                                 placeholder="ejemplo@correo.com"
                                             />
                                         </div>
                                     </div>
 
-                                    {manualSearchError && (
-                                        <p className="text-red-400 text-xs font-bold text-center bg-red-500/10 py-3 rounded-xl border border-red-500/20 px-4">
-                                            {manualSearchError}
-                                        </p>
-                                    )}
-
                                     <div className="flex flex-col gap-3">
                                         <button
                                             disabled={!searchEmail || isProcessing}
                                             onClick={handleManualSearch}
-                                            className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-2xl font-black text-lg uppercase shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
+                                            className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-full font-black text-lg uppercase shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
                                         >
                                             {isProcessing ? 'Validando...' : 'Validar y Registrar'}
                                             <span className="material-symbols-outlined">how_to_reg</span>

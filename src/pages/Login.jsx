@@ -3,16 +3,17 @@ import AuthLayout from '../components/AuthLayout';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useNotification } from '../context/NotificationContext';
 
 const Login = () => {
     const [activeTab, setActiveTab] = useState('client');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const { signIn, signOut, user } = useAuth(); // Added signOut
     const navigate = useNavigate();
+    const { showNotification } = useNotification();
 
     // Aggressively clearing fields on startup to prevent browser autofill
     useEffect(() => {
@@ -29,7 +30,6 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        setError(null);
         setLoading(true);
         try {
             const result = await signIn(email, password);
@@ -83,7 +83,7 @@ const Login = () => {
             // Friendly error message for users
             let message = err.message;
             if (message === 'Invalid login credentials') message = '¡Ups! Correo o contraseña incorrectos.';
-            setError(message);
+            showNotification('error', 'Error de Acceso', message);
         } finally {
             setLoading(false);
         }
@@ -101,7 +101,7 @@ const Login = () => {
                 <button
                     type="button"
                     onClick={() => setActiveTab('client')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-btn text-sm font-bold transition-all ${activeTab === 'client'
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-bold transition-all ${activeTab === 'client'
                         ? 'bg-primary text-navy-dark shadow-lg shadow-primary/20'
                         : 'text-slate-subtitle hover:text-white'
                         }`}
@@ -112,7 +112,7 @@ const Login = () => {
                 <button
                     type="button"
                     onClick={() => setActiveTab('admin')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-btn text-sm font-bold transition-all ${activeTab === 'admin'
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-bold transition-all ${activeTab === 'admin'
                         ? 'bg-primary text-navy-dark shadow-lg shadow-primary/20'
                         : 'text-slate-subtitle hover:text-white'
                         }`}
@@ -134,12 +134,6 @@ const Login = () => {
             </div>
 
             <form onSubmit={handleLogin} className="flex flex-col gap-5" autoComplete="off">
-                {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-red-400 text-sm font-medium text-center">
-                        {error}
-                    </div>
-                )}
-
                 <label className="flex flex-col w-full">
                     <span className="text-slate-200 text-sm font-bold leading-normal pb-2 ml-1">
                         Correo Electrónico
@@ -187,7 +181,7 @@ const Login = () => {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-4 bg-primary hover:bg-primary/90 text-navy-dark font-black text-lg rounded-btn shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full py-4 bg-primary hover:bg-primary/90 text-navy-dark font-black text-lg rounded-full shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     {loading ? (
                         <span className="animate-spin material-symbols-outlined">refresh</span>

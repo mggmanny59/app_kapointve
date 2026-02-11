@@ -9,6 +9,42 @@ const Clients = () => {
     const [clients, setClients] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
+    const [selectedClient, setSelectedClient] = useState(null);
+    const [clientSummary, setClientSummary] = useState(null);
+    const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+
+    const fetchClientSummary = async (client) => {
+        setSelectedClient(client);
+        setIsLoadingSummary(true);
+        try {
+            const { data: transactions, error } = await supabase
+                .from('transactions')
+                .select('type, amount_fiat, points_amount')
+                .eq('profile_id', client.profile_id)
+                .eq('business_id', client.business_id);
+
+            if (error) throw error;
+
+            const summary = transactions.reduce((acc, tx) => {
+                if (tx.type === 'EARN') {
+                    acc.totalPurchases += 1;
+                } else if (tx.type === 'REDEEM') {
+                    acc.totalRedeemedPoints += Math.abs(tx.points_amount);
+                }
+                return acc;
+            }, { totalPurchases: 0, totalRedeemedPoints: 0 });
+
+            setClientSummary({
+                ...summary,
+                currentPoints: client.current_points,
+                lifetimePoints: client.total_accumulated_points
+            });
+        } catch (err) {
+            console.error('Error fetching client summary:', err);
+        } finally {
+            setIsLoadingSummary(false);
+        }
+    };
 
 
     useEffect(() => {
@@ -118,7 +154,8 @@ const Clients = () => {
                     return (
                         <div
                             key={client.id}
-                            className="bg-navy-card p-4 rounded-2xl border border-white/5 shadow-lg flex items-center gap-4 active:bg-white/5 transition-colors cursor-pointer"
+                            onClick={() => fetchClientSummary(client)}
+                            className="bg-navy-card p-4 rounded-2xl border border-white/5 shadow-lg flex items-center gap-4 active:bg-white/5 transition-colors cursor-pointer group hover:border-primary/30"
                         >
                             <div className={`w-12 h-12 rounded-full ${color.bg} flex items-center justify-center border ${color.border} shrink-0`}>
                                 <span className={`${color.text} font-bold text-lg`}>{getInitials(client.profiles?.full_name)}</span>
@@ -145,6 +182,103 @@ const Clients = () => {
                 )}
             </main>
 
+            {/* Client Summary Modal - Compact Centered Style */}
+            {selectedClient && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy-dark/90 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-navy-card w-full max-w-[340px] rounded-[2.5rem] border border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 duration-300">
+                        {/* Modal Header & Profile */}
+                        <div className="relative p-7 pb-5 bg-gradient-to-b from-white/5 to-transparent border-b border-white/5">
+                            <button
+                                onClick={() => setSelectedClient(null)}
+                                className="absolute top-5 right-5 size-8 rounded-full bg-navy-dark border border-white/10 flex items-center justify-center text-slate-500 hover:text-white transition-all active:scale-90"
+                            >
+                                <span className="material-symbols-outlined !text-lg">close</span>
+                            </button>
+
+                            <div className="flex flex-col items-center">
+                                <div className={`size-20 rounded-full mb-4 flex items-center justify-center text-2xl font-black border-4 border-navy-dark bg-primary shadow-[0_0_30px_rgba(57,224,121,0.2)] text-navy-dark`}>
+                                    {getInitials(selectedClient.profiles?.full_name)}
+                                </div>
+                                <h2 className="text-xl font-black text-white tracking-tight leading-tight text-center">{selectedClient.profiles?.full_name}</h2>
+                                <div className="flex items-center gap-2 mt-2 px-3 py-1 rounded-full bg-white/5 border border-white/5">
+                                    <span className="material-symbols-outlined !text-[10px] text-slate-500">phone</span>
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{selectedClient.profiles?.phone || 'Sin contacto'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="p-7 pt-6 space-y-6">
+                            {isLoadingSummary ? (
+                                <div className="py-10 flex flex-col items-center justify-center gap-4">
+                                    <div className="size-10 rounded-full border-4 border-primary/10 border-t-primary animate-spin"></div>
+                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none">Generando informe...</p>
+                                </div>
+                            ) : clientSummary && (
+                                <>
+                                    {/* Main Points Card */}
+                                    <div className="text-center space-y-1">
+                                        <p className="text-[11px] font-black text-primary uppercase tracking-[0.4em]">Balance Actual</p>
+                                        <div className="flex items-center justify-center gap-2">
+                                            <span className="text-4xl font-black text-white">{clientSummary.currentPoints?.toLocaleString()}</span>
+                                            <span className="text-sm font-black text-primary uppercase tracking-widest">pts</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Major Stats Group */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {/* VISITAS CARD */}
+                                        <div className="bg-navy-dark border border-white/5 p-4 rounded-3xl flex flex-col items-center text-center space-y-2">
+                                            <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                                                <span className="material-symbols-outlined !text-xl font-black">shopping_bag</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-xl font-black text-white">{clientSummary.totalPurchases}</p>
+                                                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-0.5">Visitas</p>
+                                            </div>
+                                        </div>
+
+                                        {/* CANJEADOS CARD */}
+                                        <div className="bg-navy-dark border border-white/5 p-4 rounded-3xl flex flex-col items-center text-center space-y-2">
+                                            <div className="size-9 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                                <span className="material-symbols-outlined !text-xl font-black">history</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-xl font-black text-white">{clientSummary.totalRedeemedPoints?.toLocaleString()}</p>
+                                                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-0.5">Canjeados</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* TOTAL HISTORICO */}
+                                    <div className="bg-navy-dark/50 border border-white/5 p-4 rounded-3xl relative overflow-hidden">
+                                        <div className="flex items-center justify-between relative z-10">
+                                            <div className="flex items-center gap-3">
+                                                <div className="size-11 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 shadow-inner">
+                                                    <span className="material-symbols-outlined !text-xl font-black">add_moderator</span>
+                                                </div>
+                                                <div className="space-y-0.5">
+                                                    <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] leading-none">Total Histórico</p>
+                                                    <p className="text-lg font-black text-white">{clientSummary.lifetimePoints?.toLocaleString()} <span className="text-[10px] text-orange-500 ml-1">PTS</span></p>
+                                                </div>
+                                            </div>
+                                            <span className="material-symbols-outlined text-white/[0.03] !text-4xl absolute -right-2 top-1/2 -translate-y-1/2 font-black">trending_up</span>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            <button
+                                onClick={() => setSelectedClient(null)}
+                                className="w-full bg-primary text-navy-dark h-14 rounded-full font-black text-[12px] uppercase tracking-[0.2em] shadow-[0_10px_25px_rgba(57,224,121,0.2)] active:scale-95 hover:bg-primary/90 transition-all mt-2"
+                            >
+                                Cerrar Resumen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Navigation */}
             <nav className="fixed bottom-0 left-0 right-0 h-20 bg-navy-card/90 backdrop-blur-xl border-t border-white/10 flex items-center justify-around px-6 pb-2 z-50">
                 <button
@@ -158,11 +292,17 @@ const Clients = () => {
                     <span className="material-symbols-outlined font-bold">group</span>
                     <span className="text-[10px] font-bold uppercase tracking-wider">Clientes</span>
                 </button>
-                <button className="flex flex-col items-center gap-1 text-slate-500">
+                <button
+                    onClick={() => navigate('/prizes')}
+                    className="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors"
+                >
                     <span className="material-symbols-outlined">featured_seasonal_and_gifts</span>
                     <span className="text-[10px] font-bold uppercase tracking-wider">Premios</span>
                 </button>
-                <button className="flex flex-col items-center gap-1 text-slate-500">
+                <button
+                    onClick={() => navigate('/settings')}
+                    className="flex flex-col items-center gap-1 text-slate-500"
+                >
                     <span className="material-symbols-outlined">settings</span>
                     <span className="text-[10px] font-bold uppercase tracking-wider">Ajustes</span>
                 </button>

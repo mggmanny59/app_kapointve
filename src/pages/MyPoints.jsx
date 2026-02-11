@@ -10,6 +10,36 @@ const MyPoints = () => {
     const [loading, setLoading] = useState(true);
     const [loyaltyCards, setLoyaltyCards] = useState([]);
     const [profile, setProfile] = useState(null);
+    const [selectedBusiness, setSelectedBusiness] = useState(null);
+    const [businessPrizes, setBusinessPrizes] = useState([]);
+    const [loadingPrizes, setLoadingPrizes] = useState(false);
+
+    const fetchBusinessPrizes = async (business) => {
+        console.log('Opening prizes for:', business?.name);
+        if (!business || !business.id) {
+            console.warn('Invalid business data:', business);
+            return;
+        }
+
+        setSelectedBusiness(business);
+        setLoadingPrizes(true);
+        try {
+            const { data, error } = await supabase
+                .from('rewards')
+                .select('*')
+                .eq('business_id', business.id)
+                .eq('is_active', true)
+                .order('cost_points', { ascending: true });
+
+            if (error) throw error;
+            console.log('Prizes fetched:', data?.length);
+            setBusinessPrizes(data || []);
+        } catch (err) {
+            console.error('Error fetching business prizes:', err);
+        } finally {
+            setLoadingPrizes(false);
+        }
+    };
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -25,7 +55,7 @@ const MyPoints = () => {
                 // 2. Fetch Loyalty Cards (points in different businesses)
                 const { data: cardsData, error } = await supabase
                     .from('loyalty_cards')
-                    .select('*, businesses(name, logo_url)')
+                    .select('*, businesses(id, name, logo_url)')
                     .eq('profile_id', user.id)
                     .order('last_activity', { ascending: false });
 
@@ -132,7 +162,8 @@ const MyPoints = () => {
                             {loyaltyCards.map((card) => (
                                 <div
                                     key={card.id}
-                                    className="bg-navy-card p-4 rounded-card border border-border-subtle shadow-md flex items-center gap-4 active:bg-white/5 transition-colors cursor-pointer"
+                                    onClick={() => card.businesses && fetchBusinessPrizes(card.businesses)}
+                                    className="bg-navy-card p-4 rounded-card border border-border-subtle shadow-md flex items-center gap-4 active:scale-[0.98] transition-all cursor-pointer group hover:border-primary/40"
                                 >
                                     <div className="size-12 rounded-xl bg-white/5 border border-border-subtle p-2 flex items-center justify-center overflow-hidden shrink-0">
                                         {card.businesses?.logo_url ? (
@@ -162,6 +193,91 @@ const MyPoints = () => {
                 </div>
             </main>
 
+            {/* Prizes Modal */}
+            {selectedBusiness && (
+                <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center p-4 bg-navy-dark/90 backdrop-blur-md animate-in fade-in duration-300">
+                    {/* External Window Header */}
+                    <div className="absolute top-10 left-0 right-0 flex justify-center pointer-events-none">
+                        <div className="flex items-center gap-3 px-6 py-2">
+                            <span className="material-symbols-outlined text-primary text-2xl drop-shadow-[0_0_8px_rgba(57,224,121,0.5)]">redeem</span>
+                            <h2 className="text-lg font-black text-white uppercase tracking-[0.2em] drop-shadow-md">Premios disponibles</h2>
+                        </div>
+                    </div>
+
+                    <div className="bg-navy-card w-full max-w-[340px] rounded-[2.5rem] border border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[75vh]">
+                        {/* Modal Header */}
+                        <div className="relative p-7 pb-5 bg-gradient-to-b from-white/5 to-transparent border-b border-white/5 shrink-0">
+                            <button
+                                onClick={() => setSelectedBusiness(null)}
+                                className="absolute top-5 right-5 size-8 rounded-full bg-navy-dark border border-white/10 flex items-center justify-center text-slate-500 hover:text-white transition-all active:scale-90"
+                            >
+                                <span className="material-symbols-outlined !text-lg">close</span>
+                            </button>
+
+                            <div className="flex flex-col items-center">
+                                <div className="size-14 rounded-xl bg-white/5 border border-white/10 p-2 flex items-center justify-center overflow-hidden mb-3">
+                                    {selectedBusiness.logo_url ? (
+                                        <img src={selectedBusiness.logo_url} alt={selectedBusiness.name} className="w-full h-full object-contain" />
+                                    ) : (
+                                        <span className="material-symbols-outlined text-primary text-2xl">storefront</span>
+                                    )}
+                                </div>
+                                <h3 className="text-xl font-black text-white tracking-tight leading-tight text-center">{selectedBusiness.name}</h3>
+                            </div>
+                        </div>
+
+                        {/* Modal Content - Prizes Grid */}
+                        <div className="p-4 overflow-y-auto custom-scrollbar">
+                            {loadingPrizes ? (
+                                <div className="py-12 flex flex-col items-center justify-center gap-4 text-center">
+                                    <div className="size-10 rounded-full border-4 border-primary/10 border-t-primary animate-spin mx-auto mr-auto ml-auto"></div>
+                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Cargando catálogo...</p>
+                                </div>
+                            ) : businessPrizes.length > 0 ? (
+                                <div className="grid grid-cols-2 gap-3 pb-2">
+                                    {businessPrizes.map((prize) => (
+                                        <div key={prize.id} className="bg-navy-dark/50 border border-white/5 rounded-2xl overflow-hidden shadow-inner group flex flex-col">
+                                            <div className="aspect-square bg-white/5 border-b border-white/5 overflow-hidden flex items-center justify-center relative">
+                                                {prize.image_url ? (
+                                                    <img src={prize.image_url} alt={prize.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                                ) : (
+                                                    <span className="material-symbols-outlined text-slate-700 text-3xl">redeem</span>
+                                                )}
+                                                <div className="absolute top-2 right-2 bg-navy-dark/80 backdrop-blur-md px-2 py-1 rounded-full border border-white/10 flex items-center gap-1">
+                                                    <span className="material-symbols-outlined text-accent text-[10px]">stars</span>
+                                                    <span className="text-[10px] font-black text-accent">{prize.cost_points?.toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                            <div className="p-3 flex flex-col flex-1">
+                                                <h4 className="text-[11px] font-bold text-slate-200 line-clamp-2 leading-tight min-h-[2.5em]">{prize.name}</h4>
+                                                {prize.description && (
+                                                    <p className="text-[9px] text-slate-500 mt-1 line-clamp-1 italic">{prize.description}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="py-12 text-center opacity-50 flex flex-col items-center">
+                                    <span className="material-symbols-outlined text-4xl mb-2">sentiment_dissatisfied</span>
+                                    <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">Sin premios por ahora</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Footer Action */}
+                        <div className="p-6 pt-0 mt-auto shrink-0">
+                            <button
+                                onClick={() => setSelectedBusiness(null)}
+                                className="w-full bg-primary text-navy-dark h-14 rounded-full font-black text-[12px] uppercase tracking-[0.2em] shadow-[0_10px_25px_rgba(57,224,121,0.2)] active:scale-95 hover:bg-primary/90 transition-all"
+                            >
+                                Entendido
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Bottom Menu */}
             <nav className="fixed bottom-0 left-0 right-0 h-20 bg-navy-card/90 backdrop-blur-xl border-t border-border-subtle flex items-center justify-around px-6 pb-2 z-50">
                 <button className="flex flex-col items-center gap-1 text-primary">
@@ -172,7 +288,10 @@ const MyPoints = () => {
                     <span className="material-symbols-outlined">explore</span>
                     <span className="text-[10px] font-bold uppercase tracking-wider">Comercios</span>
                 </button>
-                <button className="flex flex-col items-center gap-1 text-slate-subtitle">
+                <button
+                    onClick={() => loyaltyCards[0]?.businesses && fetchBusinessPrizes(loyaltyCards[0].businesses)}
+                    className="flex flex-col items-center gap-1 text-slate-subtitle active:scale-90 transition-transform"
+                >
                     <span className="material-symbols-outlined">featured_seasonal_and_gifts</span>
                     <span className="text-[10px] font-bold uppercase tracking-wider">Premios</span>
                 </button>

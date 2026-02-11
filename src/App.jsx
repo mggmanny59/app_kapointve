@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Clients from './pages/Clients';
 import MyPoints from './pages/MyPoints';
 import PrizeDesigner from './pages/PrizeDesigner';
+import BusinessSettings from './pages/BusinessSettings';
 import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
@@ -49,6 +50,14 @@ function App() {
           element={
             <ProtectedRoute>
               <PrizeDesigner />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <BusinessSettings />
             </ProtectedRoute>
           }
         />

@@ -1,28 +1,63 @@
 @import "tailwindcss";
 
+:root {
+    --font-display: 'Outfit', system-ui, sans-serif;
+    --color-primary: #22c55e;
+    --color-accent: #f98418;
+    --color-navy-dark: #0f172a;
+    --color-navy-card: #1e293b;
+    --color-border-subtle: rgba(255, 255, 255, 0.1);
+    --color-slate-subtitle: #94a3b8;
+}
+
+body {
+    font-family: var(--font-display);
+    background-color: var(--color-navy-dark);
+    color: white;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 @theme {
-  --color-primary: #22C55E;
-  --color-accent: #F59E0B;
-  --color-navy-dark: #0F172A;
-  --color-navy-card: #1E293B;
-  --color-slate-subtitle: #94A3B8;
-  --color-border-subtle: #334155;
-
-  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
-
-  --radius-card: 16px;
-  --radius-btn: 12px;
-}
-
-@layer base {
-  body {
-    @apply font-display bg-navy-dark text-white transition-colors duration-300;
-    min-height: max(884px, 100dvh);
-  }
-}
-
-@layer components {
-  .chart-gradient {
-    background: linear-gradient(180deg, rgba(57, 224, 121, 0.2) 0%, rgba(57, 224, 121, 0) 100%);
-  }
+    --font-display: 'Outfit', system-ui, sans-serif;
+    --radius-card: 2rem;
+    --radius-btn: 9999px;
+    --color-primary: #22c55e;
+    --color-accent: #f98418;
+    --color-navy-dark: #0f172a;
+    --color-navy-card: #1e293b;
+    --color-border-subtle: rgba(255, 255, 255, 0.1);
+    --color-slate-subtitle: #94a3b8;
 }

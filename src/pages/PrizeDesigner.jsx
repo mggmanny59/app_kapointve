@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import PrizeCalculator from '../components/PrizeCalculator';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 const PrizeDesigner = () => {
     const { user } = useAuth();
@@ -16,12 +18,14 @@ const PrizeDesigner = () => {
         name: '',
         description: '',
         points: '',
-        image: null
+        image: null,
+        is_active: true
     });
     const [previewUrl, setPreviewUrl] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
-    const [error, setError] = useState(null);
     const [editingPrizeId, setEditingPrizeId] = useState(null);
+    const [showCalculator, setShowCalculator] = useState(false);
+    const { showNotification } = useNotification();
 
     const fetchPrizes = async () => {
         try {
@@ -61,17 +65,38 @@ const PrizeDesigner = () => {
             name: prize.name,
             description: prize.description || '',
             points: prize.cost_points.toString(),
-            image: null // We keep the existing image unless they upload a new one
+            image: null,
+            is_active: prize.is_active ?? true
         });
         setPreviewUrl(prize.image_url);
         setView('create');
     };
 
+    const handleDelete = async () => {
+        if (!editingPrizeId) return;
+        if (!window.confirm('¿Estás seguro de que deseas eliminar este premio? Esta acción no se puede deshacer.')) return;
+
+        try {
+            const { error } = await supabase
+                .from('rewards')
+                .delete()
+                .eq('id', editingPrizeId);
+
+            if (error) throw error;
+            showNotification('success', '¡Eliminado!', 'El premio ha sido eliminado del catálogo.');
+            await fetchPrizes();
+            resetForm();
+            setView('list');
+        } catch (err) {
+            console.error('Delete error:', err);
+            showNotification('error', 'Error al eliminar', err.message);
+        }
+    };
+
     const resetForm = () => {
-        setFormData({ name: '', description: '', points: '', image: null });
+        setFormData({ name: '', description: '', points: '', image: null, is_active: true });
         setPreviewUrl(null);
         setEditingPrizeId(null);
-        setError(null);
     };
 
     const handleImageChange = (e) => {
@@ -82,52 +107,64 @@ const PrizeDesigner = () => {
         }
     };
 
+    const handleApplyPoints = (calculatedPoints) => {
+        setFormData({ ...formData, points: calculatedPoints.toString() });
+        setShowCalculator(false);
+        showNotification('success', 'Puntos Aplicados', 'Los puntos calculados se han cargado en el formulario.');
+    };
+
     const handleSave = async (e) => {
         e.preventDefault();
-        setIsSaving(true);
-        setError(null);
 
         try {
+            setIsSaving(true);
+
             // Validation
             if (!formData.name || !formData.points) {
                 throw new Error('El nombre y los puntos son obligatorios');
             }
 
-            // 1. Process Image to Base64 for persistence (if changed)
-            let finalImageUrl = previewUrl; // Use current preview (might be existing URL or new base64)
-
+            // 1. Process Image to Base64 (if changed)
+            let finalImageUrl = previewUrl;
             if (formData.image) {
-                finalImageUrl = await new Promise((resolve) => {
+                finalImageUrl = await new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
                     reader.readAsDataURL(formData.image);
                 });
             }
 
-            // 2. Get Business ID
-            const { data: memberData } = await supabase
-                .from('business_members')
-                .select('business_id')
-                .eq('profile_id', user.id)
-                .single();
-
-            const businessId = memberData?.business_id || '00000000-0000-0000-0000-000000000001';
-
-            // 3. Save Reward (Update or Insert)
+            // 3. Save Reward
             if (editingPrizeId) {
+                // Update
                 const { error: updateError } = await supabase
                     .from('rewards')
                     .update({
                         name: formData.name,
                         description: formData.description,
                         cost_points: parseInt(formData.points),
-                        image_url: finalImageUrl
+                        image_url: finalImageUrl,
+                        is_active: formData.is_active
                     })
                     .eq('id', editingPrizeId);
 
                 if (updateError) throw updateError;
-                alert('¡Premio actualizado con éxito!');
+                showNotification('success', '¡Actualizado!', 'El premio se ha modificado correctamente.');
             } else {
+                // Insert - Only fetch businessId for new prizes
+                const { data: memberData, error: memberError } = await supabase
+                    .from('business_members')
+                    .select('business_id')
+                    .eq('profile_id', user?.id)
+                    .single();
+
+                if (memberError && !memberData) {
+                    console.error('Error fetching business_id:', memberError);
+                }
+
+                const businessId = memberData?.business_id || '00000000-0000-0000-0000-000000000001';
+
                 const { error: insertError } = await supabase
                     .from('rewards')
                     .insert({
@@ -136,17 +173,20 @@ const PrizeDesigner = () => {
                         description: formData.description,
                         cost_points: parseInt(formData.points),
                         image_url: finalImageUrl || 'https://via.placeholder.com/400x400.png?text=Sin+Imagen',
-                        is_active: true
+                        is_active: formData.is_active
                     });
 
                 if (insertError) throw insertError;
-                alert('¡Premio creado con éxito!');
+                showNotification('success', '¡Creado!', 'El nuevo premio se ha añadido a tu catálogo.');
             }
 
+            // Refresh list and return
+            await fetchPrizes();
             resetForm();
             setView('list');
         } catch (err) {
-            setError(err.message);
+            console.error('Save error:', err);
+            showNotification('error', 'Error en Operación', err.message);
         } finally {
             setIsSaving(false);
         }
@@ -175,7 +215,7 @@ const PrizeDesigner = () => {
 
                     <div className="flex gap-2">
                         <button
-                            onClick={() => alert('Calculadora de Puntos: Próximamente')}
+                            onClick={() => setShowCalculator(true)}
                             className="h-9 px-4 rounded-full bg-white/5 border border-white/10 flex items-center gap-2 text-slate-300 active:scale-95 transition-all outline-none"
                         >
                             <span className="material-symbols-outlined font-bold !text-lg text-accent">calculate</span>
@@ -219,22 +259,22 @@ const PrizeDesigner = () => {
                 </div>
             </header>
 
-            <main className="px-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <main className="px-6 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {view === 'create' ? (
-                    <form onSubmit={handleSave} className="space-y-8">
+                    <form onSubmit={handleSave} className="space-y-4">
 
                         {/* Image Upload Area */}
                         <div className="flex flex-col items-center">
                             <div
                                 onClick={() => fileInputRef.current?.click()}
-                                className="size-48 rounded-[2.5rem] bg-navy-card border-2 border-dashed border-white/10 flex flex-col items-center justify-center overflow-hidden relative group cursor-pointer hover:border-primary/50 transition-colors"
+                                className="size-36 rounded-[2rem] bg-navy-card border-2 border-dashed border-white/10 flex flex-col items-center justify-center overflow-hidden relative group cursor-pointer hover:border-primary/50 transition-colors"
                             >
                                 {previewUrl ? (
                                     <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                                 ) : (
-                                    <div className="text-center p-4">
-                                        <span className="material-symbols-outlined text-primary !text-4xl mb-2 block animate-pulse">add_a_photo</span>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight">Toca para cargar foto del premio</p>
+                                    <div className="text-center p-3">
+                                        <span className="material-symbols-outlined text-primary !text-3xl mb-1 block animate-pulse">add_a_photo</span>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight">Foto del premio</p>
                                     </div>
                                 )}
                                 <input
@@ -248,61 +288,85 @@ const PrizeDesigner = () => {
                         </div>
 
                         {/* Inputs */}
-                        <div className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre del Premio</label>
+                        <div className="grid grid-cols-1 gap-4">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre del Premio</label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full bg-navy-card border border-white/5 h-14 rounded-2xl px-5 text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all font-bold placeholder:text-slate-600"
+                                    className="w-full bg-navy-card border border-white/5 h-12 rounded-xl px-4 text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all font-bold placeholder:text-slate-600"
                                     placeholder="Ej. Hamburguesa Gratis"
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Descripción del Beneficio</label>
-                                <textarea
-                                    rows="3"
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descripción corta</label>
+                                <input
+                                    type="text"
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full bg-navy-card border border-white/5 rounded-2xl p-5 text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium placeholder:text-slate-600 resize-none"
-                                    placeholder="Ej. Válido para 1 hamburguesa clásica con papas..."
-                                ></textarea>
+                                    className="w-full bg-navy-card border border-white/5 h-12 rounded-xl px-4 text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium placeholder:text-slate-600"
+                                    placeholder="Ej. Válido para 1 hamburguesa clásica..."
+                                />
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Puntos Requeridos</label>
-                                <div className="relative">
-                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-accent !text-2xl font-black">stars</span>
-                                    <input
-                                        type="number"
-                                        required
-                                        value={formData.points}
-                                        onChange={(e) => setFormData({ ...formData, points: e.target.value })}
-                                        className="w-full bg-navy-card border border-white/5 h-16 rounded-2xl pl-14 pr-5 text-white text-2xl font-black focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-slate-600"
-                                        placeholder="500"
-                                    />
+                            <div className="flex gap-4">
+                                <div className="flex-1 space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Puntos</label>
+                                    <div className="relative">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-accent !text-xl">stars</span>
+                                        <input
+                                            type="number"
+                                            required
+                                            value={formData.points}
+                                            onChange={(e) => setFormData({ ...formData, points: e.target.value })}
+                                            className="w-full bg-navy-card border border-white/5 h-12 rounded-xl pl-12 pr-4 text-white text-xl font-black focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-slate-600"
+                                            placeholder="500"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1 min-w-[120px]">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 text-center block">Estado</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, is_active: !formData.is_active })}
+                                        className={`w-full h-12 rounded-full border flex items-center justify-center gap-2 transition-all ${formData.is_active
+                                            ? 'bg-primary/10 border-primary/30 text-primary'
+                                            : 'bg-red-500/10 border-red-500/30 text-red-500'}`}
+                                    >
+                                        <span className="material-symbols-outlined !text-lg">
+                                            {formData.is_active ? 'check_circle' : 'cancel'}
+                                        </span>
+                                        <span className="text-[10px] font-black uppercase">{formData.is_active ? 'Activo' : 'Inactivo'}</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        {error && (
-                            <p className="text-red-400 text-xs font-bold text-center bg-red-500/10 py-3 rounded-xl border border-red-500/20">
-                                {error}
-                            </p>
-                        )}
-
-                        {/* Submit Button */}
-                        <button
-                            type="submit"
-                            disabled={isSaving}
-                            className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-2xl font-black text-lg uppercase shadow-[0_8px_30px_rgb(57,224,121,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                        >
-                            {isSaving ? 'Guardando...' : (editingPrizeId ? 'Actualizar Premio' : 'Guardar Premio')}
-                            <span className="material-symbols-outlined">{editingPrizeId ? 'edit_note' : 'save'}</span>
-                        </button>
+                        {/* Action Buttons */}
+                        <div className="flex gap-3 pt-2">
+                            {editingPrizeId && (
+                                <button
+                                    type="button"
+                                    onClick={handleDelete}
+                                    className="flex-1 bg-red-500/10 border border-red-500/20 text-red-500 h-14 rounded-full font-black text-[12px] uppercase tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <span className="material-symbols-outlined !text-lg">delete</span>
+                                    Eliminar
+                                </button>
+                            )}
+                            <button
+                                type="submit"
+                                disabled={isSaving}
+                                className={`${editingPrizeId ? 'flex-[2]' : 'w-full'} bg-primary text-navy-dark h-14 rounded-full font-black text-sm uppercase shadow-[0_8px_25px_rgb(57,224,121,0.2)] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50`}
+                            >
+                                {isSaving ? (editingPrizeId ? 'Actualizando...' : 'Guardando...') : (editingPrizeId ? 'ACTUALIZAR' : 'Guardar Premio')}
+                                <span className="material-symbols-outlined !text-lg">{editingPrizeId ? 'done_all' : 'save'}</span>
+                            </button>
+                        </div>
                     </form>
                 ) : (
                     <div className="grid grid-cols-2 gap-4">
@@ -363,6 +427,43 @@ const PrizeDesigner = () => {
                     </div>
                 )}
             </main>
+
+            {/* Calculator Modal */}
+            {showCalculator && (
+                <PrizeCalculator
+                    onClose={() => setShowCalculator(false)}
+                    onApply={handleApplyPoints}
+                />
+            )}
+
+            {/* Navigation */}
+            <nav className="fixed bottom-0 left-0 right-0 h-20 bg-navy-card/90 backdrop-blur-xl border-t border-white/10 flex items-center justify-around px-6 pb-2 z-50">
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    className="flex flex-col items-center gap-1 text-slate-500"
+                >
+                    <span className="material-symbols-outlined">dashboard</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Panel</span>
+                </button>
+                <button
+                    onClick={() => navigate('/clients')}
+                    className="flex flex-col items-center gap-1 text-slate-500"
+                >
+                    <span className="material-symbols-outlined">group</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Clientes</span>
+                </button>
+                <button className="flex flex-col items-center gap-1 text-primary">
+                    <span className="material-symbols-outlined font-bold">featured_seasonal_and_gifts</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Premios</span>
+                </button>
+                <button
+                    onClick={() => navigate('/settings')}
+                    className="flex flex-col items-center gap-1 text-slate-500"
+                >
+                    <span className="material-symbols-outlined">settings</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Ajustes</span>
+                </button>
+            </nav>
         </div>
     );
 };

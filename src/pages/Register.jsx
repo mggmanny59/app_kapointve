@@ -3,6 +3,7 @@ import AuthLayout from '../components/AuthLayout';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useNotification } from '../context/NotificationContext';
 
 const Register = () => {
     const [activeTab, setActiveTab] = useState('client');
@@ -13,11 +14,11 @@ const Register = () => {
         password: '',
         shopCode: ''
     });
-    const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const { signUp } = useAuth();
     const navigate = useNavigate();
+    const { showNotification } = useNotification();
 
     // Aggressively clearing fields on startup to prevent browser autofill
     React.useEffect(() => {
@@ -42,7 +43,6 @@ const Register = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault();
-        setError(null);
         setLoading(true);
 
         try {
@@ -54,7 +54,7 @@ const Register = () => {
             const data = await signUp(formData.email, formData.password, metadata);
 
             if (data?.user?.identities?.length === 0) {
-                setError('Este correo electrónico ya está registrado. Intenta iniciar sesión.');
+                showNotification('error', 'Cuenta Existente', 'Este correo electrónico ya está registrado. Intenta iniciar sesión.');
                 setLoading(false);
                 return;
             }
@@ -110,6 +110,7 @@ const Register = () => {
                 }
             }
 
+            showNotification('success', '¡Registro Exitoso!', 'Tu cuenta ha sido creada correctamente. Ya puedes iniciar sesión.');
             navigate('/login');
         } catch (err) {
             let friendlyMessage = err.message;
@@ -118,7 +119,7 @@ const Register = () => {
             } else if (err.message.includes('Password should be')) {
                 friendlyMessage = 'La contraseña debe tener al menos 6 caracteres.';
             }
-            setError(friendlyMessage);
+            showNotification('error', 'Error en Registro', friendlyMessage);
         } finally {
             setLoading(false);
         }
@@ -137,7 +138,7 @@ const Register = () => {
                 <button
                     type="button"
                     onClick={() => setActiveTab('client')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-btn text-sm font-bold transition-all ${activeTab === 'client'
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-bold transition-all ${activeTab === 'client'
                         ? 'bg-primary text-navy-dark shadow-lg shadow-primary/20'
                         : 'text-slate-subtitle hover:text-white'
                         }`}
@@ -148,7 +149,7 @@ const Register = () => {
                 <button
                     type="button"
                     onClick={() => setActiveTab('admin')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-btn text-sm font-bold transition-all ${activeTab === 'admin'
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-bold transition-all ${activeTab === 'admin'
                         ? 'bg-primary text-navy-dark shadow-lg shadow-primary/20'
                         : 'text-slate-subtitle hover:text-white'
                         }`}
@@ -168,12 +169,6 @@ const Register = () => {
             </div>
 
             <form onSubmit={handleRegister} className="flex flex-col gap-5" autoComplete="off">
-                {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-red-400 text-sm font-medium text-center">
-                        {error}
-                    </div>
-                )}
-
                 {/* Nombre Completo */}
                 <label className="flex flex-col w-full">
                     <span className="text-slate-200 text-sm font-bold pb-2 ml-1">Nombre Completo</span>
@@ -279,7 +274,7 @@ const Register = () => {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-4 bg-primary hover:bg-primary/90 text-navy-dark font-black text-lg rounded-btn shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full py-4 bg-primary hover:bg-primary/90 text-navy-dark font-black text-lg rounded-full shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     {loading ? (
                         <span className="animate-spin material-symbols-outlined">refresh</span>
