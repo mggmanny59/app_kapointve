@@ -129,27 +129,50 @@ const Home = () => {
 
     const startScanner = () => {
         setSaleStep(2);
-        // Small delay to ensure container exists
+        setIsProcessing(false);
         setTimeout(async () => {
             try {
+                const container = document.getElementById("reader");
+                if (!container) return;
+
                 if (window.scannerInstance) {
                     await window.scannerInstance.stop().catch(() => { });
                 }
+
                 const html5QrCode = new Html5Qrcode("reader");
-                await html5QrCode.start(
-                    { facingMode: "environment" },
-                    { fps: 10, qrbox: { width: 250, height: 250 } },
-                    onScanSuccess,
-                    onScanFailure
-                );
                 window.scannerInstance = html5QrCode;
+
+                // Try starting with facingMode
+                try {
+                    await html5QrCode.start(
+                        { facingMode: "environment" },
+                        { fps: 15, qrbox: { width: 250, height: 250 } },
+                        onScanSuccess,
+                        onScanFailure
+                    );
+                } catch (err) {
+                    console.warn("Direct facingMode failed, listing cameras...", err);
+                    const cameras = await Html5Qrcode.getCameras();
+                    if (cameras && cameras.length > 0) {
+                        const backCam = cameras.find(c =>
+                            c.label.toLowerCase().includes('back') ||
+                            c.label.toLowerCase().includes('rear') ||
+                            c.label.toLowerCase().includes('trasera')
+                        ) || cameras[0];
+
+                        await html5QrCode.start(
+                            backCam.id,
+                            { fps: 15, qrbox: { width: 250, height: 250 } },
+                            onScanSuccess,
+                            onScanFailure
+                        );
+                    }
+                }
             } catch (err) {
-                console.error('Error starting scanner:', err);
-                const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
-                scanner.render(onScanSuccess, onScanFailure);
-                window.scannerUI = scanner;
+                console.error('Final scanner error:', err);
+                showNotification('error', 'Error de Cámara', 'No se pudo activar la cámara automáticamente.');
             }
-        }, 300);
+        }, 400);
     };
 
     const onScanSuccess = async (decodedText) => {
@@ -202,26 +225,49 @@ const Home = () => {
     const startRedeemScanner = () => {
         setRedeemStep(1);
         setIsRedeemModalOpen(true);
+        setIsProcessing(false);
         setTimeout(async () => {
             try {
+                const container = document.getElementById("redeem-reader");
+                if (!container) return;
+
                 if (window.redeemScannerInstance) {
                     await window.redeemScannerInstance.stop().catch(() => { });
                 }
+
                 const html5QrCode = new Html5Qrcode("redeem-reader");
-                await html5QrCode.start(
-                    { facingMode: "environment" },
-                    { fps: 10, qrbox: { width: 250, height: 250 } },
-                    onRedeemScanSuccess,
-                    onScanFailure
-                );
                 window.redeemScannerInstance = html5QrCode;
+
+                try {
+                    await html5QrCode.start(
+                        { facingMode: "environment" },
+                        { fps: 15, qrbox: { width: 250, height: 250 } },
+                        onRedeemScanSuccess,
+                        onScanFailure
+                    );
+                } catch (err) {
+                    console.warn("Redeem facingMode failed, listing cameras...", err);
+                    const cameras = await Html5Qrcode.getCameras();
+                    if (cameras && cameras.length > 0) {
+                        const backCam = cameras.find(c =>
+                            c.label.toLowerCase().includes('back') ||
+                            c.label.toLowerCase().includes('rear') ||
+                            c.label.toLowerCase().includes('trasera')
+                        ) || cameras[0];
+
+                        await html5QrCode.start(
+                            backCam.id,
+                            { fps: 15, qrbox: { width: 250, height: 250 } },
+                            onRedeemScanSuccess,
+                            onScanFailure
+                        );
+                    }
+                }
             } catch (err) {
-                console.error('Error starting redeem scanner:', err);
-                const scanner = new Html5QrcodeScanner("redeem-reader", { fps: 10, qrbox: 250 }, false);
-                scanner.render(onRedeemScanSuccess, onScanFailure);
-                window.redeemScannerUI = scanner;
+                console.error('Final redeem scanner error:', err);
+                showNotification('error', 'Error de Cámara', 'No se pudo activar la cámara automáticamente.');
             }
-        }, 300);
+        }, 400);
     };
 
     const onRedeemScanSuccess = async (decodedText) => {
