@@ -207,7 +207,7 @@ const Home = () => {
             setAmount('');
             setSaleStep(1);
             showNotification('success', '¡Puntos Asignados!', 'La venta se ha procesado y los puntos han sido cargados al cliente.');
-            setTimeout(() => window.location.reload(), 1500); // Wait for user to see the message
+            fetchDashboardData();
         } catch (err) {
             console.error('Error processing sale:', err);
             showNotification('error', 'Error de Escaneo', 'No se pudo procesar la venta. Verifique el código QR.');
@@ -450,7 +450,7 @@ const Home = () => {
             setSearchEmail('');
             setSaleStep(1);
             showNotification('success', '¡Venta Registrada!', 'Los puntos han sido asignados correctamente al cliente.');
-            setTimeout(() => window.location.reload(), 1500);
+            fetchDashboardData();
         } catch (err) {
             showNotification('error', 'Error en Registro', err.message);
         } finally {
