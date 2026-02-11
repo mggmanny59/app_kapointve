@@ -16,6 +16,7 @@ const MyPoints = () => {
     const [loadingPrizes, setLoadingPrizes] = useState(false);
     const [recentTransactions, setRecentTransactions] = useState([]);
     const [showRedemptionQR, setShowRedemptionQR] = useState(null); // Local state for the QR modal
+    const [showMainQRModal, setShowMainQRModal] = useState(false); // New state for main QR modal
     const { showNotification } = useNotification();
 
     const fetchBusinessPrizes = async (business) => {
@@ -185,30 +186,31 @@ const MyPoints = () => {
                 </div>
 
                 {/* QR Access Section */}
-                <div className="bg-navy-card border border-border-subtle p-8 rounded-card shadow-lg flex flex-col items-center gap-6">
+                <div className="bg-navy-card border border-border-subtle p-6 rounded-card shadow-lg flex flex-col items-center gap-4">
                     <div className="text-center">
-                        <h3 className="text-2xl font-black text-white tracking-tight">Mi Código QR</h3>
-                        <p className="text-sm text-slate-subtitle mt-2">Muéstralo en caja para sumar puntos</p>
+                        <h3 className="text-xl font-black text-white tracking-tight">Mi Código QR</h3>
+                        <p className="text-[11px] text-slate-subtitle mt-1">Muéstralo en caja para sumar puntos</p>
                     </div>
 
                     <div className="relative">
-                        {/* Subtle glow effect behind the QR */}
-                        <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full"></div>
-
-                        <div className="size-64 bg-white rounded-[2.5rem] flex items-center justify-center text-navy-dark shadow-2xl relative z-10 border-4 border-white/5 p-8">
+                        <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full"></div>
+                        {/* Reduced size QR: size-32 (128px) instead of size-64 (256px), and SVG size 120 instead of 200 */}
+                        <div className="size-32 bg-white rounded-3xl flex items-center justify-center text-navy-dark shadow-2xl relative z-10 border-2 border-white/5 p-4">
                             <QRCodeSVG
                                 value={user?.id || 'no-user'}
-                                size={200}
+                                size={100}
                                 level="H"
                                 includeMargin={false}
-                                aria-label={`QR Code para ${profile?.full_name}`}
                             />
                         </div>
                     </div>
 
-                    <div className="bg-primary/10 px-6 py-2 rounded-full border border-primary/20">
-                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Escaneo en Caja</p>
-                    </div>
+                    <button
+                        onClick={() => setShowMainQRModal(true)}
+                        className="bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-full font-black text-[11px] uppercase tracking-[0.2em] shadow-[0_4px_15px_rgba(57,224,121,0.3)] transition-all active:scale-95"
+                    >
+                        Escaneo en Caja
+                    </button>
                 </div>
 
                 {/* Loyalty Cards List */}
@@ -464,6 +466,48 @@ const MyPoints = () => {
                                 className="w-full h-14 bg-primary text-white rounded-full font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-[0_0_20px_rgba(57,224,121,0.3)]"
                             >
                                 Cerrar Ventana
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Main QR Modal for Checkout Scanning */}
+            {showMainQRModal && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-navy-dark/95 backdrop-blur-2xl animate-in fade-in duration-300">
+                    <div className="bg-navy-card w-full max-w-[340px] rounded-[3rem] border border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+                        {/* Header */}
+                        <div className="p-8 pb-4 text-center space-y-2">
+                            <div className="size-16 rounded-2xl bg-primary/20 flex items-center justify-center text-primary mx-auto mb-4">
+                                <span className="material-symbols-outlined !text-4xl">qr_code_scanner</span>
+                            </div>
+                            <h3 className="text-xl font-black text-white leading-tight uppercase tracking-tight">Escaneo para Puntos</h3>
+                            <p className="text-xs text-slate-400 font-medium">Presenta este código al cajero para sumar puntos</p>
+                        </div>
+
+                        {/* QR Area */}
+                        <div className="px-8 py-6 flex flex-col items-center">
+                            <div className="bg-white p-6 rounded-[2.5rem] shadow-2xl">
+                                <QRCodeSVG
+                                    value={user?.id || 'no-user'}
+                                    size={180}
+                                    level="H"
+                                    includeMargin={false}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Action - Back with Refresh */}
+                        <div className="p-8 pt-2">
+                            <button
+                                onClick={async () => {
+                                    await fetchUserData(); // Actualizar todos los puntos
+                                    setShowMainQRModal(false);
+                                    showNotification('success', 'Actualizado', 'Tu saldo de puntos ha sido verificado.');
+                                }}
+                                className="w-full h-14 bg-primary text-white rounded-full font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-[0_0_20px_rgba(57,224,121,0.3)]"
+                            >
+                                Volver al panel principal
                             </button>
                         </div>
                     </div>
