@@ -320,14 +320,15 @@ const Home = () => {
 
             setAvailableRewards(rewardsData || []);
 
-            // If a prize was pre-selected in the QR, and it's available, we can proceed
+            // AUTO REDEEM: If a prize was pre-selected in the QR, and it's available, process it immediately
             if (preSelectedPrizeId && rewardsData) {
                 const selectedPrize = rewardsData.find(r => r.id === preSelectedPrizeId);
                 if (selectedPrize) {
-                    // Optional: You could directly call handleProcessRedeem(selectedPrize) here
-                    // but for security/confirmation, it's better to show the selection screen 
-                    // with the prize highlighted or just let the merchant click it.
-                    console.log('Prize pre-selected by client:', selectedPrize.name);
+                    console.log('Automating redemption for:', selectedPrize.name);
+                    setTimeout(() => {
+                        handleProcessRedeem(selectedPrize, cardData, true);
+                    }, 500);
+                    return;
                 }
             }
 
@@ -341,41 +342,59 @@ const Home = () => {
         }
     };
 
-    const handleProcessRedeem = async (reward) => {
-        if (!redeemClient || !reward) return;
+    const handleProcessRedeem = async (reward, clientOverride = null, isAuto = false) => {
+        const client = clientOverride || redeemClient;
+        if (!client || !reward) return;
 
-        if (redeemClient.current_points < reward.cost_points) {
+        if (client.current_points < reward.cost_points) {
             showNotification('error', 'Puntos Insuficientes', 'El cliente no tiene suficientes puntos para este premio.');
             return;
         }
 
-        if (!window.confirm(`¿Confirmas el canje de "${reward.name}" por ${reward.cost_points} pts?`)) return;
+        if (!isAuto && !window.confirm(`¿Confirmas el canje de "${reward.name}" por ${reward.cost_points} pts?`)) return;
 
         try {
             setIsProcessing(true);
 
-            // Create REDEEM Transaction
+            // 1. Create REDEEM Transaction
             const { error: txError } = await supabase
                 .from('transactions')
                 .insert({
                     business_id: businessId,
-                    profile_id: redeemClient.profile_id,
+                    profile_id: client.profile_id,
                     reward_id: reward.id,
-                    points_amount: -reward.cost_points, // Negative for redemption
+                    points_amount: -reward.cost_points,
                     type: 'REDEEM',
                     description: `Canje de premio: ${reward.name}`
                 });
 
             if (txError) throw txError;
 
-            showNotification('success', '¡Canje Exitoso!', `Se ha canjeado "${reward.name}" correctamente.`);
+            // 2. Manually update points in loyalty_cards for immediate balance reflection
+            const { error: updateError } = await supabase
+                .from('loyalty_cards')
+                .update({
+                    current_points: client.current_points - reward.cost_points,
+                    last_activity: new Date().toISOString()
+                })
+                .eq('id', client.id);
+
+            if (updateError) console.error('Error updating loyalty card directly:', updateError);
+
+            // 3. Success Feedback
+            showNotification('success', '¡Canje Procesado!', `Se ha canjeado "${reward.name}" por ${reward.cost_points} pts.`);
+
+            // Close everything
             setIsRedeemModalOpen(false);
             setRedeemClient(null);
-            setSelectedReward(null);
+            setAvailableRewards([]);
+            setRedeemStep(1);
+
+            // Sync with DB
             setTimeout(() => window.location.reload(), 1500);
         } catch (err) {
             console.error('Redeem process error:', err);
-            showNotification('error', 'Error en Canje', 'No se pudo procesar el canje. Reintente.');
+            showNotification('error', 'Error en Canje', 'No se pudo completar el canje. Verifique la conexión.');
         } finally {
             setIsProcessing(false);
         }
