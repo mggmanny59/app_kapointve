@@ -85,33 +85,52 @@ const MyPoints = () => {
         if (user) fetchUserData();
     }, [user]);
 
-    // REAL-TIME REDEMPTION LISTENER
+    // REAL-TIME REDEMPTION & POINTS LISTENER
     useEffect(() => {
-        if (!showRedemptionQR || !user) return;
+        if (!user) return;
 
-        console.log('Iniciando escucha de canje en tiempo real...');
+        console.log('Configurando escucha Realtime para el usuario:', user.id);
 
         const channel = supabase
-            .channel('redemption-check')
+            .channel(`client-updates-${user.id}`)
+            // 1. Listen for new REDEEM transactions
             .on('postgres_changes', {
                 event: 'INSERT',
                 schema: 'public',
                 table: 'transactions',
                 filter: `profile_id=eq.${user.id}`
             }, (payload) => {
+                console.log('Nueva transacción detectada:', payload.new.type);
                 if (payload.new.type === 'REDEEM') {
-                    console.log('Canje verificado por Realtime!');
-                    showNotification('success', '¡Canje Exitoso!', 'Tu premio ha sido procesado por el comercio.');
+                    showNotification('success', '¡Canje Confirmado!', 'Tu premio ha sido procesado con éxito.');
                     setShowRedemptionQR(null);
                     fetchUserData();
                 }
             })
-            .subscribe();
+            // 2. Listen for point updates in loyalty cards (Fallback/Double Check)
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'loyalty_cards',
+                filter: `profile_id=eq.${user.id}`
+            }, (payload) => {
+                console.log('Actualización de puntos detectada en tarjeta.');
+                fetchUserData();
+                // If the QR is open, close it because points changed (likely due to a scan)
+                if (showRedemptionQR) {
+                    setShowRedemptionQR(null);
+                    showNotification('info', 'Puntos Actualizados', 'Tu saldo se ha actualizado correctamente.');
+                }
+            })
+            .subscribe((status) => {
+                console.log('Estado de suscripción Realtime:', status);
+            });
 
         return () => {
+            console.log('Limpiando canal Realtime');
             supabase.removeChannel(channel);
         };
-    }, [showRedemptionQR, user]);
+    }, [user, showRedemptionQR]); // Added showRedemptionQR to check its state inside the update listener
 
     if (loading) {
         return (
@@ -438,10 +457,13 @@ const MyPoints = () => {
                         {/* Action */}
                         <div className="p-8 pt-2">
                             <button
-                                onClick={() => setShowRedemptionQR(null)}
-                                className="w-full h-14 bg-white/5 border border-white/10 text-white rounded-full font-black text-xs uppercase tracking-widest active:scale-95 transition-all"
+                                onClick={() => {
+                                    setShowRedemptionQR(null);
+                                    fetchUserData(); // Actualizar puntos al cerrar
+                                }}
+                                className="w-full h-14 bg-primary text-white rounded-full font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-[0_0_20px_rgba(57,224,121,0.3)]"
                             >
-                                Cancelar Ticket
+                                Cerrar Ventana
                             </button>
                         </div>
                     </div>
