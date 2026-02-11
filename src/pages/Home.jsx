@@ -34,98 +34,98 @@ const Home = () => {
 
     const businessId = profile?.business_members?.[0]?.business_id || '00000000-0000-0000-0000-000000000001';
 
+    const fetchDashboardData = async () => {
+        try {
+            // 1. Fetch Profile and Business ID
+            const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('*, business_members(business_id, businesses(name))')
+                .eq('id', user.id)
+                .single();
+
+            if (profileError) throw profileError;
+            setProfile(profileData);
+            setBusiness(profileData.business_members?.[0]?.businesses || null);
+
+            const currentBizId = profileData.business_members?.[0]?.business_id || '00000000-0000-0000-0000-000000000001';
+
+            // 2. Fetch Stats (Today)
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+
+            // Transactions Today
+            const { data: transactionsToday } = await supabase
+                .from('transactions')
+                .select('amount_fiat, points_amount, type')
+                .eq('business_id', currentBizId)
+                .gte('created_at', startOfToday);
+
+            const totalSales = transactionsToday
+                ?.filter(tx => tx.type === 'EARN')
+                ?.reduce((acc, curr) => acc + (Number(curr.amount_fiat) || 0), 0) || 0;
+
+            const totalPoints = transactionsToday
+                ?.reduce((acc, curr) => acc + (Number(curr.points_amount) || 0), 0) || 0;
+
+            const totalTx = transactionsToday?.length || 0;
+
+            // New Clients Today
+            const { count: newClientsCount } = await supabase
+                .from('loyalty_cards')
+                .select('*', { count: 'exact', head: true })
+                .eq('business_id', currentBizId)
+                .gte('last_activity', startOfToday);
+
+            setStats({
+                sales: totalSales,
+                points: totalPoints,
+                newClients: newClientsCount || 0,
+                transactions: totalTx
+            });
+
+            // 3. Recent Activity
+            const { data: activityData } = await supabase
+                .from('transactions')
+                .select('*, profiles(full_name)')
+                .eq('business_id', currentBizId)
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            setActivities(activityData || []);
+
+            // 4. Weekly Activity
+            const startOfWeek = new Date(now);
+            const day = startOfWeek.getDay();
+            const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(startOfWeek.setDate(diff));
+            monday.setHours(0, 0, 0, 0);
+
+            const { data: weekData } = await supabase
+                .from('transactions')
+                .select('amount_fiat, created_at')
+                .eq('business_id', currentBizId)
+                .eq('type', 'EARN')
+                .gte('created_at', monday.toISOString());
+
+            const dailyTotals = [0, 0, 0, 0, 0, 0, 0];
+            weekData?.forEach(tx => {
+                const txDate = new Date(tx.created_at);
+                let txDay = txDate.getDay();
+                const index = txDay === 0 ? 6 : txDay - 1;
+                dailyTotals[index] += (Number(tx.amount_fiat) || 0);
+            });
+            setWeeklyActivity(dailyTotals);
+
+        } catch (err) {
+            console.error('Error fetching dashboard data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
-                // 1. Fetch Profile and Business ID
-                const { data: profileData, error: profileError } = await supabase
-                    .from('profiles')
-                    .select('*, business_members(business_id, businesses(name))')
-                    .eq('id', user.id)
-                    .single();
-
-                if (profileError) throw profileError;
-                setProfile(profileData);
-                setBusiness(profileData.business_members?.[0]?.businesses || null);
-
-                const currentBizId = profileData.business_members?.[0]?.business_id || '00000000-0000-0000-0000-000000000001';
-
-                // 2. Fetch Stats (Today)
-                const now = new Date();
-                const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-
-                // Transactions Today
-                const { data: transactionsToday } = await supabase
-                    .from('transactions')
-                    .select('amount_fiat, points_amount, type')
-                    .eq('business_id', currentBizId)
-                    .gte('created_at', startOfToday);
-
-                const totalSales = transactionsToday
-                    ?.filter(tx => tx.type === 'EARN')
-                    ?.reduce((acc, curr) => acc + (Number(curr.amount_fiat) || 0), 0) || 0;
-
-                const totalPoints = transactionsToday
-                    ?.reduce((acc, curr) => acc + (Number(curr.points_amount) || 0), 0) || 0;
-
-                const totalTx = transactionsToday?.length || 0;
-
-                // New Clients Today
-                const { count: newClientsCount } = await supabase
-                    .from('loyalty_cards')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('business_id', currentBizId)
-                    .gte('last_activity', startOfToday);
-
-                setStats({
-                    sales: totalSales,
-                    points: totalPoints,
-                    newClients: newClientsCount || 0,
-                    transactions: totalTx
-                });
-
-                // 3. Recent Activity
-                const { data: activityData } = await supabase
-                    .from('transactions')
-                    .select('*, profiles(full_name)')
-                    .eq('business_id', currentBizId)
-                    .order('created_at', { ascending: false })
-                    .limit(5);
-
-                setActivities(activityData || []);
-
-                // 4. Weekly Activity
-                const startOfWeek = new Date(now);
-                const day = startOfWeek.getDay();
-                const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
-                const monday = new Date(startOfWeek.setDate(diff));
-                monday.setHours(0, 0, 0, 0);
-
-                const { data: weekData } = await supabase
-                    .from('transactions')
-                    .select('amount_fiat, created_at')
-                    .eq('business_id', currentBizId)
-                    .eq('type', 'EARN')
-                    .gte('created_at', monday.toISOString());
-
-                const dailyTotals = [0, 0, 0, 0, 0, 0, 0];
-                weekData?.forEach(tx => {
-                    const txDate = new Date(tx.created_at);
-                    let txDay = txDate.getDay();
-                    const index = txDay === 0 ? 6 : txDay - 1;
-                    dailyTotals[index] += (Number(tx.amount_fiat) || 0);
-                });
-                setWeeklyActivity(dailyTotals);
-
-            } catch (err) {
-                console.error('Error fetching dashboard data:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         if (user) fetchDashboardData();
-    }, [user]); // Removed profile?.id to prevent loop
+    }, [user]);
 
     const startScanner = () => {
         setSaleStep(2);
@@ -327,8 +327,10 @@ const Home = () => {
                     console.log('Automating redemption for:', selectedPrize.name);
                     setTimeout(() => {
                         handleProcessRedeem(selectedPrize, cardData, true);
-                    }, 500);
+                    }, 800);
                     return;
+                } else {
+                    showNotification('warning', 'Premio no disponible', 'El premio solicitado no está activo en este comercio.');
                 }
             }
 
@@ -346,7 +348,7 @@ const Home = () => {
         const client = clientOverride || redeemClient;
         if (!client || !reward) return;
 
-        if (client.current_points < reward.cost_points) {
+        if (Number(client.current_points) < Number(reward.cost_points)) {
             showNotification('error', 'Puntos Insuficientes', 'El cliente no tiene suficientes puntos para este premio.');
             return;
         }
@@ -363,7 +365,7 @@ const Home = () => {
                     business_id: businessId,
                     profile_id: client.profile_id,
                     reward_id: reward.id,
-                    points_amount: -reward.cost_points,
+                    points_amount: -Math.abs(reward.cost_points),
                     type: 'REDEEM',
                     description: `Canje de premio: ${reward.name}`
                 });
@@ -374,24 +376,21 @@ const Home = () => {
             const { error: updateError } = await supabase
                 .from('loyalty_cards')
                 .update({
-                    current_points: client.current_points - reward.cost_points,
+                    current_points: Number(client.current_points) - Number(reward.cost_points),
                     last_activity: new Date().toISOString()
                 })
                 .eq('id', client.id);
 
             if (updateError) console.error('Error updating loyalty card directly:', updateError);
 
-            // 3. Success Feedback
+            // 3. Success Feedback & Cleanup
+            await closeModal();
+            await closeRedeemModal();
+
             showNotification('success', '¡Canje Procesado!', `Se ha canjeado "${reward.name}" por ${reward.cost_points} pts.`);
 
-            // Close everything
-            setIsRedeemModalOpen(false);
-            setRedeemClient(null);
-            setAvailableRewards([]);
-            setRedeemStep(1);
-
-            // Sync with DB
-            setTimeout(() => window.location.reload(), 1500);
+            // Refresh UI
+            fetchDashboardData();
         } catch (err) {
             console.error('Redeem process error:', err);
             showNotification('error', 'Error en Canje', 'No se pudo completar el canje. Verifique la conexión.');
@@ -998,6 +997,5 @@ const Home = () => {
         </div>
     );
 };
-
 
 export default Home;
