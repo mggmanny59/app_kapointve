@@ -13,6 +13,8 @@ const MyPoints = () => {
     const [selectedBusiness, setSelectedBusiness] = useState(null);
     const [businessPrizes, setBusinessPrizes] = useState([]);
     const [loadingPrizes, setLoadingPrizes] = useState(false);
+    const [recentTransactions, setRecentTransactions] = useState([]);
+    const [showRedemptionQR, setShowRedemptionQR] = useState(null); // Local state for the QR modal
 
     const fetchBusinessPrizes = async (business) => {
         console.log('Opening prizes for:', business?.name);
@@ -53,14 +55,24 @@ const MyPoints = () => {
                 setProfile(profileData);
 
                 // 2. Fetch Loyalty Cards (points in different businesses)
-                const { data: cardsData, error } = await supabase
+                const { data: cardsData, error: cardsError } = await supabase
                     .from('loyalty_cards')
                     .select('*, businesses(id, name, logo_url)')
                     .eq('profile_id', user.id)
                     .order('last_activity', { ascending: false });
 
-                if (error) throw error;
+                if (cardsError) throw cardsError;
                 setLoyaltyCards(cardsData || []);
+
+                // 3. Fetch Recent Transactions
+                const { data: txData } = await supabase
+                    .from('transactions')
+                    .select('*, businesses(name, logo_url)')
+                    .eq('profile_id', user.id)
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+
+                setRecentTransactions(txData || []);
             } catch (err) {
                 console.error('Error fetching client data:', err);
             } finally {
@@ -185,93 +197,221 @@ const MyPoints = () => {
                         </div>
                     ) : (
                         <div className="text-center py-12 bg-navy-card/30 rounded-card border border-dashed border-border-subtle">
-                            <span className="material-symbols-outlined text-slate-600 text-5xl mb-3">volunteer_activism</span>
-                            <p className="text-sm font-bold text-slate-subtitle">Aún no tienes puntos</p>
-                            <p className="text-[10px] text-slate-600 mt-1">Visita un comercio aliado para empezar</p>
+                            <span className="material-symbols-outlined text-slate-subtitle text-4xl mb-2">storefront</span>
+                            <p className="text-sm font-medium text-slate-subtitle">Aún no tienes tarjetas de lealtad</p>
                         </div>
                     )}
                 </div>
-            </main>
 
-            {/* Prizes Modal */}
-            {selectedBusiness && (
-                <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center p-4 bg-navy-dark/90 backdrop-blur-md animate-in fade-in duration-300">
-                    {/* External Window Header */}
-                    <div className="absolute top-10 left-0 right-0 flex justify-center pointer-events-none">
-                        <div className="flex items-center gap-3 px-6 py-2">
-                            <span className="material-symbols-outlined text-primary text-2xl drop-shadow-[0_0_8px_rgba(57,224,121,0.5)]">redeem</span>
-                            <h2 className="text-lg font-black text-white uppercase tracking-[0.2em] drop-shadow-md">Premios disponibles</h2>
+                {/* Recent Activity Section */}
+                {recentTransactions.length > 0 && (
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center px-1">
+                            <h2 className="text-sm font-bold text-slate-subtitle uppercase tracking-widest">Actividad Reciente</h2>
+                        </div>
+                        <div className="space-y-3">
+                            {recentTransactions.map((tx) => (
+                                <div key={tx.id} className="bg-navy-card/50 p-4 rounded-card border border-border-subtle flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`size-10 rounded-full flex items-center justify-center ${tx.type === 'EARN' ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent'}`}>
+                                            <span className="material-symbols-outlined text-xl">
+                                                {tx.type === 'EARN' ? 'add_task' : 'redeem'}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-100">{tx.businesses?.name || 'Comercio'}</p>
+                                            <p className="text-[10px] text-slate-subtitle font-medium">
+                                                {new Date(tx.created_at).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className={`font-black text-sm ${tx.type === 'EARN' ? 'text-primary' : 'text-accent'}`}>
+                                            {tx.type === 'EARN' ? '+' : ''}{tx.points_amount} pts
+                                        </p>
+                                        <p className="text-[9px] text-slate-subtitle uppercase font-black tracking-widest leading-none mt-0.5">
+                                            {tx.type === 'EARN' ? 'ACUMULADO' : 'CANJEADO'}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
+                )}
+            </main>
 
-                    <div className="bg-navy-card w-full max-w-[340px] rounded-[2.5rem] border border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[75vh]">
-                        {/* Modal Header */}
-                        <div className="relative p-7 pb-5 bg-gradient-to-b from-white/5 to-transparent border-b border-white/5 shrink-0">
-                            <button
-                                onClick={() => setSelectedBusiness(null)}
-                                className="absolute top-5 right-5 size-8 rounded-full bg-navy-dark border border-white/10 flex items-center justify-center text-slate-500 hover:text-white transition-all active:scale-90"
-                            >
-                                <span className="material-symbols-outlined !text-lg">close</span>
-                            </button>
+            {/* Immersive Prizes Window (No Card Container) */}
+            {selectedBusiness && (
+                <div className="fixed inset-0 z-[60] flex flex-col bg-navy-dark/90 backdrop-blur-xl animate-in fade-in duration-500 overflow-y-auto custom-scrollbar pb-32">
 
-                            <div className="flex flex-col items-center">
-                                <div className="size-14 rounded-xl bg-white/5 border border-white/10 p-2 flex items-center justify-center overflow-hidden mb-3">
-                                    {selectedBusiness.logo_url ? (
-                                        <img src={selectedBusiness.logo_url} alt={selectedBusiness.name} className="w-full h-full object-contain" />
-                                    ) : (
-                                        <span className="material-symbols-outlined text-primary text-2xl">storefront</span>
-                                    )}
-                                </div>
-                                <h3 className="text-xl font-black text-white tracking-tight leading-tight text-center">{selectedBusiness.name}</h3>
+                    {/* Top Action Bar */}
+                    <div className="sticky top-0 left-0 right-0 p-6 flex justify-between items-center z-50 bg-gradient-to-b from-navy-dark via-navy-dark/80 to-transparent">
+                        <div className="flex items-center gap-3">
+                            <span className="material-symbols-outlined text-primary text-3xl drop-shadow-[0_0_12px_rgba(57,224,121,0.5)]">redeem</span>
+                            <div>
+                                <h1 className="text-xl font-black text-white uppercase tracking-tighter">Premios</h1>
+                                <p className="text-[10px] text-primary font-black uppercase tracking-[0.3em] leading-none">Disponibles</p>
                             </div>
                         </div>
+                        <button
+                            onClick={() => setSelectedBusiness(null)}
+                            className="size-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-all active:scale-90"
+                        >
+                            <span className="material-symbols-outlined !text-2xl">close</span>
+                        </button>
+                    </div>
 
-                        {/* Modal Content - Prizes Grid */}
-                        <div className="p-4 overflow-y-auto custom-scrollbar">
-                            {loadingPrizes ? (
-                                <div className="py-12 flex flex-col items-center justify-center gap-4 text-center">
-                                    <div className="size-10 rounded-full border-4 border-primary/10 border-t-primary animate-spin mx-auto mr-auto ml-auto"></div>
-                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Cargando catálogo...</p>
-                                </div>
-                            ) : businessPrizes.length > 0 ? (
-                                <div className="grid grid-cols-2 gap-3 pb-2">
-                                    {businessPrizes.map((prize) => (
-                                        <div key={prize.id} className="bg-navy-dark/50 border border-white/5 rounded-2xl overflow-hidden shadow-inner group flex flex-col">
-                                            <div className="aspect-square bg-white/5 border-b border-white/5 overflow-hidden flex items-center justify-center relative">
-                                                {prize.image_url ? (
-                                                    <img src={prize.image_url} alt={prize.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                                                ) : (
-                                                    <span className="material-symbols-outlined text-slate-700 text-3xl">redeem</span>
-                                                )}
-                                                <div className="absolute top-2 right-2 bg-navy-dark/80 backdrop-blur-md px-2 py-1 rounded-full border border-white/10 flex items-center gap-1">
-                                                    <span className="material-symbols-outlined text-accent text-[10px]">stars</span>
-                                                    <span className="text-[10px] font-black text-accent">{prize.cost_points?.toLocaleString()}</span>
-                                                </div>
-                                            </div>
-                                            <div className="p-3 flex flex-col flex-1">
-                                                <h4 className="text-[11px] font-bold text-slate-200 line-clamp-2 leading-tight min-h-[2.5em]">{prize.name}</h4>
-                                                {prize.description && (
-                                                    <p className="text-[9px] text-slate-500 mt-1 line-clamp-1 italic">{prize.description}</p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                    {/* Store Identity & Balance Section */}
+                    <div className="px-6 py-8 flex flex-col items-center gap-4 text-center animate-in slide-in-from-top-4 duration-700">
+                        <div className="size-20 rounded-[2rem] bg-white shadow-[0_0_40px_rgba(255,255,255,0.05)] border border-white/20 p-4 flex items-center justify-center overflow-hidden rotate-3 hover:rotate-0 transition-transform duration-500">
+                            {selectedBusiness.logo_url ? (
+                                <img src={selectedBusiness.logo_url} alt={selectedBusiness.name} className="w-full h-full object-contain" />
                             ) : (
-                                <div className="py-12 text-center opacity-50 flex flex-col items-center">
-                                    <span className="material-symbols-outlined text-4xl mb-2">sentiment_dissatisfied</span>
-                                    <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">Sin premios por ahora</p>
-                                </div>
+                                <span className="material-symbols-outlined text-navy-dark text-4xl font-black">storefront</span>
                             )}
                         </div>
 
-                        {/* Footer Action */}
-                        <div className="p-6 pt-0 mt-auto shrink-0">
+                        <div className="space-y-1">
+                            <h2 className="text-3xl font-black text-white tracking-tight drop-shadow-lg">
+                                {selectedBusiness.name}
+                            </h2>
+                            {loyaltyCards.find(c => c.business_id === selectedBusiness.id) && (
+                                <div className="flex items-center justify-center gap-2 mt-2">
+                                    <div className="px-5 py-2 bg-accent/20 border border-accent/30 rounded-full flex items-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.1)]">
+                                        <span className="material-symbols-outlined text-accent !text-sm">stars</span>
+                                        <span className="text-sm font-black text-accent uppercase tracking-widest leading-none">
+                                            {loyaltyCards.find(c => c.business_id === selectedBusiness.id).current_points?.toLocaleString()} puntos
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Prizes Grid - Distributed in the window */}
+                    <div className="px-6 pb-10">
+                        {loadingPrizes ? (
+                            <div className="py-20 flex flex-col items-center justify-center gap-4">
+                                <div className="size-12 rounded-full border-4 border-primary/10 border-t-primary animate-spin"></div>
+                                <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Sincronizando Catálogo...</p>
+                            </div>
+                        ) : businessPrizes.length > 0 ? (
+                            <div className="grid grid-cols-2 gap-4">
+                                {businessPrizes.map((prize) => {
+                                    const userPoints = loyaltyCards.find(c => c.business_id === selectedBusiness.id)?.current_points || 0;
+                                    const canAfford = userPoints >= prize.cost_points;
+                                    const pointsNeeded = prize.cost_points - userPoints;
+
+                                    return (
+                                        <div
+                                            key={prize.id}
+                                            onClick={() => canAfford && setShowRedemptionQR(prize)}
+                                            className={`relative group flex flex-col animate-in fade-in zoom-in-95 duration-500 ${canAfford ? 'cursor-pointer active:scale-95' : 'cursor-default'}`}
+                                        >
+                                            <div className={`aspect-square rounded-[2rem] bg-white/5 border ${canAfford ? 'border-primary/40 shadow-[0_15px_30px_-10px_rgba(57,224,121,0.2)]' : 'border-white/5 opacity-40'} overflow-hidden flex items-center justify-center transition-all duration-300 relative`}>
+                                                {prize.image_url ? (
+                                                    <img src={prize.image_url} alt={prize.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                                ) : (
+                                                    <span className="material-symbols-outlined text-white/10 !text-6xl">redeem</span>
+                                                )}
+
+                                                {/* Cost Tag */}
+                                                <div className="absolute top-3 right-3 bg-navy-dark/80 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-white/10 flex items-center gap-1.5">
+                                                    <span className="material-symbols-outlined text-accent !text-xs font-black">stars</span>
+                                                    <span className="text-xs font-black text-accent">{prize.cost_points}</span>
+                                                </div>
+
+                                                {/* Unlock Status Info */}
+                                                {canAfford ? (
+                                                    <div className="absolute inset-x-3 bottom-3 bg-primary/90 backdrop-blur-sm py-2 rounded-2xl flex items-center justify-center gap-1.5 shadow-lg">
+                                                        <span className="material-symbols-outlined !text-sm text-navy-dark font-black">verified_user</span>
+                                                        <span className="text-[9px] font-black text-navy-dark uppercase tracking-widest">Canje Listo</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="absolute inset-x-3 bottom-3 bg-navy-dark/60 backdrop-blur-md py-2 rounded-2xl flex items-center justify-center border border-white/5">
+                                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Faltan {pointsNeeded}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="mt-4 px-2 space-y-1">
+                                                <h4 className={`text-sm font-black leading-tight truncate ${canAfford ? 'text-white' : 'text-slate-500'}`}>
+                                                    {prize.name}
+                                                </h4>
+                                                {prize.description && (
+                                                    <p className="text-[10px] text-slate-500 font-medium line-clamp-1 italic">{prize.description}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="py-20 text-center">
+                                <span className="material-symbols-outlined text-6xl text-white/5 mb-4">featured_seasonal_and_gifts</span>
+                                <p className="text-sm font-black text-slate-500 uppercase tracking-widest">Sin premios publicados</p>
+                            </div>
+                        )}
+                    </div>
+
+                </div>
+            )}
+
+            {/* Redemption QR Modal */}
+            {showRedemptionQR && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-navy-dark/95 backdrop-blur-2xl animate-in fade-in duration-300">
+                    <div className="bg-navy-card w-full max-w-[340px] rounded-[3rem] border border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+                        {/* Header */}
+                        <div className="p-8 pb-4 text-center space-y-2">
+                            <div className="size-16 rounded-2xl bg-primary/20 flex items-center justify-center text-primary mx-auto mb-4">
+                                <span className="material-symbols-outlined !text-4xl">qr_code_2</span>
+                            </div>
+                            <h3 className="text-xl font-black text-white leading-tight uppercase tracking-tight">Ticket de Canje</h3>
+                            <p className="text-xs text-slate-400 font-medium">Muestra este código al comerciante</p>
+                        </div>
+
+                        {/* QR Area */}
+                        <div className="px-8 py-6 flex flex-col items-center">
+                            <div className="bg-white p-6 rounded-[2.5rem] shadow-2xl">
+                                <QRCodeSVG
+                                    value={JSON.stringify({
+                                        type: 'REDEEM_REQUEST',
+                                        clientId: user.id,
+                                        prizeId: showRedemptionQR.id,
+                                        points: showRedemptionQR.cost_points
+                                    })}
+                                    size={200}
+                                    level="H"
+                                />
+                            </div>
+
+                            {/* Prize Info Card */}
+                            <div className="w-full mt-8 bg-white/5 border border-white/5 p-4 rounded-2xl flex items-center gap-4">
+                                <div className="size-12 rounded-xl bg-white/10 overflow-hidden flex items-center justify-center shrink-0">
+                                    {showRedemptionQR.image_url ? (
+                                        <img src={showRedemptionQR.image_url} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="material-symbols-outlined text-primary">redeem</span>
+                                    )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest leading-none mb-1">Premio Seleccionado</p>
+                                    <h4 className="font-bold text-white text-sm truncate">{showRedemptionQR.name}</h4>
+                                    <div className="flex items-center gap-1 mt-0.5">
+                                        <span className="material-symbols-outlined text-accent text-xs">stars</span>
+                                        <span className="text-xs font-black text-accent">{showRedemptionQR.cost_points} pts</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Action */}
+                        <div className="p-8 pt-2">
                             <button
-                                onClick={() => setSelectedBusiness(null)}
-                                className="w-full bg-primary text-navy-dark h-14 rounded-full font-black text-[12px] uppercase tracking-[0.2em] shadow-[0_10px_25px_rgba(57,224,121,0.2)] active:scale-95 hover:bg-primary/90 transition-all"
+                                onClick={() => setShowRedemptionQR(null)}
+                                className="w-full h-14 bg-white/5 border border-white/10 text-white rounded-full font-black text-xs uppercase tracking-widest active:scale-95 transition-all"
                             >
-                                Entendido
+                                Cancelar Ticket
                             </button>
                         </div>
                     </div>
@@ -279,8 +419,11 @@ const MyPoints = () => {
             )}
 
             {/* Bottom Menu */}
-            <nav className="fixed bottom-0 left-0 right-0 h-20 bg-navy-card/90 backdrop-blur-xl border-t border-border-subtle flex items-center justify-around px-6 pb-2 z-50">
-                <button className="flex flex-col items-center gap-1 text-primary">
+            <nav className="fixed bottom-0 left-0 right-0 h-20 bg-navy-card/90 backdrop-blur-xl border-t border-border-subtle flex items-center justify-around px-6 pb-2 z-[80]">
+                <button
+                    onClick={() => setSelectedBusiness(null)}
+                    className={`flex flex-col items-center gap-1 ${!selectedBusiness ? 'text-primary' : 'text-slate-subtitle'}`}
+                >
                     <span className="material-symbols-outlined font-bold">account_balance_wallet</span>
                     <span className="text-[10px] font-bold uppercase tracking-wider">Inicio</span>
                 </button>
@@ -289,8 +432,12 @@ const MyPoints = () => {
                     <span className="text-[10px] font-bold uppercase tracking-wider">Comercios</span>
                 </button>
                 <button
-                    onClick={() => loyaltyCards[0]?.businesses && fetchBusinessPrizes(loyaltyCards[0].businesses)}
-                    className="flex flex-col items-center gap-1 text-slate-subtitle active:scale-90 transition-transform"
+                    onClick={() => {
+                        if (loyaltyCards.length > 0) {
+                            fetchBusinessPrizes(loyaltyCards[0].businesses);
+                        }
+                    }}
+                    className={`flex flex-col items-center gap-1 ${selectedBusiness ? 'text-primary' : 'text-slate-subtitle'} active:scale-90 transition-transform`}
                 >
                     <span className="material-symbols-outlined">featured_seasonal_and_gifts</span>
                     <span className="text-[10px] font-bold uppercase tracking-wider">Premios</span>

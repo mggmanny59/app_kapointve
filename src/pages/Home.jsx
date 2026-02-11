@@ -25,6 +25,13 @@ const Home = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [searchEmail, setSearchEmail] = useState('');
 
+    // Redeem State
+    const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false);
+    const [redeemStep, setRedeemStep] = useState(1); // 1: Scanner, 2: Reward Selection
+    const [redeemClient, setRedeemClient] = useState(null);
+    const [availableRewards, setAvailableRewards] = useState([]);
+    const [selectedReward, setSelectedReward] = useState(null);
+
     const businessId = profile?.business_members?.[0]?.business_id || '00000000-0000-0000-0000-000000000001';
 
     useEffect(() => {
@@ -177,7 +184,101 @@ const Home = () => {
     };
 
     const onScanFailure = (error) => {
-        // Just ignore failures (too frequent)
+        // Just ignore failures
+    };
+
+    // REDEEM LOGIC
+    const startRedeemScanner = () => {
+        setRedeemStep(1);
+        setIsRedeemModalOpen(true);
+        setTimeout(() => {
+            const scanner = new Html5QrcodeScanner(
+                "redeem-reader",
+                { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
+                false
+            );
+            scanner.render(onRedeemScanSuccess, onScanFailure);
+            window.redeemScanner = scanner;
+        }, 300);
+    };
+
+    const onRedeemScanSuccess = async (decodedText) => {
+        try {
+            if (window.redeemScanner) window.redeemScanner.clear();
+            setIsProcessing(true);
+            const clientId = decodedText;
+
+            // 1. Get Client Info & Points for this business
+            const { data: cardData, error: cardError } = await supabase
+                .from('loyalty_cards')
+                .select('*, profiles(full_name, email)')
+                .eq('profile_id', clientId)
+                .eq('business_id', businessId)
+                .single();
+
+            if (cardError || !cardData) {
+                throw new Error('El cliente no está afiliado o no existe.');
+            }
+
+            setRedeemClient(cardData);
+
+            // 2. Fetch Active Rewards
+            const { data: rewardsData } = await supabase
+                .from('rewards')
+                .select('*')
+                .eq('business_id', businessId)
+                .eq('is_active', true)
+                .order('cost_points', { ascending: true });
+
+            setAvailableRewards(rewardsData || []);
+            setRedeemStep(2);
+        } catch (err) {
+            console.error('Redeem scan error:', err);
+            showNotification('error', 'Error de Canje', err.message || 'No se pudo identificar al cliente.');
+            setIsRedeemModalOpen(false);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handleProcessRedeem = async (reward) => {
+        if (!redeemClient || !reward) return;
+
+        if (redeemClient.current_points < reward.cost_points) {
+            showNotification('error', 'Puntos Insuficientes', 'El cliente no tiene suficientes puntos para este premio.');
+            return;
+        }
+
+        if (!window.confirm(`¿Confirmas el canje de "${reward.name}" por ${reward.cost_points} pts?`)) return;
+
+        try {
+            setIsProcessing(true);
+
+            // Create REDEEM Transaction
+            const { error: txError } = await supabase
+                .from('transactions')
+                .insert({
+                    business_id: businessId,
+                    profile_id: redeemClient.profile_id,
+                    reward_id: reward.id,
+                    points_amount: -reward.cost_points, // Negative for redemption
+                    type: 'REDEEM',
+                    description: `Canje de premio: ${reward.name}`
+                });
+
+            if (txError) throw txError;
+
+            showNotification('success', '¡Canje Exitoso!', `Se ha canjeado "${reward.name}" correctamente.`);
+            setIsRedeemModalOpen(false);
+            setRedeemClient(null);
+            setSelectedReward(null);
+            setTimeout(() => window.location.reload(), 1500);
+        } catch (err) {
+            console.error('Redeem process error:', err);
+            showNotification('error', 'Error en Canje', 'No se pudo procesar el canje. Reintente.');
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     const handleManualSearch = async () => {
@@ -248,6 +349,16 @@ const Home = () => {
         setAmount('');
         setAmountBs('');
         setSaleStep(1);
+    };
+
+    const closeRedeemModal = () => {
+        if (window.redeemScanner) {
+            window.redeemScanner.clear().catch(e => console.log(e));
+        }
+        setIsRedeemModalOpen(false);
+        setRedeemClient(null);
+        setAvailableRewards([]);
+        setRedeemStep(1);
     };
 
 
@@ -377,14 +488,24 @@ const Home = () => {
                     </div>
                 </div>
 
-                {/* Action Button */}
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-full flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(57,224,121,0.3)] active:scale-[0.98] transition-all"
-                >
-                    <span className="material-symbols-outlined font-black !text-3xl">qr_code_scanner</span>
-                    <span className="text-lg font-extrabold uppercase tracking-tight">Registrar Venta (Scan)</span>
-                </button>
+                {/* Action Buttons */}
+                <div className="grid grid-cols-1 gap-4">
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-full flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(57,224,121,0.2)] active:scale-[0.98] transition-all"
+                    >
+                        <span className="material-symbols-outlined font-black !text-3xl">add_shopping_cart</span>
+                        <span className="text-lg font-extrabold uppercase tracking-tight">Registrar Venta</span>
+                    </button>
+
+                    <button
+                        onClick={startRedeemScanner}
+                        className="w-full bg-accent hover:bg-yellow-500 text-navy-dark h-16 rounded-full flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(255,160,0,0.2)] active:scale-[0.98] transition-all"
+                    >
+                        <span className="material-symbols-outlined font-black !text-3xl">redeem</span>
+                        <span className="text-lg font-extrabold uppercase tracking-tight">Canjear Premio</span>
+                    </button>
+                </div>
 
                 {/* Activity Section */}
                 <div className="space-y-4">
@@ -631,6 +752,105 @@ const Home = () => {
                                         >
                                             Volver
                                         </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* REDEEM REWARD MODAL */}
+            {isRedeemModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
+                    <div className="absolute inset-0 bg-navy-dark/95 backdrop-blur-md" onClick={closeRedeemModal}></div>
+
+                    <div className="relative w-full max-w-md bg-navy-card border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col max-h-[90vh]">
+                        <div className="p-8 pb-4 shrink-0">
+                            <div className="relative flex items-center gap-4 mb-2 pt-2">
+                                <div className="size-12 rounded-full bg-accent/20 flex items-center justify-center text-accent border border-accent/30 shadow-[0_0_20px_rgba(255,160,0,0.2)]">
+                                    <span className="material-symbols-outlined !text-3xl font-bold">redeem</span>
+                                </div>
+                                <div className="flex-1">
+                                    <h2 className="text-2xl font-black text-white leading-tight tracking-tight">Canje de Premio</h2>
+                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mt-1">RECOMPENSAS DEL CLUB</p>
+                                </div>
+                                <button
+                                    onClick={closeRedeemModal}
+                                    className="absolute -top-4 -right-4 size-12 rounded-full bg-navy-card border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 shadow-2xl transition-all active:scale-95 group"
+                                >
+                                    <span className="material-symbols-outlined group-hover:rotate-90 transition-transform">close</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto custom-scrollbar p-8 pt-0">
+                            {redeemStep === 1 ? (
+                                <div className="space-y-6 text-center">
+                                    <div className="bg-navy-dark rounded-3xl overflow-hidden border border-white/10 relative min-h-[300px] flex items-center justify-center">
+                                        {isProcessing ? (
+                                            <div className="flex flex-col items-center gap-4">
+                                                <span className="animate-spin material-symbols-outlined text-accent text-5xl">refresh</span>
+                                                <p className="font-bold text-sm text-accent">Buscando cliente...</p>
+                                            </div>
+                                        ) : (
+                                            <div id="redeem-reader" className="w-full"></div>
+                                        )}
+                                    </div>
+                                    <p className="text-slate-400 text-sm font-medium">Escanea el código QR del cliente para ver sus puntos disponibles.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-6">
+                                    {/* Client Summary */}
+                                    <div className="bg-navy-dark/50 border border-white/10 rounded-3xl p-5 flex items-center gap-4 shadow-inner">
+                                        <div className="size-14 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                                            <span className="material-symbols-outlined text-primary text-2xl">person</span>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-black text-white">{redeemClient?.profiles?.full_name}</h3>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className="material-symbols-outlined text-accent text-lg">stars</span>
+                                                <span className="text-xl font-black text-accent">{redeemClient?.current_points?.toLocaleString()} pts</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Rewards List */}
+                                    <div className="space-y-3">
+                                        <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Premios Disponibles</h4>
+                                        {availableRewards.length > 0 ? (
+                                            <div className="grid grid-cols-1 gap-3">
+                                                {availableRewards.map((reward) => {
+                                                    const canAfford = redeemClient?.current_points >= reward.cost_points;
+                                                    return (
+                                                        <button
+                                                            key={reward.id}
+                                                            disabled={!canAfford || isProcessing}
+                                                            onClick={() => handleProcessRedeem(reward)}
+                                                            className={`bg-navy-dark/40 border ${canAfford ? 'border-white/10 hover:border-accent/40' : 'border-red-500/20 opacity-60'} p-3 rounded-2xl flex items-center gap-4 transition-all group text-left relative overflow-hidden`}
+                                                        >
+                                                            <div className="size-16 rounded-xl bg-white/5 overflow-hidden flex items-center justify-center border border-white/10">
+                                                                {reward.image_url ? (
+                                                                    <img src={reward.image_url} alt={reward.name} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <span className="material-symbols-outlined text-slate-600 text-2xl">redeem</span>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <h5 className="font-bold text-sm text-slate-100 truncate">{reward.name}</h5>
+                                                                <p className="text-[10px] text-accent font-black tracking-widest mt-1">{reward.cost_points} PTS</p>
+                                                            </div>
+                                                            {canAfford ? (
+                                                                <span className="material-symbols-outlined text-accent opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+                                                            ) : (
+                                                                <span className="text-[9px] font-black text-red-500 uppercase">Faltan puntos</span>
+                                                            )}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        ) : (
+                                            <div className="py-8 text-center text-slate-500 italic text-sm">No hay premios configurados hoy.</div>
+                                        )}
                                     </div>
                                 </div>
                             )}
