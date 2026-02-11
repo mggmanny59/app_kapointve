@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
 import { useNotification } from '../context/NotificationContext';
 
 const Home = () => {
@@ -130,27 +130,38 @@ const Home = () => {
     const startScanner = () => {
         setSaleStep(2);
         // Small delay to ensure container exists
-        setTimeout(() => {
-            const scanner = new Html5QrcodeScanner(
-                "reader",
-                {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 },
-                    aspectRatio: 1.0
-                },
-                /* verbose= */ false
-            );
-
-            scanner.render(onScanSuccess, onScanFailure);
-
-            // Store scanner in window to clear it later if needed
-            window.scanner = scanner;
+        setTimeout(async () => {
+            try {
+                if (window.scannerInstance) {
+                    await window.scannerInstance.stop().catch(() => { });
+                }
+                const html5QrCode = new Html5Qrcode("reader");
+                await html5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    onScanSuccess,
+                    onScanFailure
+                );
+                window.scannerInstance = html5QrCode;
+            } catch (err) {
+                console.error('Error starting scanner:', err);
+                const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
+                scanner.render(onScanSuccess, onScanFailure);
+                window.scannerUI = scanner;
+            }
         }, 300);
     };
 
     const onScanSuccess = async (decodedText) => {
         try {
-            if (window.scanner) window.scanner.clear();
+            if (window.scannerInstance) {
+                await window.scannerInstance.stop().catch(() => { });
+                window.scannerInstance = null;
+            }
+            if (window.scannerUI) {
+                window.scannerUI.clear().catch(() => { });
+                window.scannerUI = null;
+            }
             setIsProcessing(true);
 
             const clientId = decodedText; // UUID of the client
@@ -191,22 +202,53 @@ const Home = () => {
     const startRedeemScanner = () => {
         setRedeemStep(1);
         setIsRedeemModalOpen(true);
-        setTimeout(() => {
-            const scanner = new Html5QrcodeScanner(
-                "redeem-reader",
-                { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
-                false
-            );
-            scanner.render(onRedeemScanSuccess, onScanFailure);
-            window.redeemScanner = scanner;
+        setTimeout(async () => {
+            try {
+                if (window.redeemScannerInstance) {
+                    await window.redeemScannerInstance.stop().catch(() => { });
+                }
+                const html5QrCode = new Html5Qrcode("redeem-reader");
+                await html5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    onRedeemScanSuccess,
+                    onScanFailure
+                );
+                window.redeemScannerInstance = html5QrCode;
+            } catch (err) {
+                console.error('Error starting redeem scanner:', err);
+                const scanner = new Html5QrcodeScanner("redeem-reader", { fps: 10, qrbox: 250 }, false);
+                scanner.render(onRedeemScanSuccess, onScanFailure);
+                window.redeemScannerUI = scanner;
+            }
         }, 300);
     };
 
     const onRedeemScanSuccess = async (decodedText) => {
         try {
-            if (window.redeemScanner) window.redeemScanner.clear();
+            if (window.redeemScannerInstance) {
+                await window.redeemScannerInstance.stop().catch(() => { });
+                window.redeemScannerInstance = null;
+            }
+            if (window.redeemScannerUI) {
+                await window.redeemScannerUI.clear().catch(() => { });
+                window.redeemScannerUI = null;
+            }
             setIsProcessing(true);
-            const clientId = decodedText;
+
+            let clientId = decodedText;
+            let preSelectedPrizeId = null;
+
+            // Try to parse JSON for the new redemption ticket format
+            try {
+                const qrData = JSON.parse(decodedText);
+                if (qrData.type === 'REDEEM_REQUEST') {
+                    clientId = qrData.clientId;
+                    preSelectedPrizeId = qrData.prizeId;
+                }
+            } catch (e) {
+                // Not a JSON, assume it's a legacy UUID string (client ID only)
+            }
 
             // 1. Get Client Info & Points for this business
             const { data: cardData, error: cardError } = await supabase
@@ -231,6 +273,18 @@ const Home = () => {
                 .order('cost_points', { ascending: true });
 
             setAvailableRewards(rewardsData || []);
+
+            // If a prize was pre-selected in the QR, and it's available, we can proceed
+            if (preSelectedPrizeId && rewardsData) {
+                const selectedPrize = rewardsData.find(r => r.id === preSelectedPrizeId);
+                if (selectedPrize) {
+                    // Optional: You could directly call handleProcessRedeem(selectedPrize) here
+                    // but for security/confirmation, it's better to show the selection screen 
+                    // with the prize highlighted or just let the merchant click it.
+                    console.log('Prize pre-selected by client:', selectedPrize.name);
+                }
+            }
+
             setRedeemStep(2);
         } catch (err) {
             console.error('Redeem scan error:', err);
@@ -340,9 +394,18 @@ const Home = () => {
         }
     };
 
-    const closeModal = () => {
+    const closeModal = async () => {
+        if (window.scannerInstance) {
+            await window.scannerInstance.stop().catch(() => { });
+            window.scannerInstance = null;
+        }
+        if (window.scannerUI) {
+            await window.scannerUI.clear().catch(() => { });
+            window.scannerUI = null;
+        }
         if (window.scanner) {
             window.scanner.clear().catch(e => console.log(e));
+            window.scanner = null;
         }
         setIsModalOpen(false);
         setSearchEmail('');
@@ -351,9 +414,18 @@ const Home = () => {
         setSaleStep(1);
     };
 
-    const closeRedeemModal = () => {
+    const closeRedeemModal = async () => {
+        if (window.redeemScannerInstance) {
+            await window.redeemScannerInstance.stop().catch(() => { });
+            window.redeemScannerInstance = null;
+        }
+        if (window.redeemScannerUI) {
+            await window.redeemScannerUI.clear().catch(() => { });
+            window.redeemScannerUI = null;
+        }
         if (window.redeemScanner) {
             window.redeemScanner.clear().catch(e => console.log(e));
+            window.redeemScanner = null;
         }
         setIsRedeemModalOpen(false);
         setRedeemClient(null);
