@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
+import { useNotification } from '../context/NotificationContext';
 
 const MyPoints = () => {
     const { user, signOut } = useAuth();
@@ -15,6 +16,7 @@ const MyPoints = () => {
     const [loadingPrizes, setLoadingPrizes] = useState(false);
     const [recentTransactions, setRecentTransactions] = useState([]);
     const [showRedemptionQR, setShowRedemptionQR] = useState(null); // Local state for the QR modal
+    const { showNotification } = useNotification();
 
     const fetchBusinessPrizes = async (business) => {
         console.log('Opening prizes for:', business?.name);
@@ -43,45 +45,73 @@ const MyPoints = () => {
         }
     };
 
+    const fetchUserData = async () => {
+        try {
+            // 1. Fetch Profile
+            const { data: profileData } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+            setProfile(profileData);
+
+            // 2. Fetch Loyalty Cards (points in different businesses)
+            const { data: cardsData, error: cardsError } = await supabase
+                .from('loyalty_cards')
+                .select('*, businesses(id, name, logo_url)')
+                .eq('profile_id', user.id)
+                .order('last_activity', { ascending: false });
+
+            if (cardsError) throw cardsError;
+            setLoyaltyCards(cardsData || []);
+
+            // 3. Fetch Recent Transactions
+            const { data: txData } = await supabase
+                .from('transactions')
+                .select('*, businesses(name, logo_url)')
+                .eq('profile_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            setRecentTransactions(txData || []);
+        } catch (err) {
+            console.error('Error fetching client data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                // 1. Fetch Profile
-                const { data: profileData } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
-                setProfile(profileData);
-
-                // 2. Fetch Loyalty Cards (points in different businesses)
-                const { data: cardsData, error: cardsError } = await supabase
-                    .from('loyalty_cards')
-                    .select('*, businesses(id, name, logo_url)')
-                    .eq('profile_id', user.id)
-                    .order('last_activity', { ascending: false });
-
-                if (cardsError) throw cardsError;
-                setLoyaltyCards(cardsData || []);
-
-                // 3. Fetch Recent Transactions
-                const { data: txData } = await supabase
-                    .from('transactions')
-                    .select('*, businesses(name, logo_url)')
-                    .eq('profile_id', user.id)
-                    .order('created_at', { ascending: false })
-                    .limit(5);
-
-                setRecentTransactions(txData || []);
-            } catch (err) {
-                console.error('Error fetching client data:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         if (user) fetchUserData();
     }, [user]);
+
+    // REAL-TIME REDEMPTION LISTENER
+    useEffect(() => {
+        if (!showRedemptionQR || !user) return;
+
+        console.log('Iniciando escucha de canje en tiempo real...');
+
+        const channel = supabase
+            .channel('redemption-check')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'transactions',
+                filter: `profile_id=eq.${user.id}`
+            }, (payload) => {
+                if (payload.new.type === 'REDEEM') {
+                    console.log('Canje verificado por Realtime!');
+                    showNotification('success', '¡Canje Exitoso!', 'Tu premio ha sido procesado por el comercio.');
+                    setShowRedemptionQR(null);
+                    fetchUserData();
+                }
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [showRedemptionQR, user]);
 
     if (loading) {
         return (
