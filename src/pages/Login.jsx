@@ -54,11 +54,24 @@ const Login = () => {
                 navigate('/dashboard');
             } else {
                 // CLIENT VALIDATION: Strict separation
-                // If it was registered with role 'admin' in metadata, we block it from client login
                 const userRole = authUser.user_metadata?.role;
-                if (userRole === 'admin') {
+
+                // 1. Check Metadata first (fast)
+                if (userRole === 'admin' || userRole === 'cashier') {
                     await signOut();
-                    throw new Error('Esta cuenta es de tipo NEGOCIO. Por favor, selecciona la pestaña "Dueño" para ingresar.');
+                    throw new Error('Esta cuenta pertenece al equipo de un NEGOCIO. Por favor, utiliza la pestaña "Dueño" para ingresar.');
+                }
+
+                // 2. Double check Database (secure)
+                const { data: isTeamMember } = await supabase
+                    .from('business_members')
+                    .select('id')
+                    .eq('profile_id', authUser.id)
+                    .maybeSingle();
+
+                if (isTeamMember) {
+                    await signOut();
+                    throw new Error('Acceso Denegado: Tu perfil está registrado como Miembro de Equipo. Por favor, ingresa por la sección de "Dueño".');
                 }
 
                 // AUTO-REPAIR: Ensure every client has at least the default business loyalty card

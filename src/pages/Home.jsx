@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
 import { useNotification } from '../context/NotificationContext';
+import Navigation from '../components/Navigation';
 
 const Home = () => {
     const { user, signOut } = useAuth();
@@ -32,22 +33,33 @@ const Home = () => {
     const [availableRewards, setAvailableRewards] = useState([]);
     const [selectedReward, setSelectedReward] = useState(null);
 
+    const [userPermissions, setUserPermissions] = useState(null);
+    const [userRole, setUserRole] = useState(null);
+
     const businessId = profile?.business_members?.[0]?.business_id || '00000000-0000-0000-0000-000000000001';
 
     const fetchDashboardData = async () => {
         try {
-            // 1. Fetch Profile and Business ID
+            // 1. Fetch Profile and Business ID with Permissions
             const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
-                .select('*, business_members(business_id, businesses(name))')
+                .select('*, business_members(business_id, role, permissions, businesses(name))')
                 .eq('id', user.id)
                 .single();
 
             if (profileError) throw profileError;
-            setProfile(profileData);
-            setBusiness(profileData.business_members?.[0]?.businesses || null);
 
-            const currentBizId = profileData.business_members?.[0]?.business_id || '00000000-0000-0000-0000-000000000001';
+            setProfile(profileData);
+            const memberInfo = profileData.business_members?.[0];
+            setBusiness(memberInfo?.businesses || null);
+            setUserRole(memberInfo?.role || 'client');
+            setUserPermissions(memberInfo?.permissions || {
+                can_earn: true,
+                can_redeem: true,
+                can_view_clients: true
+            });
+
+            const currentBizId = memberInfo?.business_id || '00000000-0000-0000-0000-000000000001';
 
             // 2. Fetch Stats (Today)
             const now = new Date();
@@ -545,11 +557,20 @@ const Home = () => {
 
             <main className="px-6 space-y-6">
                 <div className="flex flex-col">
-                    <h2 className="text-2xl font-black text-white flex items-center gap-2">
+                    <h2 className="text-2xl font-black text-white flex items-center gap-2 leading-tight">
                         <span className="material-symbols-outlined text-primary !text-3xl">store</span>
                         {business?.name || 'Mi Negocio'}
                     </h2>
-                    <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1 ml-1">Panel de Control</p>
+
+                    <div className="mt-4 space-y-1 ml-1">
+                        <p className="text-lg font-black text-primary uppercase tracking-wider flex items-center gap-2">
+                            <span className="material-symbols-outlined !text-[20px]">person</span>
+                            {profile?.full_name || 'Cargando...'}
+                        </p>
+                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] opacity-80">
+                            Panel de Control
+                        </p>
+                    </div>
                 </div>
 
                 {/* Stats Grid */}
@@ -626,21 +647,25 @@ const Home = () => {
 
                 {/* Action Buttons */}
                 <div className="grid grid-cols-1 gap-4">
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-full flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(57,224,121,0.2)] active:scale-[0.98] transition-all"
-                    >
-                        <span className="material-symbols-outlined font-black !text-3xl">add_shopping_cart</span>
-                        <span className="text-lg font-extrabold uppercase tracking-tight">Registrar Venta</span>
-                    </button>
+                    {userPermissions?.can_earn && (
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-full flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(57,224,121,0.2)] active:scale-[0.98] transition-all"
+                        >
+                            <span className="material-symbols-outlined font-black !text-3xl">add_shopping_cart</span>
+                            <span className="text-lg font-extrabold uppercase tracking-tight">Registrar Venta</span>
+                        </button>
+                    )}
 
-                    <button
-                        onClick={startRedeemScanner}
-                        className="w-full bg-accent hover:bg-yellow-500 text-navy-dark h-16 rounded-full flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(255,160,0,0.2)] active:scale-[0.98] transition-all"
-                    >
-                        <span className="material-symbols-outlined font-black !text-3xl">redeem</span>
-                        <span className="text-lg font-extrabold uppercase tracking-tight">Canjear Premio</span>
-                    </button>
+                    {userPermissions?.can_redeem && (
+                        <button
+                            onClick={startRedeemScanner}
+                            className="w-full bg-accent hover:bg-yellow-500 text-navy-dark h-16 rounded-full flex items-center justify-center gap-3 shadow-[0_8px_30_rgb(255,160,0,0.2)] active:scale-[0.98] transition-all"
+                        >
+                            <span className="material-symbols-outlined font-black !text-3xl">redeem</span>
+                            <span className="text-lg font-extrabold uppercase tracking-tight">Canjear Premio</span>
+                        </button>
+                    )}
                 </div>
 
                 {/* Activity Section */}
@@ -676,36 +701,7 @@ const Home = () => {
             </main>
 
             {/* Navigation */}
-            <nav className="fixed bottom-0 left-0 right-0 h-20 bg-navy-card/90 backdrop-blur-xl border-t border-white/10 flex items-center justify-around px-6 pb-2 z-50">
-                <button
-                    onClick={() => navigate('/dashboard')}
-                    className="flex flex-col items-center gap-1 text-primary"
-                >
-                    <span className="material-symbols-outlined font-bold">dashboard</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Panel</span>
-                </button>
-                <button
-                    onClick={() => navigate('/clients')}
-                    className="flex flex-col items-center gap-1 text-slate-500"
-                >
-                    <span className="material-symbols-outlined">group</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Clientes</span>
-                </button>
-                <button
-                    onClick={() => navigate('/prizes')}
-                    className="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors"
-                >
-                    <span className="material-symbols-outlined">featured_seasonal_and_gifts</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Premios</span>
-                </button>
-                <button
-                    onClick={() => navigate('/settings')}
-                    className="flex flex-col items-center gap-1 text-slate-500"
-                >
-                    <span className="material-symbols-outlined">settings</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Ajustes</span>
-                </button>
-            </nav>
+            <Navigation />
 
             {/* REGISTER SALE MODAL */}
             {isModalOpen && (

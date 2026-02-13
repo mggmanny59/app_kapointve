@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
-const PrizeCalculator = ({ onClose, onApply }) => {
+const PrizeCalculator = ({ onClose, onApply, initialCost }) => {
     const { user } = useAuth();
-    const [cost, setCost] = useState('');
+    const [cost, setCost] = useState(initialCost || '');
     const [retention, setRetention] = useState(10); // 10% default
     const [visits, setVisits] = useState(5);
     const [showHelp, setShowHelp] = useState(false);
@@ -65,7 +65,7 @@ const PrizeCalculator = ({ onClose, onApply }) => {
 
     const handleApply = () => {
         if (points > 0) {
-            onApply(points);
+            onApply(points, cost);
             onClose();
         }
     };

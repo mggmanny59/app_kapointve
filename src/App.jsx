@@ -6,11 +6,26 @@ import Clients from './pages/Clients';
 import MyPoints from './pages/MyPoints';
 import PrizeDesigner from './pages/PrizeDesigner';
 import BusinessSettings from './pages/BusinessSettings';
+import StaffManagement from './pages/StaffManagement';
 import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
+  return children;
+};
+
+const AdminRoute = ({ children }) => {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+
+  // Basic security check: Only 'admin' role can access admin-only pages
+  // Cashiers/Staff are blocked from here
+  const role = user.user_metadata?.role;
+  if (role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return children;
 };
 
@@ -48,17 +63,25 @@ function App() {
         <Route
           path="/prizes"
           element={
-            <ProtectedRoute>
+            <AdminRoute>
               <PrizeDesigner />
-            </ProtectedRoute>
+            </AdminRoute>
           }
         />
         <Route
           path="/settings"
           element={
-            <ProtectedRoute>
+            <AdminRoute>
               <BusinessSettings />
-            </ProtectedRoute>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/settings/staff"
+          element={
+            <AdminRoute>
+              <StaffManagement />
+            </AdminRoute>
           }
         />
       </Routes>

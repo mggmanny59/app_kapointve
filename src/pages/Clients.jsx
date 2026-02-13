@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import Navigation from '../components/Navigation';
 
 const Clients = () => {
     const navigate = useNavigate();
@@ -59,13 +60,26 @@ const Clients = () => {
 
                 const bId = profileData?.business_members?.[0]?.business_id || '00000000-0000-0000-0000-000000000001';
 
+                // 2. Fetch Business Members (Team) to exclude them
+                const { data: teamMembers } = await supabase
+                    .from('business_members')
+                    .select('profile_id')
+                    .eq('business_id', bId);
 
-                // 2. Fetch Clients from loyalty_cards
-                const { data: clientsData, error } = await supabase
+                const teamIds = teamMembers?.map(m => m.profile_id) || [];
+
+                // 3. Fetch Clients from loyalty_cards
+                let query = supabase
                     .from('loyalty_cards')
                     .select('*, profiles(*)')
-                    .eq('business_id', bId)
-                    .order('last_activity', { ascending: false });
+                    .eq('business_id', bId);
+
+                // Only apply filter if we have team members to exclude
+                if (teamIds.length > 0) {
+                    query = query.not('profile_id', 'in', `(${teamIds.join(',')})`);
+                }
+
+                const { data: clientsData, error } = await query.order('last_activity', { ascending: false });
 
                 if (error) throw error;
                 setClients(clientsData || []);
@@ -280,33 +294,7 @@ const Clients = () => {
             )}
 
             {/* Navigation */}
-            <nav className="fixed bottom-0 left-0 right-0 h-20 bg-navy-card/90 backdrop-blur-xl border-t border-white/10 flex items-center justify-around px-6 pb-2 z-50">
-                <button
-                    onClick={() => navigate('/dashboard')}
-                    className="flex flex-col items-center gap-1 text-slate-500"
-                >
-                    <span className="material-symbols-outlined">dashboard</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Panel</span>
-                </button>
-                <button className="flex flex-col items-center gap-1 text-primary">
-                    <span className="material-symbols-outlined font-bold">group</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Clientes</span>
-                </button>
-                <button
-                    onClick={() => navigate('/prizes')}
-                    className="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors"
-                >
-                    <span className="material-symbols-outlined">featured_seasonal_and_gifts</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Premios</span>
-                </button>
-                <button
-                    onClick={() => navigate('/settings')}
-                    className="flex flex-col items-center gap-1 text-slate-500"
-                >
-                    <span className="material-symbols-outlined">settings</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Ajustes</span>
-                </button>
-            </nav>
+            <Navigation />
         </div>
     );
 };

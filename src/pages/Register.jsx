@@ -100,17 +100,47 @@ const Register = () => {
             } else {
                 // It's a CLIENT - Create their loyalty card if code is valid
                 if (finalizedBizId) {
+                    // Fetch points configuration for the business
+                    const { data: businessConfig } = await supabase
+                        .from('businesses')
+                        .select('points_per_dollar')
+                        .eq('id', finalizedBizId)
+                        .single();
+
+                    const pointsPerDollar = businessConfig?.points_per_dollar || 10;
+                    const giftPoints = pointsPerDollar * 2;
+
+                    // Create loyalty card with greeting points
                     await supabase
                         .from('loyalty_cards')
                         .insert({
                             business_id: finalizedBizId,
                             profile_id: userId,
-                            current_points: 0
+                            current_points: giftPoints,
+                            total_accumulated_points: giftPoints
                         });
+
+                    // Record the welcome bonus transaction
+                    await supabase
+                        .from('transactions')
+                        .insert({
+                            business_id: finalizedBizId,
+                            profile_id: userId,
+                            type: 'BONUS',
+                            points_amount: giftPoints,
+                            description: 'Regalo de Bienvenida'
+                        });
+
+                    const welcomeMessage = `¡Bienvenido a la comunidad KPoint!
+
+Acabamos de activar tu monedero con tus primeros ${giftPoints} puntos de regalo. Ya estás más cerca de tu primer premio. ¡Empieza a escanear y haz que tus compras valan más!`;
+
+                    showNotification('success', '¡Bienvenido!', welcomeMessage);
+                } else {
+                    showNotification('success', '¡Registro Exitoso!', 'Tu cuenta ha sido creada correctamente. Ya puedes iniciar sesión.');
                 }
             }
 
-            showNotification('success', '¡Registro Exitoso!', 'Tu cuenta ha sido creada correctamente. Ya puedes iniciar sesión.');
             navigate('/login');
         } catch (err) {
             let friendlyMessage = err.message;

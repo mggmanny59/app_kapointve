@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import PrizeCalculator from '../components/PrizeCalculator';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import Navigation from '../components/Navigation';
 
 const PrizeDesigner = () => {
     const { user } = useAuth();
@@ -18,6 +19,7 @@ const PrizeDesigner = () => {
         name: '',
         description: '',
         points: '',
+        unit_cost: '',
         image: null,
         is_active: true
     });
@@ -65,6 +67,7 @@ const PrizeDesigner = () => {
             name: prize.name,
             description: prize.description || '',
             points: prize.cost_points.toString(),
+            unit_cost: (prize.unit_cost || 0).toString(),
             image: null,
             is_active: prize.is_active ?? true
         });
@@ -94,7 +97,7 @@ const PrizeDesigner = () => {
     };
 
     const resetForm = () => {
-        setFormData({ name: '', description: '', points: '', image: null, is_active: true });
+        setFormData({ name: '', description: '', points: '', unit_cost: '', image: null, is_active: true });
         setPreviewUrl(null);
         setEditingPrizeId(null);
     };
@@ -107,10 +110,14 @@ const PrizeDesigner = () => {
         }
     };
 
-    const handleApplyPoints = (calculatedPoints) => {
-        setFormData({ ...formData, points: calculatedPoints.toString() });
+    const handleApplyPoints = (calculatedPoints, calculatedCost) => {
+        setFormData({
+            ...formData,
+            points: calculatedPoints.toString(),
+            unit_cost: calculatedCost.toString()
+        });
         setShowCalculator(false);
-        showNotification('success', 'Puntos Aplicados', 'Los puntos calculados se han cargado en el formulario.');
+        showNotification('success', 'Puntos y Costo Aplicados', 'Los valores calculados se han cargado en el formulario.');
     };
 
     const handleSave = async (e) => {
@@ -144,6 +151,7 @@ const PrizeDesigner = () => {
                         name: formData.name,
                         description: formData.description,
                         cost_points: parseInt(formData.points),
+                        unit_cost: parseFloat(formData.unit_cost) || 0,
                         image_url: finalImageUrl,
                         is_active: formData.is_active
                     })
@@ -172,6 +180,7 @@ const PrizeDesigner = () => {
                         name: formData.name,
                         description: formData.description,
                         cost_points: parseInt(formData.points),
+                        unit_cost: parseFloat(formData.unit_cost) || 0,
                         image_url: finalImageUrl || 'https://via.placeholder.com/400x400.png?text=Sin+Imagen',
                         is_active: formData.is_active
                     });
@@ -312,6 +321,21 @@ const PrizeDesigner = () => {
                                 />
                             </div>
 
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Costo Unitario ($)</label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary !text-xl">payments</span>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={formData.unit_cost}
+                                        onChange={(e) => setFormData({ ...formData, unit_cost: e.target.value })}
+                                        className="w-full bg-navy-card border border-white/5 h-12 rounded-xl pl-12 pr-4 text-white text-xl font-black focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-slate-800"
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                            </div>
+
                             <div className="flex gap-4">
                                 <div className="flex-1 space-y-1">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Puntos</label>
@@ -327,6 +351,7 @@ const PrizeDesigner = () => {
                                         />
                                     </div>
                                 </div>
+
 
                                 <div className="space-y-1 min-w-[120px]">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 text-center block">Estado</label>
@@ -431,39 +456,14 @@ const PrizeDesigner = () => {
             {/* Calculator Modal */}
             {showCalculator && (
                 <PrizeCalculator
+                    initialCost={formData.unit_cost}
                     onClose={() => setShowCalculator(false)}
                     onApply={handleApplyPoints}
                 />
             )}
 
             {/* Navigation */}
-            <nav className="fixed bottom-0 left-0 right-0 h-20 bg-navy-card/90 backdrop-blur-xl border-t border-white/10 flex items-center justify-around px-6 pb-2 z-50">
-                <button
-                    onClick={() => navigate('/dashboard')}
-                    className="flex flex-col items-center gap-1 text-slate-500"
-                >
-                    <span className="material-symbols-outlined">dashboard</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Panel</span>
-                </button>
-                <button
-                    onClick={() => navigate('/clients')}
-                    className="flex flex-col items-center gap-1 text-slate-500"
-                >
-                    <span className="material-symbols-outlined">group</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Clientes</span>
-                </button>
-                <button className="flex flex-col items-center gap-1 text-primary">
-                    <span className="material-symbols-outlined font-bold">featured_seasonal_and_gifts</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Premios</span>
-                </button>
-                <button
-                    onClick={() => navigate('/settings')}
-                    className="flex flex-col items-center gap-1 text-slate-500"
-                >
-                    <span className="material-symbols-outlined">settings</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Ajustes</span>
-                </button>
-            </nav>
+            <Navigation />
         </div>
     );
 };

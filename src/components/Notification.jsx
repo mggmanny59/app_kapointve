@@ -49,7 +49,7 @@ const Notification = ({ type = 'success', title, message, onClose, duration = 50
                     <h4 className="font-black text-white text-lg uppercase tracking-wider">
                         {title}
                     </h4>
-                    <p className="text-sm text-slate-400 font-medium leading-relaxed">
+                    <p className="text-sm text-slate-400 font-medium leading-relaxed whitespace-pre-line">
                         {message}
                     </p>
                 </div>
