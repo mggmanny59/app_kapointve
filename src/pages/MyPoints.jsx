@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNotification } from '../context/NotificationContext';
+import { useMessages } from '../context/MessageContext';
+import MessageCenter from '../components/MessageCenter';
 
 const MyPoints = () => {
     const { user, signOut } = useAuth();
@@ -18,6 +20,8 @@ const MyPoints = () => {
     const [showRedemptionQR, setShowRedemptionQR] = useState(null); // Local state for the QR modal
     const [showMainQRModal, setShowMainQRModal] = useState(false); // New state for main QR modal
     const { showNotification } = useNotification();
+    const [isMessageCenterOpen, setIsMessageCenterOpen] = useState(false);
+    const { unreadCount } = useMessages();
 
     const fetchBusinessPrizes = async (business) => {
         console.log('Opening prizes for:', business?.name);
@@ -159,6 +163,17 @@ const MyPoints = () => {
                     </div>
                 </div>
                 <div className="flex gap-2">
+                    <button
+                        onClick={() => setIsMessageCenterOpen(true)}
+                        className="w-10 h-10 rounded-full bg-navy-card border border-border-subtle flex items-center justify-center relative group active:scale-90 transition-all font-display"
+                    >
+                        <span className="material-symbols-outlined text-slate-subtitle group-hover:text-primary transition-colors">notifications</span>
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 size-5 bg-primary text-navy-dark text-[10px] font-black rounded-full border-2 border-navy-dark flex items-center justify-center shadow-lg">
+                                {unreadCount}
+                            </span>
+                        )}
+                    </button>
                     <button
                         onClick={signOut}
                         className="w-10 h-10 rounded-full bg-navy-card border border-border-subtle flex items-center justify-center hover:text-red-500 transition-colors"
@@ -543,6 +558,12 @@ const MyPoints = () => {
                     <span className="text-[10px] font-bold uppercase tracking-wider">Perfil</span>
                 </button>
             </nav>
+
+            {/* Message Center Drawer */}
+            <MessageCenter
+                isOpen={isMessageCenterOpen}
+                onClose={() => setIsMessageCenterOpen(false)}
+            />
         </div>
     );
 };

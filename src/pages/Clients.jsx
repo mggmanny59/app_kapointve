@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import Navigation from '../components/Navigation';
+import SendNotificationModal from '../components/SendNotificationModal';
 
 const Clients = () => {
     const navigate = useNavigate();
@@ -13,6 +14,11 @@ const Clients = () => {
     const [selectedClient, setSelectedClient] = useState(null);
     const [clientSummary, setClientSummary] = useState(null);
     const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+
+    // Notification Modal States
+    const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+    const [notificationTarget, setNotificationTarget] = useState(null); // null means broadcast
+    const [currentBusinessId, setCurrentBusinessId] = useState(null);
 
     const fetchClientSummary = async (client) => {
         setSelectedClient(client);
@@ -59,6 +65,7 @@ const Clients = () => {
                     .single();
 
                 const bId = profileData?.business_members?.[0]?.business_id || '00000000-0000-0000-0000-000000000001';
+                setCurrentBusinessId(bId);
 
                 // 2. Fetch Business Members (Team) to exclude them
                 const { data: teamMembers } = await supabase
@@ -133,8 +140,15 @@ const Clients = () => {
                 <div className="flex items-center justify-between mb-6">
                     <h1 className="text-2xl font-extrabold tracking-tight">Mis <span className="text-primary">Clientes</span></h1>
                     <div className="flex gap-2">
-                        <button className="w-10 h-10 rounded-full bg-navy-card border border-white/10 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-slate-300">person_add</span>
+                        <button
+                            onClick={() => {
+                                setNotificationTarget(null);
+                                setIsNotificationModalOpen(true);
+                            }}
+                            className="w-10 h-10 rounded-full bg-primary/20 border border-primary/20 flex items-center justify-center text-primary hover:bg-primary hover:text-navy-dark transition-all active:scale-90 shadow-lg shadow-primary/10"
+                            title="Comunicado Masivo"
+                        >
+                            <span className="material-symbols-outlined text-xl font-black">campaign</span>
                         </button>
                     </div>
                 </div>
@@ -282,12 +296,25 @@ const Clients = () => {
                                 </>
                             )}
 
-                            <button
-                                onClick={() => setSelectedClient(null)}
-                                className="w-full bg-primary text-navy-dark h-14 rounded-full font-black text-[12px] uppercase tracking-[0.2em] shadow-[0_10px_25px_rgba(57,224,121,0.2)] active:scale-95 hover:bg-primary/90 transition-all mt-2"
-                            >
-                                Cerrar Resumen
-                            </button>
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={() => {
+                                        setNotificationTarget(selectedClient);
+                                        setIsNotificationModalOpen(true);
+                                    }}
+                                    className="w-full bg-white/5 text-white h-14 rounded-full font-black text-[12px] uppercase tracking-[0.2em] border border-white/10 active:scale-95 hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <span className="material-symbols-outlined text-sm font-black">send</span>
+                                    Enviar Mensaje
+                                </button>
+
+                                <button
+                                    onClick={() => setSelectedClient(null)}
+                                    className="w-full bg-primary text-navy-dark h-14 rounded-full font-black text-[12px] uppercase tracking-[0.2em] shadow-[0_10px_25px_rgba(57,224,121,0.2)] active:scale-95 hover:bg-primary/90 transition-all"
+                                >
+                                    Cerrar Resumen
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -295,6 +322,14 @@ const Clients = () => {
 
             {/* Navigation */}
             <Navigation />
+
+            {/* Notification Sender Modal */}
+            <SendNotificationModal
+                isOpen={isNotificationModalOpen}
+                onClose={() => setIsNotificationModalOpen(false)}
+                businessId={currentBusinessId}
+                targetClient={notificationTarget}
+            />
         </div>
     );
 };

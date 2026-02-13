@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const AuthLayout = ({ children, title, footerText, footerLinkText, footerLinkHref, showBackButton, isLoginPage = false }) => {
+const AuthLayout = ({ children, title, footerText, footerLinkText, footerLinkHref, showBackButton }) => {
     const navigate = useNavigate();
 
     return (
-        <div className={`min-h-screen w-full flex flex-col relative font-display text-white items-center p-5 overflow-x-hidden bg-navy-dark ${isLoginPage ? 'pt-52 pb-16' : 'justify-center py-10'}`}>
+        <div className="min-h-screen w-full flex flex-col relative font-display text-white items-center justify-center p-5 overflow-x-hidden bg-navy-dark">
             {/* Background Image with Framing and Gradient Fade */}
             <div className="absolute top-0 left-0 right-0 h-[60vh] z-0">
                 <img

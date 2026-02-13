@@ -108,7 +108,6 @@ const Login = () => {
             footerText="¿Nuevo aquí?"
             footerLinkText="Regístrate"
             footerLinkHref="/register"
-            isLoginPage={true}
         >
             {/* Role Tabs */}
             <div className="flex bg-navy-dark p-1 rounded-card border border-border-subtle mb-4">

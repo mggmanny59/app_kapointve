@@ -4,7 +4,9 @@ import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
 import { useNotification } from '../context/NotificationContext';
+import { useMessages } from '../context/MessageContext';
 import Navigation from '../components/Navigation';
+import MessageCenter from '../components/MessageCenter';
 
 const Home = () => {
     const { user, signOut } = useAuth();
@@ -35,6 +37,8 @@ const Home = () => {
 
     const [userPermissions, setUserPermissions] = useState(null);
     const [userRole, setUserRole] = useState(null);
+    const [isMessageCenterOpen, setIsMessageCenterOpen] = useState(false);
+    const { unreadCount } = useMessages();
 
     const businessId = profile?.business_members?.[0]?.business_id || '00000000-0000-0000-0000-000000000001';
 
@@ -543,8 +547,16 @@ const Home = () => {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <button className="w-10 h-10 rounded-full bg-navy-card border border-white/10 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-slate-300">notifications</span>
+                    <button
+                        onClick={() => setIsMessageCenterOpen(true)}
+                        className="w-10 h-10 rounded-full bg-navy-card border border-white/10 flex items-center justify-center relative group active:scale-90 transition-all"
+                    >
+                        <span className="material-symbols-outlined text-slate-300 group-hover:text-white transition-colors">notifications</span>
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 size-5 bg-primary text-navy-dark text-[10px] font-black rounded-full border-2 border-navy-dark flex items-center justify-center shadow-lg">
+                                {unreadCount}
+                            </span>
+                        )}
                     </button>
                     <button
                         onClick={signOut}
@@ -702,6 +714,12 @@ const Home = () => {
 
             {/* Navigation */}
             <Navigation />
+
+            {/* Message Center Drawer */}
+            <MessageCenter
+                isOpen={isMessageCenterOpen}
+                onClose={() => setIsMessageCenterOpen(false)}
+            />
 
             {/* REGISTER SALE MODAL */}
             {isModalOpen && (
