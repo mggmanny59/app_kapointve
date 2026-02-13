@@ -9,7 +9,8 @@ const Register = () => {
     const [activeTab, setActiveTab] = useState('client');
     const [formData, setFormData] = useState({
         name: '',
-        phone: '',
+        phonePrefix: '0412',
+        phoneSuffix: '',
         email: '',
         password: '',
         shopCode: ''
@@ -25,7 +26,8 @@ const Register = () => {
         const timer = setTimeout(() => {
             setFormData({
                 name: '',
-                phone: '',
+                phonePrefix: '0412',
+                phoneSuffix: '',
                 email: '',
                 password: '',
                 shopCode: ''
@@ -43,7 +45,16 @@ const Register = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault();
+
+        // Validate Phone Suffix (7 digits)
+        if (formData.phoneSuffix.length !== 7 || !/^\d+$/.test(formData.phoneSuffix)) {
+            showNotification('error', 'Teléfono Inválido', 'El número de teléfono debe tener exactamente 7 dígitos.');
+            return;
+        }
+
         setLoading(true);
+
+        const fullPhone = `${formData.phonePrefix}${formData.phoneSuffix}`;
 
         try {
             const metadata = {
@@ -65,7 +76,7 @@ const Register = () => {
             await supabase
                 .from('profiles')
                 .update({
-                    phone: formData.phone,
+                    phone: fullPhone,
                     full_name: formData.name,
                     email: formData.email
                 })
@@ -135,7 +146,7 @@ const Register = () => {
 
 Acabamos de activar tu monedero con tus primeros ${giftPoints} puntos de regalo. Ya estás más cerca de tu primer premio. ¡Empieza a escanear y haz que tus compras valan más!`;
 
-                    showNotification('success', '¡Bienvenido!', welcomeMessage);
+                    showNotification('success', '¡Bienvenido!', welcomeMessage, null);
                 } else {
                     showNotification('success', '¡Registro Exitoso!', 'Tu cuenta ha sido creada correctamente. Ya puedes iniciar sesión.');
                 }
@@ -164,7 +175,7 @@ Acabamos de activar tu monedero con tus primeros ${giftPoints} puntos de regalo.
             showBackButton={true}
         >
             {/* Role Tabs */}
-            <div className="flex bg-navy-dark p-1 rounded-card border border-border-subtle mb-8">
+            <div className="flex bg-navy-dark p-1 rounded-card border border-border-subtle mb-4">
                 <button
                     type="button"
                     onClick={() => setActiveTab('client')}
@@ -189,78 +200,101 @@ Acabamos de activar tu monedero con tus primeros ${giftPoints} puntos de regalo.
                 </button>
             </div>
 
-            <div className="mb-6 text-center">
+            <div className="mb-3 text-center">
                 <h3 className="text-xl font-bold text-white">Crear Cuenta</h3>
-                <p className="text-slate-subtitle text-sm mt-1">
+                <p className="text-slate-subtitle text-sm mt-0">
                     {activeTab === 'client'
                         ? 'Únete para ganar recompensas'
                         : 'Registra tu negocio en KPoint'}
                 </p>
             </div>
 
-            <form onSubmit={handleRegister} className="flex flex-col gap-5" autoComplete="off">
+            <form onSubmit={handleRegister} className="flex flex-col gap-3" autoComplete="off">
                 {/* Nombre Completo */}
                 <label className="flex flex-col w-full">
-                    <span className="text-slate-200 text-sm font-bold pb-2 ml-1">Nombre Completo</span>
+                    <span className="text-slate-200 text-xs font-bold pb-1 ml-1">Nombre Completo</span>
                     <div className="relative group">
                         <input
                             name="name"
                             autoComplete="off"
-                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-14 placeholder:text-slate-500 p-4 font-medium transition-all"
+                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all"
                             placeholder="Ej. Juan Pérez"
                             type="text"
                             value={formData.name}
                             onChange={handleChange}
                             required
                         />
-                        <span className="material-symbols-outlined absolute right-4 top-4 text-slate-subtitle">person</span>
+                        <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">person</span>
                     </div>
                 </label>
 
                 {/* Teléfono */}
                 <label className="flex flex-col w-full">
-                    <span className="text-slate-200 text-sm font-bold pb-2 ml-1">Número de Teléfono</span>
-                    <div className="relative group">
-                        <input
-                            name="phone"
-                            autoComplete="off"
-                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-14 placeholder:text-slate-500 p-4 font-medium transition-all"
-                            placeholder="Ej. +58 412 1234567"
-                            type="tel"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            required
-                        />
-                        <span className="material-symbols-outlined absolute right-4 top-4 text-slate-subtitle">phone</span>
+                    <span className="text-slate-200 text-xs font-bold pb-1 ml-1">Número de Teléfono</span>
+                    <div className="flex gap-2">
+                        <div className="relative w-1/3">
+                            <select
+                                name="phonePrefix"
+                                value={formData.phonePrefix}
+                                onChange={handleChange}
+                                className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 px-4 py-2 font-medium text-xs transition-all appearance-none cursor-pointer"
+                            >
+                                <option value="0412" className="bg-navy-dark text-white font-medium text-xs">0412</option>
+                                <option value="0416" className="bg-navy-dark text-white font-medium text-xs">0416</option>
+                                <option value="0414" className="bg-navy-dark text-white font-medium text-xs">0414</option>
+                                <option value="0424" className="bg-navy-dark text-white font-medium text-xs">0424</option>
+                                <option value="0426" className="bg-navy-dark text-white font-medium text-xs">0426</option>
+                            </select>
+                            <span className="material-symbols-outlined absolute right-2 top-2.5 text-slate-subtitle pointer-events-none text-xs">expand_more</span>
+                        </div>
+                        <div className="relative flex-1">
+                            <input
+                                name="phoneSuffix"
+                                autoComplete="off"
+                                className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium text-xs transition-all"
+                                placeholder="1234567"
+                                type="tel"
+                                maxLength="7"
+                                value={formData.phoneSuffix}
+                                onChange={(e) => {
+                                    const value = e.target.value.replace(/\D/g, ''); // Only numbers
+                                    if (value.length <= 7) {
+                                        setFormData({ ...formData, phoneSuffix: value });
+                                    }
+                                }}
+                                required
+                            />
+                            <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">phone</span>
+                        </div>
                     </div>
                 </label>
 
                 {/* Email */}
                 <label className="flex flex-col w-full">
-                    <span className="text-slate-200 text-sm font-bold pb-2 ml-1">Correo Electrónico</span>
+                    <span className="text-slate-200 text-xs font-bold pb-1 ml-1">Correo Electrónico</span>
                     <div className="relative group">
                         <input
                             name="email"
                             autoComplete="off"
-                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-14 placeholder:text-slate-500 p-4 font-medium transition-all"
+                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all"
                             placeholder="correo@ejemplo.com"
                             type="email"
                             value={formData.email}
                             onChange={handleChange}
                             required
                         />
-                        <span className="material-symbols-outlined absolute right-4 top-4 text-slate-subtitle">mail</span>
+                        <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">mail</span>
                     </div>
                 </label>
 
                 {/* Password */}
                 <label className="flex flex-col w-full">
-                    <span className="text-slate-200 text-sm font-bold pb-2 ml-1">Contraseña</span>
+                    <span className="text-slate-200 text-xs font-bold pb-1 ml-1">Contraseña</span>
                     <div className="relative group">
                         <input
                             name="password"
                             autoComplete="new-password"
-                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-14 placeholder:text-slate-500 p-4 font-medium transition-all pr-12"
+                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all pr-12"
                             placeholder="••••••••"
                             type={showPassword ? "text" : "password"}
                             value={formData.password}
@@ -270,7 +304,7 @@ Acabamos de activar tu monedero con tus primeros ${giftPoints} puntos de regalo.
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-4 text-slate-subtitle hover:text-white transition-colors"
+                            className="absolute right-4 top-2.5 text-slate-subtitle hover:text-white transition-colors"
                         >
                             <span className="material-symbols-outlined">
                                 {showPassword ? 'visibility_off' : 'visibility'}
@@ -281,8 +315,8 @@ Acabamos de activar tu monedero con tus primeros ${giftPoints} puntos de regalo.
 
                 {/* Código del Comercio (Visible para todos en el registro) */}
                 <label className="flex flex-col w-full">
-                    <div className="pb-2 ml-1">
-                        <span className="text-slate-200 text-sm font-bold">
+                    <div className="pb-1 ml-1">
+                        <span className="text-slate-200 text-xs font-bold">
                             {activeTab === 'admin' ? 'Código del Comercio' : 'Código de Invitación (Opcional)'}
                         </span>
                     </div>
@@ -290,21 +324,21 @@ Acabamos de activar tu monedero con tus primeros ${giftPoints} puntos de regalo.
                         <input
                             name="shopCode"
                             autoComplete="off"
-                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-14 placeholder:text-slate-500 p-4 font-medium transition-all"
+                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all"
                             placeholder={activeTab === 'admin' ? "Código único requerido" : "Ej. KPOINT001"}
                             type="text"
                             value={formData.shopCode}
                             onChange={handleChange}
                             required={activeTab === 'admin'}
                         />
-                        <span className="material-symbols-outlined absolute right-4 top-4 text-slate-subtitle">store</span>
+                        <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">store</span>
                     </div>
                 </label>
 
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-4 bg-primary hover:bg-primary/90 text-navy-dark font-black text-lg rounded-full shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full py-3 bg-primary hover:bg-primary/90 text-navy-dark font-black text-lg rounded-full shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-1 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     {loading ? (
                         <span className="animate-spin material-symbols-outlined">refresh</span>

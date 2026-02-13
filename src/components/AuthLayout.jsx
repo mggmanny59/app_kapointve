@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const AuthLayout = ({ children, title, footerText, footerLinkText, footerLinkHref, showBackButton }) => {
+const AuthLayout = ({ children, title, footerText, footerLinkText, footerLinkHref, showBackButton, isLoginPage = false }) => {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen w-full flex flex-col relative font-display text-white items-center p-5 pt-16 overflow-x-hidden bg-navy-dark">
+        <div className={`min-h-screen w-full flex flex-col relative font-display text-white items-center p-5 overflow-x-hidden bg-navy-dark ${isLoginPage ? 'pt-52 pb-16' : 'justify-center py-10'}`}>
             {/* Background Image with Framing and Gradient Fade */}
             <div className="absolute top-0 left-0 right-0 h-[60vh] z-0">
                 <img
@@ -17,8 +17,8 @@ const AuthLayout = ({ children, title, footerText, footerLinkText, footerLinkHre
                 <div className="absolute inset-0 bg-gradient-to-b from-[#0a1f1a]/40 via-[#0a1f1a]/90 to-navy-dark"></div>
             </div>
 
-            <div className="relative z-10 w-full max-w-[440px] flex flex-col items-center mb-8">
-                <div className="bg-white p-3 rounded-card shadow-lg mb-4 flex items-center justify-center size-20">
+            <div className="relative z-10 w-full max-w-[440px] flex flex-col items-center mb-4">
+                <div className="bg-white p-2.5 rounded-card shadow-lg mb-2 flex items-center justify-center size-16">
                     <img
                         src="/Logo KPoint Solo K (sin Fondo).png"
                         alt="KPoint Logo"
@@ -33,14 +33,14 @@ const AuthLayout = ({ children, title, footerText, footerLinkText, footerLinkHre
                 </p>
             </div>
 
-            <div className="relative z-10 w-full max-w-[440px] bg-navy-card/90 backdrop-blur-md rounded-card shadow-2xl p-6 border border-border-subtle">
-                <div className="mb-6">
+            <div className="relative z-10 w-full max-w-[440px] bg-navy-card/90 backdrop-blur-md rounded-card shadow-2xl px-5 py-4 border border-border-subtle">
+                <div className="mb-3">
                     <h2 className="text-2xl font-bold text-white text-center">{title}</h2>
                 </div>
 
                 {children}
 
-                <div className="mt-8 text-center">
+                <div className="mt-4 text-center">
                     <p className="text-slate-subtitle text-sm font-medium">
                         {footerText}
                         <Link
@@ -63,10 +63,9 @@ const AuthLayout = ({ children, title, footerText, footerLinkText, footerLinkHre
                 </button>
             )}
 
-            <footer className="relative z-10 mt-12 flex flex-col items-center gap-2 text-slate-subtitle/50">
-                <p className="text-[10px] flex items-center gap-1.5 font-bold uppercase tracking-widest">
-                    <span className="material-symbols-outlined !text-xs">verified_user</span>
-                    Seguridad de Grado Bancario
+            <footer className="relative z-10 mt-6 flex flex-col items-center gap-2 text-slate-subtitle/50">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-center">
+                    Desarrollado por CloudNets 2026
                 </p>
             </footer>
         </div>

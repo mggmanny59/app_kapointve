@@ -6,8 +6,8 @@ const NotificationContext = createContext();
 export const NotificationProvider = ({ children }) => {
     const [notification, setNotification] = useState(null);
 
-    const showNotification = useCallback((type, title, message) => {
-        setNotification({ type, title, message });
+    const showNotification = useCallback((type, title, message, duration) => {
+        setNotification({ type, title, message, duration });
     }, []);
 
     const hideNotification = useCallback(() => {

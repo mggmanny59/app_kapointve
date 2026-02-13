@@ -108,9 +108,10 @@ const Login = () => {
             footerText="¿Nuevo aquí?"
             footerLinkText="Regístrate"
             footerLinkHref="/register"
+            isLoginPage={true}
         >
             {/* Role Tabs */}
-            <div className="flex bg-navy-dark p-1 rounded-card border border-border-subtle mb-8">
+            <div className="flex bg-navy-dark p-1 rounded-card border border-border-subtle mb-4">
                 <button
                     type="button"
                     onClick={() => setActiveTab('client')}
@@ -135,45 +136,45 @@ const Login = () => {
                 </button>
             </div>
 
-            <div className="mb-6 text-center">
+            <div className="mb-3 text-center">
                 <h3 className="text-xl font-bold text-white">
                     {activeTab === 'client' ? 'Acceso Clientes' : 'Acceso Negocio'}
                 </h3>
-                <p className="text-sm text-slate-subtitle mt-1">
+                <p className="text-sm text-slate-subtitle mt-0">
                     {activeTab === 'client'
                         ? 'Consulta tus puntos y premios'
                         : 'Gestiona tu inventario y clientes'}
                 </p>
             </div>
 
-            <form onSubmit={handleLogin} className="flex flex-col gap-5" autoComplete="off">
+            <form onSubmit={handleLogin} className="flex flex-col gap-3" autoComplete="off">
                 <label className="flex flex-col w-full">
-                    <span className="text-slate-200 text-sm font-bold leading-normal pb-2 ml-1">
+                    <span className="text-slate-200 text-xs font-bold leading-normal pb-1 ml-1">
                         Correo Electrónico
                     </span>
                     <div className="relative group">
                         <input
                             type="email"
                             autoComplete="off"
-                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-14 placeholder:text-slate-500 p-4 font-medium transition-all"
+                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all"
                             placeholder="correo@ejemplo.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
                         />
-                        <span className="material-symbols-outlined absolute right-4 top-4 text-slate-subtitle">mail</span>
+                        <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">mail</span>
                     </div>
                 </label>
 
                 <label className="flex flex-col w-full">
-                    <span className="text-slate-200 text-sm font-bold leading-normal pb-2 ml-1">
+                    <span className="text-slate-200 text-xs font-bold leading-normal pb-1 ml-1">
                         Contraseña
                     </span>
                     <div className="relative group">
                         <input
                             type={showPassword ? "text" : "password"}
                             autoComplete="new-password"
-                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-14 placeholder:text-slate-500 p-4 font-medium transition-all pr-12"
+                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all pr-12"
                             placeholder="••••••••"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -182,7 +183,7 @@ const Login = () => {
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-4 text-slate-subtitle hover:text-white transition-colors"
+                            className="absolute right-4 top-2.5 text-slate-subtitle hover:text-white transition-colors"
                         >
                             <span className="material-symbols-outlined">
                                 {showPassword ? 'visibility_off' : 'visibility'}
@@ -194,7 +195,7 @@ const Login = () => {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-4 bg-primary hover:bg-primary/90 text-navy-dark font-black text-lg rounded-full shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full py-3 bg-primary hover:bg-primary/90 text-navy-dark font-black text-lg rounded-full shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-1 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     {loading ? (
                         <span className="animate-spin material-symbols-outlined">refresh</span>
