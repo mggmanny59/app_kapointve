@@ -262,9 +262,24 @@ const MyPoints = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-12 bg-navy-card/30 rounded-card border border-dashed border-border-subtle">
-                            <span className="material-symbols-outlined text-slate-subtitle text-4xl mb-2">storefront</span>
-                            <p className="text-sm font-medium text-slate-subtitle">Aún no tienes tarjetas de lealtad</p>
+                        <div className="text-center py-12 px-6 bg-navy-card/30 rounded-[2.5rem] border border-dashed border-white/10 flex flex-col items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                            <div className="size-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-2 shadow-[0_0_30px_rgba(57,224,121,0.1)]">
+                                <span className="material-symbols-outlined text-primary text-5xl font-black">lock_open</span>
+                            </div>
+                            <div className="space-y-4">
+                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Aún no tienes tarjetas de lealtad</p>
+
+                                <div className="space-y-3">
+                                    <h4 className="text-2xl font-black text-white leading-tight">
+                                        Tu billetera de premios está <span className="text-primary italic">esperando...</span> 🔓
+                                    </h4>
+                                    <p className="text-sm text-slate-400 font-semibold leading-relaxed max-w-[300px] mx-auto">
+                                        Cientos de usuarios ya están canjeando productos gratis en sus Kioskos y Comercios favoritos.
+                                        <span className="block mt-3 text-white font-black text-base">¿Te vas a quedar fuera?</span>
+                                        Activa tu primera tarjeta hoy en tu comercio favorito.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
