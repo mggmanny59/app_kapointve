@@ -13,6 +13,7 @@ const Register = () => {
         phoneSuffix: '',
         email: '',
         password: '',
+        birthDate: '', // New field for both roles
         shopCode: '', // businessName for owners
         rif: '' // New field for owners
     });
@@ -31,6 +32,7 @@ const Register = () => {
                 phoneSuffix: '',
                 email: '',
                 password: '',
+                birthDate: '',
                 shopCode: '',
                 rif: ''
             });
@@ -80,7 +82,8 @@ const Register = () => {
                 .update({
                     phone: fullPhone,
                     full_name: formData.name,
-                    email: formData.email
+                    email: formData.email,
+                    birth_date: formData.birthDate || null
                 })
                 .eq('id', userId);
 
@@ -257,6 +260,23 @@ const Register = () => {
                             required
                         />
                         <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">mail</span>
+                    </div>
+                </label>
+
+                {/* Fecha de Nacimiento */}
+                <label className="flex flex-col w-full">
+                    <span className="text-slate-200 text-xs font-bold pb-1 ml-1">Fecha de Nacimiento</span>
+                    <div className="relative group">
+                        <input
+                            name="birthDate"
+                            autoComplete="off"
+                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all"
+                            type="date"
+                            value={formData.birthDate}
+                            onChange={handleChange}
+                            required
+                        />
+                        <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">cake</span>
                     </div>
                 </label>
 
