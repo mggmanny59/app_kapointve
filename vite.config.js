@@ -23,6 +23,8 @@ export default defineConfig({
         scope: '/',
         start_url: '/',
         id: '/',
+        lang: 'es',
+
         icons: [
           {
             src: 'pwa-192x192.png',
