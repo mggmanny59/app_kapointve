@@ -5,6 +5,11 @@ import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext'
 import { NotificationProvider } from './context/NotificationContext'
 import { MessageProvider } from './context/MessageContext'
+import { registerSW } from 'virtual:pwa-register'
+
+// Registro del Service Worker para PWA
+registerSW({ immediate: true })
+
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
