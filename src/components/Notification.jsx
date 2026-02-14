@@ -46,10 +46,10 @@ const Notification = ({ type = 'success', title, message, onClose, duration = 50
 
                 {/* Content */}
                 <div className="space-y-2">
-                    <h4 className="font-black text-white text-lg uppercase tracking-wider">
+                    <h4 className="font-black text-white text-xl uppercase tracking-wider">
                         {title}
                     </h4>
-                    <p className="text-sm text-slate-400 font-medium leading-relaxed whitespace-pre-line">
+                    <p className="text-base text-slate-400 font-medium leading-relaxed whitespace-pre-line">
                         {message}
                     </p>
                 </div>
@@ -60,7 +60,7 @@ const Notification = ({ type = 'success', title, message, onClose, duration = 50
                         setIsVisible(false);
                         setTimeout(onClose, 300);
                     }}
-                    className="mt-2 px-8 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-sm hover:bg-white/10 transition-colors w-full"
+                    className="mt-2 px-8 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-base hover:bg-white/10 transition-colors w-full"
                 >
                     Entendido
                 </button>

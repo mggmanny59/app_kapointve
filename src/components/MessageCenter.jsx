@@ -27,7 +27,7 @@ const MessageCenter = ({ isOpen, onClose }) => {
                 <header className="p-6 border-b border-white/5 flex items-center justify-between">
                     <div>
                         <h2 className="text-xl font-black text-white">Notificaciones</h2>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Centro de Mensajes</p>
+                        <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Centro de Mensajes</p>
                     </div>
                     <button
                         onClick={onClose}
@@ -43,7 +43,7 @@ const MessageCenter = ({ isOpen, onClose }) => {
                             <div className="flex justify-end px-2">
                                 <button
                                     onClick={markAllAsRead}
-                                    className="text-[10px] font-black text-primary uppercase tracking-wider hover:opacity-80 transition-opacity"
+                                    className="text-xs font-black text-primary uppercase tracking-wider hover:opacity-80 transition-opacity"
                                 >
                                     Marcar todo como leído
                                 </button>
@@ -53,8 +53,8 @@ const MessageCenter = ({ isOpen, onClose }) => {
                                     key={msg.id}
                                     onClick={() => !msg.read_at && markAsRead(msg.id)}
                                     className={`p-4 rounded-2xl border transition-all cursor-pointer group hover:scale-[1.02] active:scale-[0.98] ${msg.read_at
-                                            ? 'bg-white/5 border-transparent opacity-60'
-                                            : 'bg-primary/5 border-primary/20 shadow-lg shadow-primary/5'
+                                        ? 'bg-white/5 border-transparent opacity-60'
+                                        : 'bg-primary/5 border-primary/20 shadow-lg shadow-primary/5'
                                         }`}
                                 >
                                     <div className="flex justify-between items-start mb-2">
@@ -66,14 +66,14 @@ const MessageCenter = ({ isOpen, onClose }) => {
                                                     <span className="material-symbols-outlined text-primary text-sm">store</span>
                                                 )}
                                             </div>
-                                            <span className="text-xs font-bold text-slate-300 group-hover:text-white transition-colors">
+                                            <span className="text-sm font-bold text-slate-300 group-hover:text-white transition-colors">
                                                 {msg.businesses?.name || 'Sistema KPoint'}
                                             </span>
                                         </div>
-                                        <span className="text-[10px] text-slate-500 font-bold">{formatTime(msg.created_at)}</span>
+                                        <span className="text-xs text-slate-500 font-bold">{formatTime(msg.created_at)}</span>
                                     </div>
-                                    <h3 className="text-sm font-bold text-white mb-1">{msg.title}</h3>
-                                    <p className="text-xs text-slate-400 leading-relaxed font-medium">{msg.message}</p>
+                                    <h3 className="text-lg font-bold text-white mb-2">{msg.title}</h3>
+                                    <p className="text-sm text-slate-400 leading-relaxed font-medium">{msg.message}</p>
 
                                     {!msg.read_at && (
                                         <div className="mt-3 flex justify-end">
