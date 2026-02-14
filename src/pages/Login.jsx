@@ -50,6 +50,20 @@ const Login = () => {
                     await signOut();
                     throw new Error('Lo sentimos, esta cuenta no está registrada como Dueño de negocio.');
                 }
+
+                // Check Business Status
+                const { data: businessStatus } = await supabase
+                    .from('businesses')
+                    .select('is_active, registration_status')
+                    .eq('id', businessMember.business_id) // Assuming business_members has business_id which links to businesses
+                    .single();
+
+                if (businessStatus) {
+                    if (businessStatus.is_active === false) {
+                        await signOut();
+                        throw new Error('Tu cuenta de negocio está en revisión. Un administrador debe aprobar tu registro.');
+                    }
+                }
                 // If validation passes, navigate manually
                 navigate('/dashboard');
             } else {
@@ -74,20 +88,8 @@ const Login = () => {
                     throw new Error('Acceso Denegado: Tu perfil está registrado como Miembro de Equipo. Por favor, ingresa por la sección de "Dueño".');
                 }
 
-                // AUTO-REPAIR: Ensure every client has at least the default business loyalty card
-                const { data: clientCards } = await supabase
-                    .from('loyalty_cards')
-                    .select('id')
-                    .eq('profile_id', authUser.id)
-                    .limit(1);
-
-                if (!clientCards || clientCards.length === 0) {
-                    await supabase.from('loyalty_cards').insert({
-                        business_id: '00000000-0000-0000-0000-000000000001',
-                        profile_id: authUser.id,
-                        current_points: 0
-                    });
-                }
+                // AUTO-REPAIR REMOVED: Clients now join via QR code manually.
+                // We no longer force a loyalty card creation on login.
 
                 // If validation passes, navigate manually
                 navigate('/my-points');

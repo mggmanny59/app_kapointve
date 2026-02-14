@@ -13,7 +13,8 @@ const Register = () => {
         phoneSuffix: '',
         email: '',
         password: '',
-        shopCode: ''
+        shopCode: '', // businessName for owners
+        rif: '' // New field for owners
     });
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +31,8 @@ const Register = () => {
                 phoneSuffix: '',
                 email: '',
                 password: '',
-                shopCode: ''
+                shopCode: '',
+                rif: ''
             });
         }, 100);
         return () => clearTimeout(timer);
@@ -82,74 +84,45 @@ const Register = () => {
                 })
                 .eq('id', userId);
 
-            // 2. Link User to Business based on role
-            const businessCode = formData.shopCode || 'KPOINT001'; // Default for MVP testing
-
-            // Find the business anyway if a code is provided
-            const { data: bizData } = await supabase
-                .from('businesses')
-                .select('id')
-                .eq('rif', businessCode)
-                .maybeSingle();
-
-            const finalizedBizId = (businessCode === 'KPOINT001')
-                ? '00000000-0000-0000-0000-000000000001'
-                : bizData?.id;
-
+            // 2. Business Logic based on Role
             if (activeTab === 'admin') {
-                if (!finalizedBizId) {
-                    throw new Error('El código de comercio ingresado no es válido para Dueños.');
+                // Owner Registration - Create Pending Business
+                if (!formData.shopCode || !formData.rif) {
+                    throw new Error('El nombre del negocio y el RIF son obligatorios.');
                 }
+
+                // Create the Business Entry (Pending Approval)
+                const { data: newBiz, error: bizError } = await supabase
+                    .from('businesses')
+                    .insert({
+                        name: formData.shopCode, // Using shopCode field to store Business Name
+                        rif: formData.rif,
+                        owner_id: userId,
+                        is_active: false,
+                        registration_status: 'PENDING'
+                    })
+                    .select()
+                    .single();
+
+                if (bizError) throw bizError;
+
                 // Insert into business_members
                 await supabase
                     .from('business_members')
                     .insert({
-                        business_id: finalizedBizId,
+                        business_id: newBiz.id,
                         profile_id: userId,
                         role: 'owner'
                     });
+
+                showNotification('success', '¡Registro Recibido!', 'Tu solicitud de registro ha sido enviada. Un administrador verificará tus datos y activará tu cuenta pronto.');
+
             } else {
-                // It's a CLIENT - Create their loyalty card if code is valid
-                if (finalizedBizId) {
-                    // Fetch points configuration for the business
-                    const { data: businessConfig } = await supabase
-                        .from('businesses')
-                        .select('points_per_dollar')
-                        .eq('id', finalizedBizId)
-                        .single();
+                // Client Registration - Decoupled Flow
+                // No automatic business affiliation. 
+                // Enhanced profile is already created.
 
-                    const pointsPerDollar = businessConfig?.points_per_dollar || 10;
-                    const giftPoints = pointsPerDollar * 2;
-
-                    // Create loyalty card with greeting points
-                    await supabase
-                        .from('loyalty_cards')
-                        .insert({
-                            business_id: finalizedBizId,
-                            profile_id: userId,
-                            current_points: giftPoints,
-                            total_accumulated_points: giftPoints
-                        });
-
-                    // Record the welcome bonus transaction
-                    await supabase
-                        .from('transactions')
-                        .insert({
-                            business_id: finalizedBizId,
-                            profile_id: userId,
-                            type: 'BONUS',
-                            points_amount: giftPoints,
-                            description: 'Regalo de Bienvenida'
-                        });
-
-                    const welcomeMessage = `¡Bienvenido a la comunidad KPoint!
-
-Acabamos de activar tu monedero con tus primeros ${giftPoints} puntos de regalo. Ya estás más cerca de tu primer premio. ¡Empieza a escanear y haz que tus compras valan más!`;
-
-                    showNotification('success', '¡Bienvenido!', welcomeMessage, null);
-                } else {
-                    showNotification('success', '¡Registro Exitoso!', 'Tu cuenta ha sido creada correctamente. Ya puedes iniciar sesión.');
-                }
+                showNotification('success', '¡Cuenta Creada!', 'Tu cuenta ha sido creada exitosamente. Escanea el código QR de un comercio para unirte a su programa de fidelidad.');
             }
 
             navigate('/login');
@@ -313,27 +286,48 @@ Acabamos de activar tu monedero con tus primeros ${giftPoints} puntos de regalo.
                     </div>
                 </label>
 
-                {/* Código del Comercio (Visible para todos en el registro) */}
-                <label className="flex flex-col w-full">
-                    <div className="pb-1 ml-1">
-                        <span className="text-slate-200 text-xs font-bold">
-                            {activeTab === 'admin' ? 'Código del Comercio' : 'Código de Invitación (Opcional)'}
-                        </span>
-                    </div>
-                    <div className="relative group">
-                        <input
-                            name="shopCode"
-                            autoComplete="off"
-                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all"
-                            placeholder={activeTab === 'admin' ? "Código único requerido" : "Ej. KPOINT001"}
-                            type="text"
-                            value={formData.shopCode}
-                            onChange={handleChange}
-                            required={activeTab === 'admin'}
-                        />
-                        <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">store</span>
-                    </div>
-                </label>
+                {/* Campos Específicos para Dueño */}
+                {activeTab === 'admin' && (
+                    <>
+                        {/* Nombre del Negocio */}
+                        <label className="flex flex-col w-full">
+                            <span className="text-slate-200 text-xs font-bold pb-1 ml-1">Nombre del Negocio</span>
+                            <div className="relative group">
+                                <input
+                                    name="shopCode" // We reuse this state key for business name to minimize refactor
+                                    autoComplete="off"
+                                    className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all"
+                                    placeholder="Ej. Panadería Delicias"
+                                    type="text"
+                                    value={formData.shopCode}
+                                    onChange={handleChange}
+                                    required
+                                />
+                                <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">store</span>
+                            </div>
+                        </label>
+
+                        {/* RIF */}
+                        <label className="flex flex-col w-full">
+                            <span className="text-slate-200 text-xs font-bold pb-1 ml-1">RIF / Identificación Fiscal</span>
+                            <div className="relative group">
+                                <input
+                                    name="rif"
+                                    autoComplete="off"
+                                    className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all"
+                                    placeholder="Ej. J-12345678-9"
+                                    type="text"
+                                    value={formData.rif}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, rif: e.target.value.toUpperCase() });
+                                    }}
+                                    required
+                                />
+                                <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">badge</span>
+                            </div>
+                        </label>
+                    </>
+                )}
 
                 <button
                     type="submit"
