@@ -16,17 +16,19 @@ export const MessageProvider = ({ children }) => {
         try {
             const { data, error } = await supabase
                 .from('notifications')
-                .select('*, businesses(name, logo_url), notification_reads!left(read_at)')
+                .select('*, businesses(name, logo_url), notification_reads!left(read_at, is_deleted)')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
 
-            // Map data to merge the read state from the join
-            const processedData = (data || []).map(msg => ({
-                ...msg,
-                // The message is read if it has an entry in notification_reads OR if its individual profile_id matched and it was read (legacy)
-                read_at: msg.notification_reads?.[0]?.read_at || msg.read_at
-            }));
+            // Map data to merge the read state and filter out deleted messages
+            const processedData = (data || [])
+                .map(msg => ({
+                    ...msg,
+                    read_at: msg.notification_reads?.[0]?.read_at || msg.read_at,
+                    is_deleted: msg.notification_reads?.[0]?.is_deleted || false
+                }))
+                .filter(msg => !msg.is_deleted);
 
             setMessages(processedData);
             setUnreadCount(processedData.filter(m => !m.read_at).length);
@@ -130,6 +132,45 @@ export const MessageProvider = ({ children }) => {
         }
     };
 
+    const deleteMessage = async (messageId) => {
+        try {
+            const now = new Date().toISOString();
+
+            // Check if record exists in notification_reads
+            const { data: existing } = await supabase
+                .from('notification_reads')
+                .select('id')
+                .eq('notification_id', messageId)
+                .eq('profile_id', user.id)
+                .single();
+
+            if (existing) {
+                // Update existing record
+                await supabase
+                    .from('notification_reads')
+                    .update({ is_deleted: true })
+                    .eq('id', existing.id);
+            } else {
+                // Create new record as deleted
+                await supabase
+                    .from('notification_reads')
+                    .insert({
+                        notification_id: messageId,
+                        profile_id: user.id,
+                        is_deleted: true
+                    });
+            }
+
+            setMessages(prev => prev.filter(m => m.id !== messageId));
+            setUnreadCount(prev => {
+                const msg = messages.find(m => m.id === messageId);
+                return msg && !msg.read_at ? Math.max(0, prev - 1) : prev;
+            });
+        } catch (err) {
+            console.error('Error deleting message:', err);
+        }
+    };
+
     const sendMessage = async (businessId, profileId, title, message, type = 'GENERAL') => {
         try {
             const { error } = await supabase
@@ -158,6 +199,7 @@ export const MessageProvider = ({ children }) => {
             fetchMessages,
             markAsRead,
             markAllAsRead,
+            deleteMessage,
             sendMessage
         }}>
             {children}

@@ -2,7 +2,7 @@ import React from 'react';
 import { useMessages } from '../context/MessageContext';
 
 const MessageCenter = ({ isOpen, onClose }) => {
-    const { messages, markAsRead, markAllAsRead, loading } = useMessages();
+    const { messages, markAsRead, markAllAsRead, deleteMessage, loading } = useMessages();
 
     if (!isOpen) return null;
 
@@ -70,7 +70,21 @@ const MessageCenter = ({ isOpen, onClose }) => {
                                                 {msg.businesses?.name || 'Sistema KPoint'}
                                             </span>
                                         </div>
-                                        <span className="text-xs text-slate-500 font-bold">{formatTime(msg.created_at)}</span>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-xs text-slate-500 font-bold">{formatTime(msg.created_at)}</span>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (confirm('¿Estás seguro de que quieres borrar este mensaje?')) {
+                                                        deleteMessage(msg.id);
+                                                    }
+                                                }}
+                                                className="size-6 flex items-center justify-center rounded-lg hover:bg-red-500/10 text-slate-500 hover:text-red-500 transition-colors"
+                                                title="Borrar mensaje"
+                                            >
+                                                <span className="material-symbols-outlined !text-lg">delete</span>
+                                            </button>
+                                        </div>
                                     </div>
                                     <h3 className="text-lg font-bold text-white mb-2">{msg.title}</h3>
                                     <p className="text-sm text-slate-400 leading-relaxed font-medium">{msg.message}</p>
