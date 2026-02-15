@@ -42,7 +42,7 @@ const Login = () => {
                 // Check if user is a member of any business in the database
                 const { data: businessMember, error: dbError } = await supabase
                     .from('business_members')
-                    .select('id')
+                    .select('id, business_id')
                     .eq('profile_id', authUser.id)
                     .maybeSingle();
 
@@ -59,9 +59,22 @@ const Login = () => {
                     .single();
 
                 if (businessStatus) {
+                    // Rule 1: Fixed Blocked Account
                     if (businessStatus.is_active === false) {
                         await signOut();
+                        throw new Error('Estimado usuario. Su cuenta bloqueada. Comuniquese con el departamento de soporte técnico para su activacion.');
+                    }
+
+                    // Rule 3: Pending Review (Current message maintained)
+                    if (businessStatus.registration_status === 'PENDING') {
+                        await signOut();
                         throw new Error('Tu cuenta de negocio está en revisión. Un administrador debe aprobar tu registro.');
+                    }
+
+                    // Rule 2: Authorized Access (Only 'OK' is permitted)
+                    if (businessStatus.registration_status !== 'OK') {
+                        await signOut();
+                        throw new Error('Su cuenta aún no cuenta con la autorización de acceso necesaria para el uso de la aplicación.');
                     }
                 }
                 // If validation passes, navigate manually

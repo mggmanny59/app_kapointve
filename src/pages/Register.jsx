@@ -101,8 +101,8 @@ const Register = () => {
                         name: formData.shopCode, // Using shopCode field to store Business Name
                         rif: formData.rif,
                         owner_id: userId,
-                        is_active: false,
-                        registration_status: 'PENDING'
+                        is_active: true, // Defaulting to true (Not blocked)
+                        registration_status: 'PENDING' // Defaulting to PENDING (Waiting for admin 'OK')
                     })
                     .select()
                     .single();
@@ -188,7 +188,9 @@ const Register = () => {
             <form onSubmit={handleRegister} className="flex flex-col gap-3" autoComplete="off">
                 {/* Nombre Completo */}
                 <label className="flex flex-col w-full">
-                    <span className="text-slate-200 text-xs font-bold pb-1 ml-1">Nombre Completo</span>
+                    <span className="text-slate-200 text-xs font-bold pb-1 ml-1">
+                        {activeTab === 'admin' ? 'Nombre del Representante Legal' : 'Nombre Completo'}
+                    </span>
                     <div className="relative group">
                         <input
                             name="name"

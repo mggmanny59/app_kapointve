@@ -48,7 +48,8 @@ const BusinessSettings = () => {
                     legal_representative: business.legal_representative,
                     phone: business.phone,
                     city: business.city,
-                    points_per_dollar: business.points_per_dollar
+                    points_per_dollar: business.points_per_dollar,
+                    registration_data: true // Set to true since all fields are required for submission
                 })
                 .eq('id', business.id);
 

@@ -41,13 +41,18 @@ body {
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
 
-    to {
-        transform: rotate(360deg);
-    }
+@keyframes float {
+    0% { transform: translateY(0px) rotate(3deg); }
+    50% { transform: translateY(-15px) rotate(-3deg); }
+    100% { transform: translateY(0px) rotate(3deg); }
+}
+
+.animate-float {
+    animation: float 4s ease-in-out infinite;
 }
 
 @theme {

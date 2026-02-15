@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
+import { QRCodeSVG } from 'qrcode.react';
 import { useNotification } from '../context/NotificationContext';
 import { useMessages } from '../context/MessageContext';
 import Navigation from '../components/Navigation';
@@ -13,7 +14,7 @@ const Home = () => {
     const navigate = useNavigate();
     const { showNotification } = useNotification();
     const [profile, setProfile] = useState(null);
-    const [stats, setStats] = useState({ sales: 0, points: 0, newClients: 0 });
+    const [stats, setStats] = useState({ sales: 0, points: 0, newClients: 0, totalClients: 0 });
     const [weeklyActivity, setWeeklyActivity] = useState([0, 0, 0, 0, 0, 0, 0]); // Lun to Dom
     const [activities, setActivities] = useState([]);
     const [business, setBusiness] = useState(null);
@@ -39,6 +40,7 @@ const Home = () => {
     const [userRole, setUserRole] = useState(null);
     const [isMessageCenterOpen, setIsMessageCenterOpen] = useState(false);
     const { unreadCount } = useMessages();
+    const [isBusinessQRModalOpen, setIsBusinessQRModalOpen] = useState(false);
 
     const businessId = profile?.business_members?.[0]?.business_id || '00000000-0000-0000-0000-000000000001';
 
@@ -47,7 +49,7 @@ const Home = () => {
             // 1. Fetch Profile and Business ID with Permissions
             const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
-                .select('*, business_members(business_id, role, permissions, businesses(name))')
+                .select('*, business_members(business_id, role, permissions, businesses(name, registration_data, business_code))')
                 .eq('id', user.id)
                 .single();
 
@@ -92,10 +94,17 @@ const Home = () => {
                 .eq('business_id', currentBizId)
                 .gte('last_activity', startOfToday);
 
+            // Total Clients (Afiliados)
+            const { count: totalClientsCount } = await supabase
+                .from('loyalty_cards')
+                .select('*', { count: 'exact', head: true })
+                .eq('business_id', currentBizId);
+
             setStats({
                 sales: totalSales,
                 points: totalPoints,
                 newClients: newClientsCount || 0,
+                totalClients: totalClientsCount || 0,
                 transactions: totalTx
             });
 
@@ -475,6 +484,12 @@ const Home = () => {
     };
 
     const closeModal = async () => {
+        setIsModalOpen(false);
+        setSearchEmail('');
+        setAmount('');
+        setAmountBs('');
+        setSaleStep(1);
+
         if (window.scannerInstance) {
             await window.scannerInstance.stop().catch(() => { });
             window.scannerInstance = null;
@@ -487,14 +502,14 @@ const Home = () => {
             window.scanner.clear().catch(e => console.log(e));
             window.scanner = null;
         }
-        setIsModalOpen(false);
-        setSearchEmail('');
-        setAmount('');
-        setAmountBs('');
-        setSaleStep(1);
     };
 
     const closeRedeemModal = async () => {
+        setIsRedeemModalOpen(false);
+        setRedeemClient(null);
+        setAvailableRewards([]);
+        setRedeemStep(1);
+
         if (window.redeemScannerInstance) {
             await window.redeemScannerInstance.stop().catch(() => { });
             window.redeemScannerInstance = null;
@@ -507,10 +522,6 @@ const Home = () => {
             window.redeemScanner.clear().catch(e => console.log(e));
             window.redeemScanner = null;
         }
-        setIsRedeemModalOpen(false);
-        setRedeemClient(null);
-        setAvailableRewards([]);
-        setRedeemStep(1);
     };
 
 
@@ -568,6 +579,7 @@ const Home = () => {
             </header>
 
             <main className="px-6 space-y-6">
+                {/* Business Info Section */}
                 <div className="flex flex-col">
                     <h2 className="text-2xl font-black text-white flex items-center gap-2 leading-tight">
                         <span className="material-symbols-outlined text-primary !text-3xl">store</span>
@@ -583,6 +595,17 @@ const Home = () => {
                             Panel de Control
                         </p>
                     </div>
+                </div>
+
+                {/* Show My QR Button (Business Context) */}
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setIsBusinessQRModalOpen(true)}
+                        className="flex flex-col items-center justify-center p-4 bg-navy-card border border-white/10 rounded-3xl group active:scale-95 transition-all w-full"
+                    >
+                        <span className="material-symbols-outlined text-primary !text-2xl group-hover:scale-110 transition-transform">qr_code_2</span>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Mi QR de Local</span>
+                    </button>
                 </div>
 
                 {/* Stats Grid */}
@@ -661,7 +684,13 @@ const Home = () => {
                 <div className="grid grid-cols-1 gap-4">
                     {userPermissions?.can_earn && (
                         <button
-                            onClick={() => setIsModalOpen(true)}
+                            onClick={() => {
+                                if (profile?.business_members?.[0]?.businesses?.registration_data === false) {
+                                    showNotification('warning', 'Datos Incompletos', 'Debe completar los datos del formulario "Ajustes del Negocio" para realizar esta acción.');
+                                    return;
+                                }
+                                setIsModalOpen(true);
+                            }}
                             className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-full flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(57,224,121,0.2)] active:scale-[0.98] transition-all"
                         >
                             <span className="material-symbols-outlined font-black !text-3xl">add_shopping_cart</span>
@@ -671,7 +700,13 @@ const Home = () => {
 
                     {userPermissions?.can_redeem && (
                         <button
-                            onClick={startRedeemScanner}
+                            onClick={() => {
+                                if (stats.totalClients === 0) {
+                                    showNotification('warning', 'Sin Clientes', 'Debe tener clientes afiliados a su comercio para canjear premios.');
+                                    return;
+                                }
+                                startRedeemScanner();
+                            }}
                             className="w-full bg-accent hover:bg-yellow-500 text-navy-dark h-16 rounded-full flex items-center justify-center gap-3 shadow-[0_8px_30_rgb(255,160,0,0.2)] active:scale-[0.98] transition-all"
                         >
                             <span className="material-symbols-outlined font-black !text-3xl">redeem</span>
@@ -712,7 +747,6 @@ const Home = () => {
                 </div>
             </main>
 
-            {/* Navigation */}
             <Navigation />
 
             {/* Message Center Drawer */}
@@ -747,7 +781,6 @@ const Home = () => {
                             {saleStep === 1 ? (
                                 <div className="space-y-6">
                                     <div className="grid grid-cols-1 gap-5">
-                                        {/* exchange Rate (Prominent) */}
                                         <div className="bg-navy-dark/80 border border-white/5 rounded-3xl p-5 flex items-center justify-between shadow-inner">
                                             <div className="flex items-center gap-3">
                                                 <div className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400">
@@ -774,7 +807,6 @@ const Home = () => {
                                         </div>
 
                                         <div className="space-y-4">
-                                            {/* Amount Bolivares */}
                                             <div className="relative group">
                                                 <span className="absolute left-5 top-1/2 -translate-y-1/2 text-lg font-black text-slate-500 group-focus-within:text-white transition-colors">Bs.</span>
                                                 <input
@@ -794,7 +826,6 @@ const Home = () => {
                                                 />
                                             </div>
 
-                                            {/* Amount Dollars (Main) */}
                                             <div className="relative group">
                                                 <span className="absolute left-6 top-1/2 -translate-y-1/2 text-3xl font-black text-primary"> $ </span>
                                                 <input
@@ -854,7 +885,7 @@ const Home = () => {
                                         <p className="text-slate-200 font-bold">Monto: <span className="text-primary text-xl">${amount}</span></p>
                                         <button
                                             onClick={() => {
-                                                if (window.scanner) window.scanner.clear().catch(e => console.log(e));
+                                                if (window.scannerInstance) window.scannerInstance.stop().catch(() => { });
                                                 setSaleStep(1);
                                             }}
                                             className="text-slate-400 text-sm font-bold flex items-center gap-1 hover:text-white"
@@ -865,7 +896,6 @@ const Home = () => {
                                     </div>
                                 </div>
                             ) : (
-                                // Step 3: Manual Search
                                 <div className="space-y-6">
                                     <div className="text-center">
                                         <p className="text-primary text-xl font-black mb-1">${amount}</p>
@@ -909,6 +939,7 @@ const Home = () => {
                     </div>
                 </div>
             )}
+
             {/* REDEEM REWARD MODAL */}
             {isRedeemModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
@@ -950,7 +981,6 @@ const Home = () => {
                                 </div>
                             ) : (
                                 <div className="space-y-6">
-                                    {/* Client Summary */}
                                     <div className="bg-navy-dark/50 border border-white/10 rounded-3xl p-5 flex items-center gap-4 shadow-inner">
                                         <div className="size-14 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
                                             <span className="material-symbols-outlined text-primary text-2xl">person</span>
@@ -964,7 +994,6 @@ const Home = () => {
                                         </div>
                                     </div>
 
-                                    {/* Rewards List */}
                                     <div className="space-y-3">
                                         <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Premios Disponibles</h4>
                                         {availableRewards.length > 0 ? (
@@ -976,7 +1005,7 @@ const Home = () => {
                                                             key={reward.id}
                                                             disabled={!canAfford || isProcessing}
                                                             onClick={() => handleProcessRedeem(reward)}
-                                                            className={`bg-navy-dark/40 border ${canAfford ? 'border-white/10 hover:border-accent/40' : 'border-red-500/20 opacity-60'} p-3 rounded-2xl flex items-center gap-4 transition-all group text-left relative overflow-hidden`}
+                                                            className={`bg-navy-card/40 border ${canAfford ? 'border-white/10 hover:border-accent/40' : 'border-red-500/20 opacity-60'} p-3 rounded-2xl flex items-center gap-4 transition-all group text-left relative overflow-hidden`}
                                                         >
                                                             <div className="size-16 rounded-xl bg-white/5 overflow-hidden flex items-center justify-center border border-white/10">
                                                                 {reward.image_url ? (
@@ -1002,8 +1031,58 @@ const Home = () => {
                                             <div className="py-8 text-center text-slate-500 italic text-sm">No hay premios configurados hoy.</div>
                                         )}
                                     </div>
+                                    <button
+                                        onClick={() => setRedeemStep(1)}
+                                        className="w-full text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-white py-2 transition-colors"
+                                    >
+                                        ← Escanear otro cliente
+                                    </button>
                                 </div>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Business QR Modal (For customer affiliation) */}
+            {isBusinessQRModalOpen && (
+                <div className="fixed inset-0 z-[115] flex items-center justify-center p-6 bg-navy-dark/95 backdrop-blur-2xl animate-in fade-in duration-300">
+                    <div className="bg-navy-card w-full max-w-[340px] rounded-[3rem] border border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+                        {/* Header */}
+                        <div className="p-8 pb-4 text-center space-y-2">
+                            <div className="size-16 rounded-2xl bg-primary/20 flex items-center justify-center text-primary mx-auto mb-4">
+                                <span className="material-symbols-outlined !text-4xl">storefront</span>
+                            </div>
+                            <h3 className="text-xl font-black text-white leading-tight uppercase tracking-tight">QR de Afiliación</h3>
+                            <p className="text-xs text-slate-400 font-medium">Invita a tus clientes a escanear este código para unirse a tu club de lealtad.</p>
+                        </div>
+
+                        {/* QR Area */}
+                        <div className="px-8 py-6 flex flex-col items-center">
+                            <div className="bg-white p-6 rounded-[2.5rem] shadow-2xl relative">
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-navy-dark rounded-full border border-white/20 text-[10px] font-black text-primary uppercase tracking-widest">
+                                    {profile?.business_members?.[0]?.businesses?.business_code || '------'}
+                                </div>
+                                <QRCodeSVG
+                                    value={profile?.business_members?.[0]?.businesses?.business_code || 'no-code'}
+                                    size={180}
+                                    level="H"
+                                    includeMargin={false}
+                                />
+                            </div>
+                            <p className="mt-8 text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] text-center px-4">
+                                "Tus clientes se afilian al instante con solo escanear"
+                            </p>
+                        </div>
+
+                        {/* Action */}
+                        <div className="p-8 pt-2">
+                            <button
+                                onClick={() => setIsBusinessQRModalOpen(false)}
+                                className="w-full h-14 bg-primary text-navy-dark rounded-full font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-[0_10px_30px_rgba(57,224,121,0.2)]"
+                            >
+                                LISTO
+                            </button>
                         </div>
                     </div>
                 </div>

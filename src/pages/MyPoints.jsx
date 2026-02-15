@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
+import { Html5Qrcode } from 'html5-qrcode';
 import { useNotification } from '../context/NotificationContext';
 import { useMessages } from '../context/MessageContext';
 import MessageCenter from '../components/MessageCenter';
@@ -22,6 +23,8 @@ const MyPoints = () => {
     const { showNotification } = useNotification();
     const [isMessageCenterOpen, setIsMessageCenterOpen] = useState(false);
     const { unreadCount } = useMessages();
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
+    const [isProcessingScanner, setIsProcessingScanner] = useState(false);
 
     const fetchBusinessPrizes = async (business) => {
         console.log('Opening prizes for:', business?.name);
@@ -137,6 +140,93 @@ const MyPoints = () => {
         };
     }, [user, showRedemptionQR]); // Added showRedemptionQR to check its state inside the update listener
 
+    const startScanner = () => {
+        setIsScannerOpen(true);
+        setIsProcessingScanner(false);
+        setTimeout(async () => {
+            try {
+                const container = document.getElementById("affiliation-reader");
+                if (!container) return;
+
+                if (window.affiliationScannerInstance) {
+                    await window.affiliationScannerInstance.stop().catch(() => { });
+                }
+
+                const html5QrCode = new Html5Qrcode("affiliation-reader");
+                window.affiliationScannerInstance = html5QrCode;
+
+                await html5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 15, qrbox: { width: 250, height: 250 } },
+                    onScanSuccess,
+                    (errorMessage) => { }
+                );
+            } catch (err) {
+                console.error('Final scanner error:', err);
+                showNotification('error', 'Error de Cámara', 'No se pudo activar la cámara.');
+            }
+        }, 400);
+    };
+
+    const onScanSuccess = async (decodedText) => {
+        try {
+            if (window.affiliationScannerInstance) {
+                await window.affiliationScannerInstance.stop().catch(() => { });
+                window.affiliationScannerInstance = null;
+            }
+            setIsProcessingScanner(true);
+
+            // 1. Find the business by code
+            const { data: businessData, error: businessError } = await supabase
+                .from('businesses')
+                .select('id, name')
+                .eq('business_code', decodedText)
+                .single();
+
+            if (businessError || !businessData) {
+                throw new Error('Código de comercio no válido.');
+            }
+
+            // 2. Check if already affiliated
+            const isAlreadyAffiliated = loyaltyCards.some(card => card.business_id === businessData.id);
+            if (isAlreadyAffiliated) {
+                showNotification('info', 'Ya estás afiliado', `Ya tienes una tarjeta en ${businessData.name}.`);
+                setIsScannerOpen(false);
+                return;
+            }
+
+            // 3. Create the loyalty card
+            const { error: affiliationError } = await supabase
+                .from('loyalty_cards')
+                .insert({
+                    profile_id: user.id,
+                    business_id: businessData.id,
+                    current_points: 0
+                });
+
+            if (affiliationError) throw affiliationError;
+
+            showNotification('success', '¡Afiliación Exitosa!', `Bienvenido al club de ${businessData.name}.`);
+            setIsScannerOpen(false);
+            fetchUserData();
+        } catch (err) {
+            console.error('Affiliation error:', err);
+            showNotification('error', 'Error de Afiliación', err.message);
+            setIsScannerOpen(false);
+        } finally {
+            setIsProcessingScanner(false);
+        }
+    };
+
+    const closeScanner = async () => {
+        setIsScannerOpen(false);
+        setIsProcessingScanner(false);
+        if (window.affiliationScannerInstance) {
+            await window.affiliationScannerInstance.stop().catch(() => { });
+            window.affiliationScannerInstance = null;
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-navy-dark flex items-center justify-center">
@@ -191,11 +281,23 @@ const MyPoints = () => {
                         <h2 className="text-3xl font-black text-white mt-1 leading-tight">
                             {profile?.full_name?.split(' ')[0] || 'Cliente'}
                         </h2>
-                        <p className="text-white/70 text-sm font-medium mt-3 max-w-[240px]">
-                            Sigue acumulando puntos en tus comercios favoritos para canjear premios.
-                        </p>
+                        <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-navy-dark/30 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl animate-in slide-in-from-left duration-700">
+                            <span className="material-symbols-outlined text-primary text-sm font-black">stars</span>
+                            <p className="text-white text-xs font-black uppercase tracking-[0.1em] leading-none">
+                                ¡Todo listo para ganar!
+                            </p>
+                        </div>
                     </div>
-                    <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-white/10 !text-[150px] font-black pointer-events-none">
+
+                    {/* Animated Reward Icon */}
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 z-20 animate-float">
+                        <div className="relative">
+                            <span className="material-symbols-outlined text-white/90 !text-7xl drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">redeem</span>
+                            <div className="absolute -top-1 -right-1 size-5 bg-accent rounded-full border-2 border-primary animate-pulse"></div>
+                        </div>
+                    </div>
+
+                    <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-white/5 !text-[150px] font-black pointer-events-none">
                         account_balance_wallet
                     </span>
                 </div>
@@ -225,6 +327,14 @@ const MyPoints = () => {
                         className="bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-full font-black text-[11px] uppercase tracking-[0.2em] shadow-[0_4px_15px_rgba(57,224,121,0.3)] transition-all active:scale-95"
                     >
                         Escaneo en Caja
+                    </button>
+
+                    <button
+                        onClick={startScanner}
+                        className="flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-[0.2em] hover:opacity-80 transition-opacity"
+                    >
+                        <span className="material-symbols-outlined !text-lg">qr_code_scanner</span>
+                        Afiliarme a un Comercio
                     </button>
                 </div>
 
@@ -276,8 +386,16 @@ const MyPoints = () => {
                                     <p className="text-sm text-slate-400 font-semibold leading-relaxed max-w-[300px] mx-auto">
                                         Cientos de usuarios ya están canjeando productos gratis en sus Kioskos y Comercios favoritos.
                                         <span className="block mt-3 text-white font-black text-base">¿Te vas a quedar fuera?</span>
-                                        Activa tu primera tarjeta hoy en tu comercio favorito.
+                                        Escanea el código del local para empezar.
                                     </p>
+
+                                    <button
+                                        onClick={startScanner}
+                                        className="mt-6 w-full max-w-[240px] bg-primary text-navy-dark h-14 rounded-full font-black text-sm uppercase shadow-lg shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <span className="material-symbols-outlined font-black">qr_code_scanner</span>
+                                        ESCANEAR COMERCIO
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -579,6 +697,43 @@ const MyPoints = () => {
                 isOpen={isMessageCenterOpen}
                 onClose={() => setIsMessageCenterOpen(false)}
             />
+
+            {/* Business Scanner Modal */}
+            {isScannerOpen && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-navy-dark/95 backdrop-blur-2xl animate-in fade-in duration-300">
+                    <div className="bg-navy-card w-full max-w-[340px] rounded-[3rem] border border-white/10 shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+                        <div className="p-8 pb-4 text-center space-y-2">
+                            <div className="size-16 rounded-2xl bg-primary/20 flex items-center justify-center text-primary mx-auto mb-4">
+                                <span className="material-symbols-outlined !text-4xl">store</span>
+                            </div>
+                            <h3 className="text-xl font-black text-white leading-tight uppercase tracking-tight">Afiliar Comercio</h3>
+                            <p className="text-xs text-slate-400 font-medium">Escanea el código QR del local</p>
+                        </div>
+
+                        <div className="px-8 py-6">
+                            <div className="bg-navy-dark rounded-3xl overflow-hidden border border-white/10 relative min-h-[250px] flex items-center justify-center">
+                                {isProcessingScanner ? (
+                                    <div className="flex flex-col items-center gap-4">
+                                        <span className="animate-spin material-symbols-outlined text-primary text-5xl">refresh</span>
+                                        <p className="font-bold text-sm text-primary">Procesando...</p>
+                                    </div>
+                                ) : (
+                                    <div id="affiliation-reader" className="w-full"></div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="p-8 pt-2">
+                            <button
+                                onClick={closeScanner}
+                                className="w-full h-14 bg-white/5 text-white rounded-full font-black text-xs uppercase tracking-widest active:scale-95 transition-all border border-white/10"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

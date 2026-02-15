@@ -3,15 +3,11 @@ import React, { useEffect, useState } from 'react';
 const Notification = ({ type = 'success', title, message, onClose, duration = 5000 }) => {
     const [isVisible, setIsVisible] = useState(true);
 
+    // Auto-dismiss disabled per user request to force manual closure
     useEffect(() => {
-        if (duration) {
-            const timer = setTimeout(() => {
-                setIsVisible(false);
-                setTimeout(onClose, 300); // Wait for exit animation
-            }, duration);
-            return () => clearTimeout(timer);
-        }
-    }, [duration, onClose]);
+        // We keep the useEffect structure if needed for other side effects, 
+        // but the timer logic is removed.
+    }, [onClose]);
 
     if (!isVisible) return null;
 
