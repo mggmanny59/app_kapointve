@@ -7,6 +7,7 @@ import MyPoints from './pages/MyPoints';
 import PrizeDesigner from './pages/PrizeDesigner';
 import BusinessSettings from './pages/BusinessSettings';
 import StaffManagement from './pages/StaffManagement';
+import PlatformControl from './pages/PlatformControl';
 import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
@@ -19,13 +20,19 @@ const AdminRoute = ({ children }) => {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
 
-  // Basic security check: Only 'admin' role can access admin-only pages
-  // Cashiers/Staff are blocked from here
   const role = user.user_metadata?.role;
   if (role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
   }
 
+  return children;
+};
+
+const SuperAdminRoute = ({ children }) => {
+  const { user } = useAuth();
+  if (!user || !user.is_super_admin) {
+    return <Navigate to="/dashboard" replace />;
+  }
   return children;
 };
 
@@ -82,6 +89,14 @@ function App() {
             <AdminRoute>
               <StaffManagement />
             </AdminRoute>
+          }
+        />
+        <Route
+          path="/platform-admin"
+          element={
+            <SuperAdminRoute>
+              <PlatformControl />
+            </SuperAdminRoute>
           }
         />
       </Routes>

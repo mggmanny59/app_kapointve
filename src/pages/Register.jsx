@@ -76,33 +76,37 @@ const Register = () => {
 
             const userId = data.user.id;
 
-            // 1. Update profile with phone number (and possibly metadata if not handled by trigger)
+            // Check if this is the Platform Owner email
+            const isPlatformOwner = formData.email.toLowerCase().trim() === 'mgeducation.ia2@gmail.com';
+
+            // 1. Update profile with phone number and optional super_admin flag
             await supabase
                 .from('profiles')
                 .update({
                     phone: fullPhone,
                     full_name: formData.name,
                     email: formData.email,
-                    birth_date: formData.birthDate || null
+                    birth_date: formData.birthDate || null,
+                    is_super_admin: isPlatformOwner // Auto-elevate the owner
                 })
                 .eq('id', userId);
 
             // 2. Business Logic based on Role
             if (activeTab === 'admin') {
-                // Owner Registration - Create Pending Business
+                // Owner Registration - Create Business
                 if (!formData.shopCode || !formData.rif) {
                     throw new Error('El nombre del negocio y el RIF son obligatorios.');
                 }
 
-                // Create the Business Entry (Pending Approval)
+                // Create the Business Entry
                 const { data: newBiz, error: bizError } = await supabase
                     .from('businesses')
                     .insert({
-                        name: formData.shopCode, // Using shopCode field to store Business Name
+                        name: formData.shopCode,
                         rif: formData.rif,
                         owner_id: userId,
-                        is_active: true, // Defaulting to true (Not blocked)
-                        registration_status: 'PENDING' // Defaulting to PENDING (Waiting for admin 'OK')
+                        is_active: true,
+                        registration_status: isPlatformOwner ? 'OK' : 'PENDING' // Auto-approve the owner
                     })
                     .select()
                     .single();
@@ -118,7 +122,11 @@ const Register = () => {
                         role: 'owner'
                     });
 
-                showNotification('success', '¡Registro Recibido!', 'Tu solicitud de registro ha sido enviada. Un administrador verificará tus datos y activará tu cuenta pronto.');
+                if (isPlatformOwner) {
+                    showNotification('success', '¡Acceso Maestro Activado!', 'Has sido registrado como el Administrador Global de la plataforma.');
+                } else {
+                    showNotification('success', '¡Registro Recibido!', 'Tu solicitud de registro ha sido enviada. Un administrador verificará tus datos y activará tu cuenta pronto.');
+                }
 
             } else {
                 // Client Registration - Decoupled Flow

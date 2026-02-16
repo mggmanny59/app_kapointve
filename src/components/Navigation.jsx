@@ -27,11 +27,13 @@ const Navigation = () => {
         { path: '/dashboard', label: 'Panel', icon: 'dashboard' },
         { path: '/clients', label: 'Clientes', icon: 'group' },
         { path: '/prizes', label: 'Premios', icon: 'featured_seasonal_and_gifts', adminOnly: true },
-        { path: '/settings', label: 'Ajustes', icon: 'settings' }
+        { path: '/settings', label: 'Ajustes', icon: 'settings' },
+        { path: '/platform-admin', label: 'Control', icon: 'admin_panel_settings', superAdminOnly: true }
     ];
 
-    // Filter items based on role
+    // Filter items based on role and super admin status
     const visibleItems = navItems.filter(item => {
+        if (item.superAdminOnly && !user?.is_super_admin) return false;
         if (item.adminOnly && userRole === 'cashier') return false;
         return true;
     });

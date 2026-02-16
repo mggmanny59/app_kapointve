@@ -51,14 +51,23 @@ const Login = () => {
                     throw new Error('Lo sentimos, esta cuenta no está registrada como Dueño de negocio.');
                 }
 
+                // Check profile for Super Admin status
+                const { data: profileData } = await supabase
+                    .from('profiles')
+                    .select('is_super_admin')
+                    .eq('id', authUser.id)
+                    .single();
+
+                const isSuperAdmin = profileData?.is_super_admin === true;
+
                 // Check Business Status
                 const { data: businessStatus } = await supabase
                     .from('businesses')
                     .select('is_active, registration_status')
-                    .eq('id', businessMember.business_id) // Assuming business_members has business_id which links to businesses
+                    .eq('id', businessMember.business_id)
                     .single();
 
-                if (businessStatus) {
+                if (businessStatus && !isSuperAdmin) {
                     // Rule 1: Fixed Blocked Account
                     if (businessStatus.is_active === false) {
                         await signOut();
@@ -78,7 +87,7 @@ const Login = () => {
                     }
                 }
                 // If validation passes, navigate manually
-                navigate('/dashboard');
+                navigate(isSuperAdmin ? '/platform-admin' : '/dashboard');
             } else {
                 // CLIENT VALIDATION: Strict separation
                 const userRole = authUser.user_metadata?.role;

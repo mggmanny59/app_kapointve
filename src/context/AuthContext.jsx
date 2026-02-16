@@ -7,61 +7,96 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const refreshUser = async (session) => {
+        try {
+            if (session?.user) {
+                // Fetch Profile and Business Status
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('*, business_members(business_id, businesses(is_active, registration_status))')
+                    .eq('id', session.user.id)
+                    .maybeSingle();
+
+                const isSuperAdmin = !!profile?.is_super_admin;
+                const businessInfo = profile?.business_members?.[0]?.businesses;
+
+                // Enforce Business Rules for non-Super Admins
+                if (businessInfo && !isSuperAdmin) {
+                    if (businessInfo.is_active === false) {
+                        await supabase.auth.signOut();
+                        setUser(null);
+                        throw new Error('STATUS_BLOCKED');
+                    }
+                    if (businessInfo.registration_status === 'PENDING') {
+                        await supabase.auth.signOut();
+                        setUser(null);
+                        throw new Error('STATUS_PENDING');
+                    }
+                }
+
+                setUser({
+                    ...session.user,
+                    is_super_admin: isSuperAdmin,
+                    businessStatus: businessInfo
+                });
+            } else {
+                setUser(null);
+            }
+        } catch (error) {
+            console.error('Error in refreshUser:', error);
+            setUser(null);
+            // We can emit a custom event or use notification context if available
+            // But for now, just ensure they are logged out
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        // Check active sessions and sets the user
-        const checkUser = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            setUser(session?.user ?? null);
-            setLoading(false);
-        };
-
-        checkUser();
-
-        // Listen for changes on auth state (logged in, signed out, etc.)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
-            setLoading(false);
+        // 1. Initial Check
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            refreshUser(session);
         });
 
-        return () => subscription.unsubscribe();
+        // 2. Auth State Subscription
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            refreshUser(session);
+        });
+
+        return () => {
+            if (subscription) subscription.unsubscribe();
+        };
     }, []);
 
-    // Log in a user
     const signIn = async (email, password) => {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         return data;
     };
 
-    // Register a new user
     const signUp = async (email, password, metadata) => {
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
-            options: {
-                data: metadata,
-            },
+            options: { data: metadata },
         });
         if (error) throw error;
         return data;
     };
 
-    // Sign out
     const signOut = () => supabase.auth.signOut();
 
-    const value = {
-        user,
-        signIn,
-        signUp,
-        signOut,
-    };
-
     return (
-        <AuthContext.Provider value={value}>
-            {!loading && children}
+        <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+            {children}
         </AuthContext.Provider>
     );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (context === undefined) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
+};

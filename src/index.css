@@ -19,6 +19,25 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* Fix for Material Symbols showing as text (ligatures) while loading */
+.material-symbols-outlined {
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+    text-indent: -9999px; /* Hide text until font loads */
+}
+
+/* When font is loaded, Google Fonts replaces the class or handles the indent */
+/* This is a safer approach for PWA environments */
+.material-symbols-outlined:not(:empty) {
+    text-indent: 0;
+    width: auto;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
 }
