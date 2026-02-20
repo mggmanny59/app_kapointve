@@ -304,9 +304,12 @@ const MyPoints = () => {
 
                 {/* QR Access Section */}
                 <div className="bg-navy-card border border-border-subtle p-6 rounded-card shadow-lg flex flex-col items-center gap-4">
-                    <div className="text-center">
-                        <h3 className="text-xl font-black text-white tracking-tight">Mi Código QR</h3>
-                        <p className="text-[11px] text-slate-subtitle mt-1">Muéstralo en caja para sumar puntos</p>
+                    <div className="text-center space-y-2">
+                        <h3 className="text-xl font-black text-white tracking-tight uppercase leading-none">Mi Código QR</h3>
+                        <p className="text-[13px] font-bold text-slate-300 tracking-tight leading-relaxed">
+                            <span className="text-primary mr-1">¡Listo para ganar!</span>
+                            Muéstralo en caja para sumar puntos
+                        </p>
                     </div>
 
                     <div className="relative">
@@ -324,18 +327,37 @@ const MyPoints = () => {
 
                     <button
                         onClick={() => setShowMainQRModal(true)}
-                        className="bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-full font-black text-[11px] uppercase tracking-[0.2em] shadow-[0_4px_15px_rgba(57,224,121,0.3)] transition-all active:scale-95"
+                        className="bg-primary hover:bg-primary-dark text-navy-dark px-10 h-14 rounded-full font-black text-[12px] uppercase tracking-[0.2em] shadow-[0_8px_25px_rgba(57,224,121,0.3)] transition-all active:scale-95 flex items-center justify-center gap-2"
                     >
                         Escaneo en Caja
+                        <span className="material-symbols-outlined !text-xl">qr_code_2</span>
                     </button>
+                </div>
 
-                    <button
-                        onClick={startScanner}
-                        className="flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-[0.2em] hover:opacity-80 transition-opacity"
-                    >
-                        <span className="material-symbols-outlined !text-lg">qr_code_scanner</span>
-                        Afiliarme a un Comercio
-                    </button>
+                {/* Independent Affiliation CTA Section */}
+                <div
+                    onClick={startScanner}
+                    className="group relative overflow-hidden bg-gradient-to-br from-navy-card to-navy-dark border border-white/5 p-5 rounded-[2rem] shadow-xl active:scale-[0.98] transition-all cursor-pointer hover:border-primary/30"
+                >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors"></div>
+
+                    <div className="flex items-center justify-between relative z-10">
+                        <div className="flex items-center gap-4">
+                            <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:rotate-12 transition-transform duration-500">
+                                <span className="material-symbols-outlined !text-4xl">add_business</span>
+                            </div>
+                            <div className="space-y-1">
+                                <h4 className="text-base font-black text-white uppercase tracking-tight">Afiliarme a un Comercio</h4>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="size-1.5 rounded-full bg-primary animate-pulse"></span>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Escanea el código del local ahora</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="size-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-navy-dark transition-all duration-300">
+                            <span className="material-symbols-outlined group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Loyalty Cards List */}

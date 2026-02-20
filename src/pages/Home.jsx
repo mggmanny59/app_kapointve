@@ -8,7 +8,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useMessages } from '../context/MessageContext';
 import Navigation from '../components/Navigation';
 import MessageCenter from '../components/MessageCenter';
-import { subscribeUserToPush } from '../lib/pushNotifications';
+import { subscribeUserToPush, sendPushToProfile } from '../lib/pushNotifications';
 
 const Home = () => {
     const { user, signOut } = useAuth();
@@ -29,6 +29,8 @@ const Home = () => {
     const [exchangeRate, setExchangeRate] = useState(60.00); // Default or fetch later
     const [isProcessing, setIsProcessing] = useState(false);
     const [searchEmail, setSearchEmail] = useState('');
+    const [isFetchingRate, setIsFetchingRate] = useState(false);
+    const [isRateSuccessful, setIsRateSuccessful] = useState(false);
 
     // Redeem State
     const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false);
@@ -46,15 +48,32 @@ const Home = () => {
     const [isSubscribed, setIsSubscribed] = useState(false);
 
     useEffect(() => {
-        // Verificar si ya tiene permiso o si debemos mostrar el banner
-        if ('Notification' in window) {
-            if (Notification.permission === 'default') {
-                setShowPushBanner(true);
-            } else if (Notification.permission === 'granted') {
-                setIsSubscribed(true);
+        const checkPushStatus = async () => {
+            if ('Notification' in window) {
+                if (Notification.permission === 'default') {
+                    setShowPushBanner(true);
+                } else if (Notification.permission === 'granted') {
+                    setIsSubscribed(true);
+                    // Proactivamente asegurar que la suscripción esté en la DB
+                    const registration = await navigator.serviceWorker.ready;
+                    const sub = await registration.pushManager.getSubscription();
+                    if (sub) {
+                        // Sincronizar con Supabase
+                        const { data: { user } } = await supabase.auth.getUser();
+                        if (user) {
+                            await supabase.from('push_subscriptions').upsert({
+                                profile_id: user.id,
+                                subscription: sub.toJSON(),
+                                user_agent: navigator.userAgent
+                            }, { onConflict: 'profile_id,subscription' });
+                            console.log('Push subscription synced on load');
+                        }
+                    }
+                }
             }
-        }
-    }, []);
+        };
+        checkPushStatus();
+    }, [user]);
 
     const handleEnablePush = async () => {
         const sub = await subscribeUserToPush();
@@ -62,37 +81,26 @@ const Home = () => {
             setShowPushBanner(false);
             setIsSubscribed(true);
             showNotification('success', '¡Excelente!', 'Has activado las notificaciones push correctamente.');
+
+            // Register subscription in Supabase (logic is inside subscribeUserToPush, 
+            // but we can ensure it here if needed)
         } else {
-            showNotification('warning', 'Aviso', 'No se pudieron activar las notificaciones. Asegúrate de dar los permisos.');
+            showNotification('warning', 'Aviso', 'No se pudieron activar las notificaciones. Asegúrate de dar los permisos en tu navegador.');
         }
     };
 
     const handleTestPush = async () => {
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-push`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session?.access_token}`
-                },
-                body: JSON.stringify({
-                    profile_id: user.id,
-                    title: 'Prueba de KPoint',
-                    message: '¡Funciona! Esta es una notificación push de prueba.',
-                    url: '/dashboard'
-                })
-            });
+        const result = await sendPushToProfile({
+            profileId: user.id,
+            title: 'Prueba de KPoint',
+            message: '¡Funciona! Esta es una notificación push de prueba.',
+            url: '/dashboard'
+        });
 
-            const result = await response.json();
-            if (result.success) {
-                showNotification('success', 'Enviado', 'Se ha enviado la señal de prueba. Debería llegar en unos segundos.');
-            } else {
-                throw new Error(result.error || result.message);
-            }
-        } catch (err) {
-            console.error('Error enviando prueba:', err);
-            showNotification('error', 'Error', 'No se pudo enviar la prueba: ' + err.message);
+        if (result.success) {
+            showNotification('success', 'Enviado', 'Se ha enviado la señal de prueba. Debería llegar en unos segundos.');
+        } else {
+            showNotification('error', 'Error', 'No se pudo enviar la prueba: ' + result.error);
         }
     };
 
@@ -202,9 +210,92 @@ const Home = () => {
         }
     };
 
+    const fetchBCVRate = async () => {
+        setIsFetchingRate(true);
+        setIsRateSuccessful(false);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-bcv-rate`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+
+            if (data.rate) {
+                console.log('Exchange Rate fetched:', data.rate, 'Source:', data.source);
+                setExchangeRate(parseFloat(data.rate).toFixed(2));
+                setIsRateSuccessful(true);
+                // Update Bolivares if amount USD is already present
+                if (amount) {
+                    setAmountBs((parseFloat(amount) * data.rate).toFixed(2));
+                }
+            } else {
+                console.error('BCV Function Error:', data.error);
+                setIsRateSuccessful(false);
+            }
+        } catch (err) {
+            console.error('Error fetching rate:', err);
+            setIsRateSuccessful(false);
+        } finally {
+            setIsFetchingRate(false);
+        }
+    };
+
     useEffect(() => {
-        if (user) fetchDashboardData();
+        if (user) {
+            fetchDashboardData();
+            fetchBCVRate();
+        }
     }, [user]);
+
+    // Refresh rate specifically when opening the modal to ensure it's up to date
+    useEffect(() => {
+        if (isModalOpen && saleStep === 1) {
+            fetchBCVRate();
+        }
+    }, [isModalOpen, saleStep]);
+
+    // Real-time listener for points/transactions
+    useEffect(() => {
+        if (!user) return;
+
+        // Subscribe to transactions for the current user
+        const channel = supabase
+            .channel(`user_transactions_${user.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'transactions',
+                    filter: `profile_id=eq.${user.id}`
+                },
+                (payload) => {
+                    console.log('Real-time transaction detected:', payload);
+                    fetchDashboardData();
+                    // Optional: Show a local notification for the client
+                    if (userRole === 'client') {
+                        showNotification('success', '¡Puntos!', 'Has recibido una nueva actualización de puntos.');
+
+                        // If browser supports web notifications and permission is granted, show a local one too
+                        if ('Notification' in window && Notification.permission === 'granted') {
+                            new Notification('KPoint Update', {
+                                body: payload.new.type === 'EARN'
+                                    ? `¡Has ganado puntos en ${business?.name || 'un comercio'}!`
+                                    : 'Se ha procesado un canje de puntos.',
+                                icon: '/favicon.ico'
+                            });
+                        }
+                    }
+                }
+            )
+            .subscribe((status) => {
+                console.log('Supabase Realtime Status:', status);
+            });
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [user, userRole, business]);
 
     const startScanner = () => {
         setSaleStep(2);
@@ -287,6 +378,14 @@ const Home = () => {
             setSaleStep(1);
             showNotification('success', '¡Puntos Asignados!', 'La venta se ha procesado y los puntos han sido cargados al cliente.');
             fetchDashboardData();
+
+            // Enviar notificación Push al cliente
+            sendPushToProfile({
+                profileId: clientId,
+                title: business?.name || 'KPoint',
+                message: `¡Has ganado ${(parseFloat(amount) * (business?.points_per_dollar || 10)).toFixed(0)} puntos!`,
+                url: '/my-points'
+            });
         } catch (err) {
             console.error('Error processing sale:', err);
             showNotification('error', 'Error de Escaneo', 'No se pudo procesar la venta. Verifique el código QR.');
@@ -470,6 +569,14 @@ const Home = () => {
 
             // Refresh UI
             fetchDashboardData();
+
+            // Enviar notificación Push al cliente
+            sendPushToProfile({
+                profileId: client.profile_id,
+                title: business?.name || 'KPoint',
+                message: `Has canjeado tus puntos por: ${reward.name}. ¡Disfrútalo!`,
+                url: '/my-points'
+            });
         } catch (err) {
             console.error('Redeem process error:', err);
             showNotification('error', 'Error en Canje', 'No se pudo completar el canje. Verifique la conexión.');
@@ -530,6 +637,14 @@ const Home = () => {
             setSaleStep(1);
             showNotification('success', '¡Venta Registrada!', 'Los puntos han sido asignados correctamente al cliente.');
             fetchDashboardData();
+
+            // Enviar notificación Push al cliente
+            sendPushToProfile({
+                profileId: profileData.id,
+                title: business?.name || 'KPoint',
+                message: `¡Has ganado ${(parseFloat(amount) * (business?.points_per_dollar || 10)).toFixed(0)} puntos!`,
+                url: '/my-points'
+            });
         } catch (err) {
             showNotification('error', 'Error en Registro', err.message);
         } finally {
@@ -854,34 +969,43 @@ const Home = () => {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
                     <div className="absolute inset-0 bg-navy-dark/95 backdrop-blur-md" onClick={closeModal}></div>
 
-                    <div className="relative w-full max-w-md bg-navy-card border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-                        <div className="p-8">
-                            <div className="relative flex items-center gap-4 mb-10 pt-2">
-                                <div className="size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary border border-primary/30 shadow-[0_0_20px_rgba(57,224,121,0.2)]">
-                                    <span className="material-symbols-outlined !text-3xl font-bold">point_of_sale</span>
+                    <div className="relative w-full max-w-[340px] bg-navy-card border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+                        <div className="p-6">
+                            <div className="relative flex items-center gap-4 mb-6 pt-1">
+                                <div className="size-12 rounded-xl bg-primary/20 flex items-center justify-center text-primary border border-primary/30 shadow-[0_0_20px_rgba(57,224,121,0.2)]">
+                                    <span className="material-symbols-outlined !text-2xl font-bold">point_of_sale</span>
                                 </div>
                                 <div className="flex-1">
-                                    <h2 className="text-2xl font-black text-white leading-tight tracking-tight">Asignación de Puntos</h2>
-                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mt-1">REGISTRAR NUEVA VENTA</p>
+                                    <h2 className="text-xl font-black text-white leading-tight tracking-tight">Asignación</h2>
+                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mt-0.5">REGISTRAR VENTA</p>
                                 </div>
                                 <button
                                     onClick={closeModal}
-                                    className="absolute -top-4 -right-4 size-12 rounded-full bg-navy-card border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 shadow-2xl transition-all active:scale-95 group"
+                                    className="absolute -top-2 -right-2 size-10 rounded-full bg-navy-card border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 shadow-2xl transition-all active:scale-95 group"
                                 >
-                                    <span className="material-symbols-outlined group-hover:rotate-90 transition-transform">close</span>
+                                    <span className="material-symbols-outlined !text-xl group-hover:rotate-90 transition-transform">close</span>
                                 </button>
                             </div>
 
                             {saleStep === 1 ? (
                                 <div className="space-y-6">
-                                    <div className="grid grid-cols-1 gap-5">
-                                        <div className="bg-navy-dark/80 border border-white/5 rounded-3xl p-5 flex items-center justify-between shadow-inner">
-                                            <div className="flex items-center gap-3">
-                                                <div className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400">
-                                                    <span className="material-symbols-outlined text-xl">currency_exchange</span>
+                                    <div className="grid grid-cols-1 gap-4">
+                                        <div className="bg-navy-dark/80 border border-white/5 rounded-3xl p-6 shadow-inner space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400">
+                                                        <span className="material-symbols-outlined text-xl">currency_exchange</span>
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none">Tasa de Cambio</span>
+                                                        <span className={`text-[9px] font-black uppercase tracking-[0.2em] mt-2 flex items-center gap-2 ${isRateSuccessful ? 'text-primary' : 'text-orange-400'}`}>
+                                                            <span className={`size-2 rounded-full ${isFetchingRate ? 'bg-orange-500 animate-spin border-t-transparent border-2' : isRateSuccessful ? 'bg-primary animate-pulse' : 'bg-orange-400'}`}></span>
+                                                            {isFetchingRate ? 'Buscando...' : isRateSuccessful ? 'Oficial BCV OK' : 'Usando Manual'}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Tasa de Cambio</span>
                                             </div>
+
                                             <div className="relative group">
                                                 <input
                                                     type="number"
@@ -889,14 +1013,15 @@ const Home = () => {
                                                     onChange={(e) => {
                                                         const rate = e.target.value;
                                                         setExchangeRate(rate);
+                                                        setIsRateSuccessful(false); // If they edit it, it's manual
                                                         const numRate = parseFloat(rate);
                                                         if (amountBs && numRate > 0) {
                                                             setAmount((parseFloat(amountBs) / numRate).toFixed(2));
                                                         }
                                                     }}
-                                                    className="w-24 bg-navy-card border border-primary/30 h-10 rounded-xl px-3 text-right text-lg font-black text-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all group-hover:border-primary"
+                                                    className="w-full bg-navy-card border border-primary/30 h-16 rounded-2xl px-4 text-center text-4xl font-black text-primary focus:ring-4 focus:ring-primary/10 focus:border-primary/50 outline-none transition-all group-hover:border-primary shadow-lg"
                                                 />
-                                                <span className="absolute -left-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-[10px] text-primary/40">edit</span>
+                                                <label className="absolute -top-2.5 left-6 bg-navy-dark px-3 text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] border border-white/5 rounded-full shadow-lg">Valor USD en Bolívares</label>
                                             </div>
                                         </div>
 
@@ -915,13 +1040,13 @@ const Home = () => {
                                                             setAmount('');
                                                         }
                                                     }}
-                                                    className="w-full bg-navy-dark/50 border border-white/10 h-16 rounded-full text-2xl font-black text-white pl-14 pr-4 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                                    placeholder="Monto en Bolívares"
+                                                    className="w-full bg-navy-dark/50 border border-white/10 h-16 rounded-2xl text-2xl font-black text-white pl-14 pr-4 focus:ring-4 focus:ring-primary/10 outline-none transition-all"
+                                                    placeholder="Monto Bs."
                                                 />
                                             </div>
 
                                             <div className="relative group">
-                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-3xl font-black text-primary"> $ </span>
+                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-4xl font-black text-primary"> $ </span>
                                                 <input
                                                     type="number"
                                                     autoFocus
@@ -935,22 +1060,22 @@ const Home = () => {
                                                             setAmountBs('');
                                                         }
                                                     }}
-                                                    className="w-full bg-navy-dark border-2 border-primary/20 h-24 rounded-3xl text-5xl font-black text-white pl-16 pr-4 focus:ring-4 focus:ring-primary/10 focus:border-primary/40 outline-none transition-all shadow-2xl"
+                                                    className="w-full bg-navy-dark border-2 border-primary/20 h-24 rounded-3xl text-5xl font-black text-white pl-16 pr-6 focus:ring-8 focus:ring-primary/10 focus:border-primary/40 outline-none transition-all shadow-2xl"
                                                     placeholder="0.00"
                                                 />
-                                                <label className="absolute -top-3 left-6 bg-navy-card px-3 text-[10px] font-black text-primary uppercase tracking-widest border border-primary/20 rounded-full">Recibir en USD</label>
+                                                <label className="absolute -top-3 left-8 bg-navy-card px-3 py-0.5 text-[9px] font-black text-primary uppercase tracking-widest border border-primary/20 rounded-full shadow-lg">Recibir en USD</label>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="flex flex-col gap-3">
                                         <button
-                                            disabled={!amount || parseFloat(amount) <= 0}
+                                            disabled={!amount || parseFloat(amount) <= 0 || isFetchingRate}
                                             onClick={startScanner}
-                                            className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-full font-black text-lg uppercase shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:grayscale transition-all"
+                                            className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-2xl font-black text-lg uppercase shadow-[0_10px_25px_rgba(57,224,121,0.2)] flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale transition-all active:scale-95"
                                         >
                                             Escanear QR
-                                            <span className="material-symbols-outlined">qr_code_scanner</span>
+                                            <span className="material-symbols-outlined !text-2xl">qr_code_scanner</span>
                                         </button>
 
                                         <button
