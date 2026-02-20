@@ -8,6 +8,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useMessages } from '../context/MessageContext';
 import Navigation from '../components/Navigation';
 import MessageCenter from '../components/MessageCenter';
+import { subscribeUserToPush } from '../lib/pushNotifications';
 
 const Home = () => {
     const { user, signOut } = useAuth();
@@ -41,6 +42,59 @@ const Home = () => {
     const [isMessageCenterOpen, setIsMessageCenterOpen] = useState(false);
     const { unreadCount } = useMessages();
     const [isBusinessQRModalOpen, setIsBusinessQRModalOpen] = useState(false);
+    const [showPushBanner, setShowPushBanner] = useState(false);
+    const [isSubscribed, setIsSubscribed] = useState(false);
+
+    useEffect(() => {
+        // Verificar si ya tiene permiso o si debemos mostrar el banner
+        if ('Notification' in window) {
+            if (Notification.permission === 'default') {
+                setShowPushBanner(true);
+            } else if (Notification.permission === 'granted') {
+                setIsSubscribed(true);
+            }
+        }
+    }, []);
+
+    const handleEnablePush = async () => {
+        const sub = await subscribeUserToPush();
+        if (sub) {
+            setShowPushBanner(false);
+            setIsSubscribed(true);
+            showNotification('success', '¡Excelente!', 'Has activado las notificaciones push correctamente.');
+        } else {
+            showNotification('warning', 'Aviso', 'No se pudieron activar las notificaciones. Asegúrate de dar los permisos.');
+        }
+    };
+
+    const handleTestPush = async () => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-push`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.access_token}`
+                },
+                body: JSON.stringify({
+                    profile_id: user.id,
+                    title: 'Prueba de KPoint',
+                    message: '¡Funciona! Esta es una notificación push de prueba.',
+                    url: '/dashboard'
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                showNotification('success', 'Enviado', 'Se ha enviado la señal de prueba. Debería llegar en unos segundos.');
+            } else {
+                throw new Error(result.error || result.message);
+            }
+        } catch (err) {
+            console.error('Error enviando prueba:', err);
+            showNotification('error', 'Error', 'No se pudo enviar la prueba: ' + err.message);
+        }
+    };
 
     const businessId = profile?.business_members?.[0]?.business_id || '00000000-0000-0000-0000-000000000001';
 
@@ -579,6 +633,46 @@ const Home = () => {
             </header>
 
             <main className="px-6 space-y-6">
+                {/* Banner de Notificaciones Push */}
+                {showPushBanner && (
+                    <div className="bg-gradient-to-r from-primary/20 to-accent/20 border border-white/10 p-5 rounded-3xl flex flex-col gap-4 animate-in slide-in-from-top-4 duration-500">
+                        <div className="flex items-start gap-4">
+                            <div className="size-12 rounded-2xl bg-white/10 flex items-center justify-center text-primary shrink-0 border border-white/10">
+                                <span className="material-symbols-outlined !text-3xl">notifications_active</span>
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-black text-white uppercase tracking-wider">¡Activa las Notificaciones!</h3>
+                                <p className="text-xs text-slate-300 mt-1 leading-relaxed">Entérate al instante cuando ganes puntos o canjees premios incluso si la app está cerrada.</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleEnablePush}
+                                className="flex-1 bg-white text-navy-dark h-11 rounded-2xl text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg"
+                            >
+                                Activar ahora
+                            </button>
+                            <button
+                                onClick={() => setShowPushBanner(false)}
+                                className="px-5 h-11 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:bg-white/5 active:scale-95 transition-all"
+                            >
+                                Después
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Botón de prueba (Solo si ya está suscrito) */}
+                {isSubscribed && (
+                    <button
+                        onClick={handleTestPush}
+                        className="w-full bg-navy-card border border-white/5 p-4 rounded-3xl flex items-center justify-center gap-3 text-slate-400 hover:text-white transition-colors group"
+                    >
+                        <span className="material-symbols-outlined text-primary group-hover:animate-bounce">send_and_archive</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Enviar Notificación de Prueba</span>
+                    </button>
+                )}
+
                 {/* Business Info Section */}
                 <div className="flex flex-col">
                     <h2 className="text-2xl font-black text-white flex items-center gap-2 leading-tight">
