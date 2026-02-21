@@ -9,6 +9,7 @@ import BusinessSettings from './pages/BusinessSettings';
 import StaffManagement from './pages/StaffManagement';
 import PlatformControl from './pages/PlatformControl';
 import { useAuth } from './context/AuthContext';
+import BackNavigationHandler from './components/BackNavigationHandler';
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
@@ -39,6 +40,7 @@ const SuperAdminRoute = ({ children }) => {
 function App() {
   return (
     <Router>
+      <BackNavigationHandler />
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Navigate to="/" replace />} />
