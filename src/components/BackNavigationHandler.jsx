@@ -58,7 +58,7 @@ const BackNavigationHandler = () => {
             />
             
             {/* Modal Card */}
-            <div className="relative w-full max-w-sm bg-navy-card border border-white/10 rounded-[2rem] p-8 shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="relative w-full max-w-sm bg-navy-card border-2 border-[#595A5B] rounded-[2rem] p-8 shadow-2xl animate-in zoom-in-95 duration-300">
                 <div className="flex flex-col items-center text-center">
                     {/* Icon */}
                     <div className="size-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-6 border border-primary/20">

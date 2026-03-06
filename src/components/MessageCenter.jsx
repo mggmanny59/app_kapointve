@@ -18,93 +18,96 @@ const MessageCenter = ({ isOpen, onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[200] overflow-hidden">
+        <div className="fixed inset-0 z-[200] overflow-hidden antialiased">
             {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
+            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-500" onClick={onClose}></div>
 
             {/* Drawer */}
-            <div className="absolute right-0 top-0 bottom-0 w-full max-w-sm bg-navy-card shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col border-l border-white/5">
-                <header className="p-6 border-b border-white/5 flex items-center justify-between">
+            <div className="absolute right-0 top-0 bottom-0 w-full max-w-sm bg-white shadow-2xl animate-in slide-in-from-right duration-400 flex flex-col border-l border-[#595A5B]">
+                <header className="p-8 border-b border-[#595A5B] flex items-center justify-between">
                     <div>
-                        <h2 className="text-xl font-black text-white">Notificaciones</h2>
-                        <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Centro de Mensajes</p>
+                        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Notificaciones</h2>
+                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Centro de Actividad</p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="size-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors group"
+                        className="size-11 rounded-2xl bg-slate-50 border-2 border-[#595A5B] flex items-center justify-center text-slate-400 active:scale-90 transition-all shadow-sm group"
                     >
-                        <span className="material-symbols-outlined text-slate-400 group-hover:text-white">close</span>
+                        <span className="material-symbols-outlined !text-xl group-hover:text-slate-900">close</span>
                     </button>
                 </header>
 
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-[#f8fafc]/50">
                     {messages.length > 0 ? (
                         <>
-                            <div className="flex justify-end px-2">
+                            <div className="flex justify-between items-center px-1">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nuevos Mensajes</span>
                                 <button
                                     onClick={markAllAsRead}
-                                    className="text-xs font-black text-primary uppercase tracking-wider hover:opacity-80 transition-opacity"
+                                    className="text-[10px] font-black text-primary uppercase tracking-widest hover:brightness-90 transition-all border-b border-primary/20"
                                 >
-                                    Marcar todo como leído
+                                    Marcar leídos
                                 </button>
                             </div>
                             {messages.map((msg) => (
                                 <div
                                     key={msg.id}
                                     onClick={() => !msg.read_at && markAsRead(msg.id)}
-                                    className={`p-4 rounded-2xl border transition-all cursor-pointer group hover:scale-[1.02] active:scale-[0.98] ${msg.read_at
-                                        ? 'bg-white/5 border-transparent opacity-60'
-                                        : 'bg-primary/5 border-primary/20 shadow-lg shadow-primary/5'
+                                    className={`p-6 rounded-[2rem] border transition-all cursor-pointer group hover:shadow-xl hover:-translate-y-1 relative overflow-hidden ${msg.read_at
+                                        ? 'bg-white border-[#595A5B] opacity-70 shadow-sm'
+                                        : 'bg-white border-primary/10 shadow-lg shadow-primary/5 ring-4 ring-primary/[0.02]'
                                         }`}
                                 >
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className="flex items-center gap-2">
-                                            <div className="size-8 rounded-lg bg-white/10 flex items-center justify-center text-[10px] font-black overflow-hidden border border-white/5">
+                                    {!msg.read_at && <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-12 -mt-12" />}
+
+                                    <div className="flex justify-between items-start mb-4 relative z-10">
+                                        <div className="flex items-center gap-3">
+                                            <div className="size-10 rounded-xl bg-slate-50 flex items-center justify-center text-primary shadow-inner border-2 border-[#595A5B] overflow-hidden">
                                                 {msg.businesses?.logo_url ? (
                                                     <img src={msg.businesses.logo_url} className="w-full h-full object-cover" alt="Logo" />
                                                 ) : (
-                                                    <span className="material-symbols-outlined text-primary text-sm">store</span>
+                                                    <span className="material-symbols-outlined text-lg font-black">storefront</span>
                                                 )}
                                             </div>
-                                            <span className="text-sm font-bold text-slate-300 group-hover:text-white transition-colors">
-                                                {msg.businesses?.name || 'Sistema KPoint'}
+                                            <span className="text-xs font-black text-slate-900 tracking-tight">
+                                                {msg.businesses?.name || 'KPoint System'}
                                             </span>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-xs text-slate-500 font-bold">{formatTime(msg.created_at)}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[9px] text-slate-400 font-bold uppercase">{formatTime(msg.created_at)}</span>
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    if (confirm('¿Estás seguro de que quieres borrar este mensaje?')) {
+                                                    if (confirm('¿Borrar esta notificación?')) {
                                                         deleteMessage(msg.id);
                                                     }
                                                 }}
-                                                className="size-6 flex items-center justify-center rounded-lg hover:bg-red-500/10 text-slate-500 hover:text-red-500 transition-colors"
-                                                title="Borrar mensaje"
+                                                className="size-8 flex items-center justify-center rounded-xl bg-slate-50 hover:bg-red-50 text-slate-300 hover:text-red-500 transition-all border-2 border-[#595A5B]"
                                             >
-                                                <span className="material-symbols-outlined !text-lg">delete</span>
+                                                <span className="material-symbols-outlined !text-base">delete</span>
                                             </button>
                                         </div>
                                     </div>
-                                    <h3 className="text-lg font-bold text-white mb-2">{msg.title}</h3>
-                                    <p className="text-sm text-slate-400 leading-relaxed font-medium">{msg.message}</p>
+
+                                    <h3 className="text-[15px] font-black text-slate-900 mb-2 leading-snug relative z-10">{msg.title}</h3>
+                                    <p className="text-xs text-slate-500 leading-relaxed font-bold relative z-10">{msg.message}</p>
 
                                     {!msg.read_at && (
-                                        <div className="mt-3 flex justify-end">
-                                            <div className="size-2 rounded-full bg-primary shadow-[0_0_10px_rgba(57,224,121,0.5)]"></div>
+                                        <div className="mt-4 flex justify-end">
+                                            <div className="px-3 py-1 rounded-full bg-primary text-white text-[8px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">Nueva</div>
                                         </div>
                                     )}
                                 </div>
                             ))}
                         </>
                     ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-center p-10 space-y-4 opacity-50">
-                            <div className="size-20 rounded-full bg-white/5 flex items-center justify-center">
-                                <span className="material-symbols-outlined text-slate-500 !text-5xl">notifications_off</span>
+                        <div className="h-full flex flex-col items-center justify-center text-center p-10 space-y-6">
+                            <div className="size-24 rounded-[2.5rem] bg-slate-50 flex items-center justify-center text-slate-200 border-2 border-[#595A5B] group shadow-inner">
+                                <span className="material-symbols-outlined !text-5xl group-hover:scale-110 transition-transform">notifications_off</span>
                             </div>
-                            <div className="space-y-1">
-                                <h3 className="text-lg font-bold text-white">Sin mensajes</h3>
-                                <p className="text-xs text-slate-400">Te avisaremos cuando tengas nuevas noticias o premios disponibles.</p>
+                            <div className="space-y-2">
+                                <h3 className="text-lg font-black text-slate-900 tracking-tight">Bandeja Vacía</h3>
+                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest leading-relaxed">No tienes actividad reciente en tu cuenta</p>
                             </div>
                         </div>
                     )}

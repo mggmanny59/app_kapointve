@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AuthLayout from '../components/AuthLayout';
+
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -151,230 +151,260 @@ const Register = () => {
     };
 
     return (
-        <AuthLayout
-            title="¡Únete ahora!"
-            footerText="¿Ya tienes cuenta?"
-            footerLinkText="Inicia sesión"
-            footerLinkHref="/login"
-            showBackButton={true}
-        >
-            {/* Role Tabs */}
-            <div className="flex bg-navy-dark p-1 rounded-card border border-border-subtle mb-4">
-                <button
-                    type="button"
-                    onClick={() => setActiveTab('client')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-bold transition-all ${activeTab === 'client'
-                        ? 'bg-primary text-navy-dark shadow-lg shadow-primary/20'
-                        : 'text-slate-subtitle hover:text-white'
-                        }`}
-                >
-                    <span className="material-symbols-outlined text-lg">person</span>
-                    Soy Cliente
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setActiveTab('admin')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-bold transition-all ${activeTab === 'admin'
-                        ? 'bg-primary text-navy-dark shadow-lg shadow-primary/20'
-                        : 'text-slate-subtitle hover:text-white'
-                        }`}
-                >
-                    <span className="material-symbols-outlined text-lg">storefront</span>
-                    Dueño
-                </button>
+        <div className="h-[100dvh] w-full flex flex-col bg-white text-slate-900 font-display overflow-hidden relative">
+            {/* Fondo con imagen original y degradado ampliado hacia blanco puro */}
+            <div className="absolute inset-0 z-0 overflow-hidden">
+                <img
+                    src="/BannerLogin.png"
+                    alt="Background"
+                    className="w-full h-[65vh] object-cover object-top opacity-90"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent via-[45%] to-white to-[85%]"></div>
             </div>
 
-            <div className="mb-3 text-center">
-                <h3 className="text-xl font-bold text-white">Crear Cuenta</h3>
-                <p className="text-slate-subtitle text-sm mt-0">
-                    {activeTab === 'client'
-                        ? 'Únete para ganar recompensas'
-                        : 'Registra tu negocio en KPoint'}
-                </p>
-            </div>
-
-            <form onSubmit={handleRegister} className="flex flex-col gap-3" autoComplete="off">
-                {/* Nombre Completo */}
-                <label className="flex flex-col w-full">
-                    <span className="text-slate-200 text-xs font-bold pb-1 ml-1">
-                        {activeTab === 'admin' ? 'Nombre del Representante Legal' : 'Nombre Completo'}
-                    </span>
-                    <div className="relative group">
-                        <input
-                            name="name"
-                            autoComplete="off"
-                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all"
-                            placeholder="Ej. Juan Pérez"
-                            type="text"
-                            value={formData.name}
-                            onChange={handleChange}
-                            required
-                        />
-                        <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">person</span>
-                    </div>
-                </label>
-
-                {/* Teléfono */}
-                <label className="flex flex-col w-full">
-                    <span className="text-slate-200 text-xs font-bold pb-1 ml-1">Número de Teléfono</span>
-                    <div className="flex gap-2">
-                        <div className="relative w-1/3">
-                            <select
-                                name="phonePrefix"
-                                value={formData.phonePrefix}
-                                onChange={handleChange}
-                                className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 px-4 py-2 font-medium text-xs transition-all appearance-none cursor-pointer"
-                            >
-                                <option value="0412" className="bg-navy-dark text-white font-medium text-xs">0412</option>
-                                <option value="0416" className="bg-navy-dark text-white font-medium text-xs">0416</option>
-                                <option value="0414" className="bg-navy-dark text-white font-medium text-xs">0414</option>
-                                <option value="0424" className="bg-navy-dark text-white font-medium text-xs">0424</option>
-                                <option value="0426" className="bg-navy-dark text-white font-medium text-xs">0426</option>
-                            </select>
-                            <span className="material-symbols-outlined absolute right-2 top-2.5 text-slate-subtitle pointer-events-none text-xs">expand_more</span>
-                        </div>
-                        <div className="relative flex-1">
-                            <input
-                                name="phoneSuffix"
-                                autoComplete="off"
-                                className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium text-xs transition-all"
-                                placeholder="1234567"
-                                type="tel"
-                                maxLength="7"
-                                value={formData.phoneSuffix}
-                                onChange={(e) => {
-                                    const value = e.target.value.replace(/\D/g, ''); // Only numbers
-                                    if (value.length <= 7) {
-                                        setFormData({ ...formData, phoneSuffix: value });
-                                    }
-                                }}
-                                required
+            <div className="relative z-10 flex flex-col flex-1 px-6 pt-[6vh] pb-6 justify-between overflow-hidden">
+                <div className="flex flex-col flex-1 overflow-hidden">
+                    {/* Logo / Brand Header */}
+                    <div className="flex flex-col items-center mb-4 shrink-0">
+                        <div className="bg-white p-3 rounded-[24px] shadow-xl border border-white/50 flex flex-col items-center gap-1">
+                            <img
+                                src="/Logo KPoint Solo K (sin Fondo).png"
+                                alt="Logo KPoint"
+                                className="w-8 h-8 object-contain"
                             />
-                            <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">phone</span>
+                            <h1 className="text-xl font-black tracking-tighter">
+                                <span className="text-[rgb(0,152,235)]">K</span>
+                                <span className="text-[#ff6a00]">P</span>
+                                <span className="text-black">oint</span>
+                            </h1>
                         </div>
                     </div>
-                </label>
 
-                {/* Email */}
-                <label className="flex flex-col w-full">
-                    <span className="text-slate-200 text-xs font-bold pb-1 ml-1">Correo Electrónico</span>
-                    <div className="relative group">
-                        <input
-                            name="email"
-                            autoComplete="off"
-                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all"
-                            placeholder="correo@ejemplo.com"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
-                        />
-                        <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">mail</span>
-                    </div>
-                </label>
+                    {/* Register Card (Stitch Inspired) */}
+                    <div className="max-w-[440px] w-full mx-auto bg-white/95 backdrop-blur-sm rounded-[32px] shadow-2xl shadow-slate-200/50 p-6 border border-white flex flex-col overflow-hidden">
+                        <div className="text-center mb-4 shrink-0">
+                            <h2 className="text-lg font-bold text-slate-900 leading-tight">¡Únete ahora!</h2>
+                            <p className="text-xs text-slate-500 font-medium">Crea tu cuenta en segundos</p>
+                        </div>
 
-                {/* Fecha de Nacimiento */}
-                <label className="flex flex-col w-full">
-                    <span className="text-slate-200 text-xs font-bold pb-1 ml-1">Fecha de Nacimiento</span>
-                    <div className="relative group">
-                        <input
-                            name="birthDate"
-                            autoComplete="off"
-                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all"
-                            type="date"
-                            value={formData.birthDate}
-                            onChange={handleChange}
-                            required
-                        />
-                        <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">cake</span>
-                    </div>
-                </label>
+                        {/* Role Tabs */}
+                        <div className="flex bg-slate-50 p-1 rounded-2xl border-2 border-[#595A5B] mb-4 text-xs shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('client')}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold transition-all ${activeTab === 'client'
+                                    ? 'bg-[#ff6a00] text-white shadow-lg'
+                                    : 'text-slate-500 hover:text-slate-900'
+                                    }`}
+                            >
+                                <span className="material-symbols-outlined text-base">person</span>
+                                Cliente
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('admin')}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold transition-all ${activeTab === 'admin'
+                                    ? 'bg-[#ff6a00] text-white shadow-lg'
+                                    : 'text-slate-500 hover:text-slate-900'
+                                    }`}
+                            >
+                                <span className="material-symbols-outlined text-base">storefront</span>
+                                Dueño
+                            </button>
+                        </div>
 
-                {/* Password */}
-                <label className="flex flex-col w-full">
-                    <span className="text-slate-200 text-xs font-bold pb-1 ml-1">Contraseña</span>
-                    <div className="relative group">
-                        <input
-                            name="password"
-                            autoComplete="new-password"
-                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all pr-12"
-                            placeholder="••••••••"
-                            type={showPassword ? "text" : "password"}
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-2.5 text-slate-subtitle hover:text-white transition-colors"
-                        >
-                            <span className="material-symbols-outlined">
-                                {showPassword ? 'visibility_off' : 'visibility'}
-                            </span>
-                        </button>
-                    </div>
-                </label>
-
-                {/* Campos Específicos para Dueño */}
-                {activeTab === 'admin' && (
-                    <>
-                        {/* Nombre del Negocio */}
-                        <label className="flex flex-col w-full">
-                            <span className="text-slate-200 text-xs font-bold pb-1 ml-1">Nombre del Negocio</span>
-                            <div className="relative group">
-                                <input
-                                    name="shopCode" // We reuse this state key for business name to minimize refactor
-                                    autoComplete="off"
-                                    className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all"
-                                    placeholder="Ej. Panadería Delicias"
-                                    type="text"
-                                    value={formData.shopCode}
-                                    onChange={handleChange}
-                                    required
-                                />
-                                <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">store</span>
+                        {/* Formulario con scroll si es necesario */}
+                        <form onSubmit={handleRegister} className="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar" autoComplete="off">
+                            {/* Nombre Completo */}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">
+                                    {activeTab === 'admin' ? 'Nombre del Representante' : 'Nombre Completo'}
+                                </label>
+                                <div className="relative group text-sm">
+                                    <input
+                                        name="name"
+                                        className="w-full rounded-2xl border-[#595A5B] bg-slate-50/50 text-slate-900 focus:outline-none focus:border-[#ff6a00] focus:ring-1 focus:ring-[#ff6a00] h-11 px-4 pl-11 transition-all"
+                                        placeholder="Ej. Juan Pérez"
+                                        type="text"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                    <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors text-xl">person</span>
+                                </div>
                             </div>
-                        </label>
 
-                        {/* RIF */}
-                        <label className="flex flex-col w-full">
-                            <span className="text-slate-200 text-xs font-bold pb-1 ml-1">RIF / Identificación Fiscal</span>
-                            <div className="relative group">
-                                <input
-                                    name="rif"
-                                    autoComplete="off"
-                                    className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all"
-                                    placeholder="Ej. J-12345678-9"
-                                    type="text"
-                                    value={formData.rif}
-                                    onChange={(e) => {
-                                        setFormData({ ...formData, rif: e.target.value.toUpperCase() });
-                                    }}
-                                    required
-                                />
-                                <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">badge</span>
+                            {/* Teléfono */}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">Número de Teléfono</label>
+                                <div className="flex gap-2">
+                                    <div className="relative w-1/3 text-sm">
+                                        <select
+                                            name="phonePrefix"
+                                            value={formData.phonePrefix}
+                                            onChange={handleChange}
+                                            className="w-full rounded-2xl border-[#595A5B] bg-slate-50/50 text-slate-900 h-11 px-4 cursor-pointer appearance-none focus:outline-none focus:border-[#ff6a00] transition-all"
+                                        >
+                                            <option value="0412">0412</option>
+                                            <option value="0416">0416</option>
+                                            <option value="0414">0414</option>
+                                            <option value="0424">0424</option>
+                                            <option value="0426">0426</option>
+                                        </select>
+                                        <span className="material-symbols-outlined absolute right-2.5 top-2.5 text-slate-400 pointer-events-none text-xl">expand_more</span>
+                                    </div>
+                                    <div className="relative flex-1 text-sm">
+                                        <input
+                                            name="phoneSuffix"
+                                            className="w-full rounded-2xl border-[#595A5B] bg-slate-50/50 text-slate-900 h-11 px-4 pl-11 focus:outline-none focus:border-[#ff6a00] transition-all"
+                                            placeholder="1234567"
+                                            type="tel"
+                                            maxLength="7"
+                                            value={formData.phoneSuffix}
+                                            onChange={(e) => {
+                                                const value = e.target.value.replace(/\D/g, '');
+                                                if (value.length <= 7) {
+                                                    setFormData({ ...formData, phoneSuffix: value });
+                                                }
+                                            }}
+                                            required
+                                        />
+                                        <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-xl">phone</span>
+                                    </div>
+                                </div>
                             </div>
-                        </label>
-                    </>
-                )}
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3 bg-primary hover:bg-primary/90 text-navy-dark font-black text-lg rounded-full shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-1 disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                    {loading ? (
-                        <span className="animate-spin material-symbols-outlined">refresh</span>
-                    ) : (
-                        <>
-                            <span>Crear mi Cuenta</span>
-                            <span className="material-symbols-outlined text-xl">rocket_launch</span>
-                        </>
-                    )}
-                </button>
-            </form>
-        </AuthLayout>
+                            {/* Email */}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">Correo Electrónico</label>
+                                <div className="relative group text-sm">
+                                    <input
+                                        name="email"
+                                        className="w-full rounded-2xl border-[#595A5B] bg-slate-50/50 text-slate-900 h-11 px-4 pl-11 focus:outline-none focus:border-[#ff6a00] transition-all"
+                                        placeholder="correo@ejemplo.com"
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                    <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-xl">mail</span>
+                                </div>
+                            </div>
+
+                            {/* Fecha de Nacimiento */}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">Fecha de Nacimiento</label>
+                                <div className="relative group text-sm">
+                                    <input
+                                        name="birthDate"
+                                        className="w-full rounded-2xl border-[#595A5B] bg-slate-50/50 text-slate-900 h-11 px-4 pl-11 focus:outline-none focus:border-[#ff6a00] transition-all"
+                                        type="date"
+                                        value={formData.birthDate}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                    <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-xl">cake</span>
+                                </div>
+                            </div>
+
+                            {/* Password */}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">Contraseña</label>
+                                <div className="relative group text-sm">
+                                    <input
+                                        name="password"
+                                        className="w-full rounded-2xl border-[#595A5B] bg-slate-50/50 text-slate-900 h-11 px-4 pl-11 pr-11 focus:outline-none focus:border-[#ff6a00] transition-all"
+                                        placeholder="••••••••"
+                                        type={showPassword ? "text" : "password"}
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                    <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-xl">lock</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3.5 top-2.5 text-slate-300 hover:text-[#ff6a00] transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-xl">
+                                            {showPassword ? 'visibility_off' : 'visibility'}
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Campos Específicos para Dueño */}
+                            {activeTab === 'admin' && (
+                                <>
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">Nombre del Negocio</label>
+                                        <div className="relative group text-sm">
+                                            <input
+                                                name="shopCode"
+                                                className="w-full rounded-2xl border-[#595A5B] bg-slate-50/50 text-slate-900 h-11 px-4 pl-11 focus:outline-none focus:border-[#ff6a00] transition-all"
+                                                placeholder="Ej. Panadería Delicias"
+                                                type="text"
+                                                value={formData.shopCode}
+                                                onChange={handleChange}
+                                                required
+                                            />
+                                            <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-xl">store</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">RIF / Identificación Fiscal</label>
+                                        <div className="relative group text-sm">
+                                            <input
+                                                name="rif"
+                                                className="w-full rounded-2xl border-[#595A5B] bg-slate-50/50 text-slate-900 h-11 px-4 pl-11 focus:outline-none focus:border-[#ff6a00] transition-all"
+                                                placeholder="Ej. J-12345678-9"
+                                                type="text"
+                                                value={formData.rif}
+                                                onChange={(e) => {
+                                                    setFormData({ ...formData, rif: e.target.value.toUpperCase() });
+                                                }}
+                                                required
+                                            />
+                                            <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-xl">badge</span>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-[#ff6a00] hover:bg-[#ff8c3a] text-white font-black h-13 rounded-2xl shadow-xl shadow-[#ff6a00]/20 transition-all flex items-center justify-center gap-3 active:scale-[0.98] mt-4"
+                            >
+                                {loading ? (
+                                    <span className="animate-spin material-symbols-outlined">refresh</span>
+                                ) : (
+                                    <>
+                                        <span className="text-sm">Crear mi Cuenta</span>
+                                        <span className="material-symbols-outlined text-lg">rocket_launch</span>
+                                    </>
+                                )}
+                            </button>
+                        </form>
+
+                        <div className="mt-4 text-center pt-2 border-t border-[#595A5B] shrink-0">
+                            <p className="text-slate-500 text-[11px] font-medium">
+                                ¿Ya tienes cuenta?
+                                <a className="text-[#ff6a00] font-bold hover:underline ml-1" href="/login">Inicia sesión</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer Credits */}
+                <div className="max-w-[440px] w-full mx-auto pb-2 text-center shrink-0">
+                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest opacity-60">
+                        Desarrollado por CloudNets 2026 - Venezuela
+                    </p>
+                </div>
+            </div>
+        </div>
     );
 };
 

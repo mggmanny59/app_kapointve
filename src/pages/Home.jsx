@@ -203,6 +203,8 @@ const Home = () => {
             });
             setWeeklyActivity(dailyTotals);
 
+
+
         } catch (err) {
             console.error('Error fetching dashboard data:', err);
         } finally {
@@ -714,33 +716,33 @@ const Home = () => {
     };
 
     return (
-        <div className="relative flex min-h-screen w-full flex-col pb-24 bg-navy-dark font-display text-white antialiased">
+        <div className="relative flex min-h-screen w-full flex-col pb-24 bg-[#F0F2F5] font-display text-slate-900 antialiased">
             {/* Header */}
-            <header className="pt-8 pb-4 px-6 flex items-center justify-between">
+            <header className="pt-8 pb-4 px-6 flex items-center justify-between sticky top-0 bg-[#F0F2F5]/80 backdrop-blur-md z-40">
                 <div className="flex items-center gap-3">
-                    <div className="bg-white/10 p-2 rounded-xl border border-white/10">
+                    <div className="bg-white p-2 rounded-xl shadow-sm border-2 border-[#595A5B]">
                         <span className="material-symbols-outlined text-primary">storefront</span>
                     </div>
                     <div>
-                        <h1 className="text-lg font-extrabold tracking-tight"><span className="text-accent">K</span>Point</h1>
-                        <p className="text-xs text-slate-400 font-bold leading-tight">Tu monedero digital de recompensas</p>
+                        <h1 className="text-lg font-black tracking-tight"><span className="text-primary">K</span>Point</h1>
+                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Panel de Control</p>
                     </div>
                 </div>
                 <div className="flex gap-2">
                     <button
                         onClick={() => setIsMessageCenterOpen(true)}
-                        className="w-10 h-10 rounded-full bg-navy-card border border-white/10 flex items-center justify-center relative group active:scale-90 transition-all"
+                        className="w-10 h-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center relative group active:scale-90 transition-all shadow-sm"
                     >
-                        <span className="material-symbols-outlined text-slate-300 group-hover:text-white transition-colors">notifications</span>
+                        <span className="material-symbols-outlined text-slate-500 group-hover:text-primary transition-colors">notifications</span>
                         {unreadCount > 0 && (
-                            <span className="absolute -top-1 -right-1 size-5 bg-primary text-navy-dark text-[10px] font-black rounded-full border-2 border-navy-dark flex items-center justify-center shadow-lg">
+                            <span className="absolute -top-1 -right-1 size-5 bg-primary text-white text-[10px] font-black rounded-full border-2 border-white flex items-center justify-center shadow-lg">
                                 {unreadCount}
                             </span>
                         )}
                     </button>
                     <button
                         onClick={signOut}
-                        className="w-10 h-10 rounded-full bg-navy-card border border-white/10 flex items-center justify-center hover:text-red-500 transition-colors"
+                        className="w-10 h-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center hover:text-red-500 transition-colors shadow-sm"
                     >
                         <span className="material-symbols-outlined">logout</span>
                     </button>
@@ -750,26 +752,26 @@ const Home = () => {
             <main className="px-6 space-y-6">
                 {/* Banner de Notificaciones Push */}
                 {showPushBanner && (
-                    <div className="bg-gradient-to-r from-primary/20 to-accent/20 border border-white/10 p-5 rounded-3xl flex flex-col gap-4 animate-in slide-in-from-top-4 duration-500">
+                    <div className="bg-white border-2 border-[#595A5B] rounded-3xl p-6 flex flex-col gap-4 shadow-sm animate-in slide-in-from-top-4 duration-500">
                         <div className="flex items-start gap-4">
-                            <div className="size-12 rounded-2xl bg-white/10 flex items-center justify-center text-primary shrink-0 border border-white/10">
+                            <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 border border-primary/10">
                                 <span className="material-symbols-outlined !text-3xl">notifications_active</span>
                             </div>
                             <div>
-                                <h3 className="text-sm font-black text-white uppercase tracking-wider">¡Activa las Notificaciones!</h3>
-                                <p className="text-xs text-slate-300 mt-1 leading-relaxed">Entérate al instante cuando ganes puntos o canjees premios incluso si la app está cerrada.</p>
+                                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">¡Activa las Notificaciones!</h3>
+                                <p className="text-xs text-slate-600 mt-1 leading-relaxed">Entérate al instante cuando ganes puntos o canjees premios.</p>
                             </div>
                         </div>
                         <div className="flex gap-2">
                             <button
                                 onClick={handleEnablePush}
-                                className="flex-1 bg-white text-navy-dark h-11 rounded-2xl text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg"
+                                className="flex-1 bg-primary text-white h-11 rounded-2xl text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/20"
                             >
                                 Activar ahora
                             </button>
                             <button
                                 onClick={() => setShowPushBanner(false)}
-                                className="px-5 h-11 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:bg-white/5 active:scale-95 transition-all"
+                                className="px-5 h-11 rounded-2xl text-[10px] font-black text-slate-500 uppercase tracking-widest hover:bg-slate-100 active:scale-95 transition-all"
                             >
                                 Después
                             </button>
@@ -790,7 +792,7 @@ const Home = () => {
 
                 {/* Business Info Section */}
                 <div className="flex flex-col">
-                    <h2 className="text-2xl font-black text-white flex items-center gap-2 leading-tight">
+                    <h2 className="text-2xl font-black text-slate-900 flex items-center gap-2 leading-tight">
                         <span className="material-symbols-outlined text-primary !text-3xl">store</span>
                         {business?.name || 'Mi Negocio'}
                     </h2>
@@ -801,7 +803,7 @@ const Home = () => {
                             {profile?.full_name || 'Cargando...'}
                         </p>
                         <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] opacity-80">
-                            Panel de Control
+                            Administrador del Local
                         </p>
                     </div>
                 </div>
@@ -810,86 +812,14 @@ const Home = () => {
                 <div className="flex gap-2">
                     <button
                         onClick={() => setIsBusinessQRModalOpen(true)}
-                        className="flex flex-col items-center justify-center p-4 bg-navy-card border border-white/10 rounded-3xl group active:scale-95 transition-all w-full"
+                        className="flex flex-col items-center justify-center p-4 bg-white border-2 border-[#595A5B] rounded-3xl group active:scale-95 transition-all w-full shadow-sm"
                     >
                         <span className="material-symbols-outlined text-primary !text-2xl group-hover:scale-110 transition-transform">qr_code_2</span>
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Mi QR de Local</span>
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1">Mi QR de Local</span>
                     </button>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gradient-to-br from-navy-card to-navy-dark p-5 rounded-3xl border border-white/5 shadow-xl relative overflow-hidden group">
-                        <div className="absolute -right-2 -top-2 bg-primary/10 size-16 rounded-full blur-2xl group-hover:bg-primary/20 transition-all"></div>
-                        <span className="material-symbols-outlined text-primary mb-2 block">payments</span>
-                        <p className="text-[11px] text-slate-400 font-black uppercase tracking-widest mb-1">Ventas Hoy</p>
-                        <div className="flex items-baseline gap-1">
-                            <p className="text-2xl font-black text-white">${stats.sales}</p>
-                            <p className="text-[10px] text-slate-500 font-bold">{stats.transactions} tx</p>
-                        </div>
-                    </div>
-
-                    <div className="bg-gradient-to-br from-navy-card to-navy-dark p-5 rounded-3xl border border-white/5 shadow-xl relative overflow-hidden group">
-                        <div className="absolute -right-2 -top-2 bg-accent/10 size-16 rounded-full blur-2xl group-hover:bg-accent/20 transition-all"></div>
-                        <span className="material-symbols-outlined text-accent mb-2 block">stars</span>
-                        <p className="text-[11px] text-slate-400 font-black uppercase tracking-widest mb-1">Puntos Dados</p>
-                        <p className="text-2xl font-black text-white">
-                            {stats.points >= 1000 ? (stats.points / 1000).toFixed(1) + 'k' : stats.points}
-                        </p>
-                    </div>
-
-                    <div className="bg-gradient-to-br from-navy-card to-navy-dark p-5 rounded-3xl border border-white/5 shadow-xl relative overflow-hidden group col-span-2">
-                        <div className="absolute -right-4 -top-4 bg-primary/5 size-24 rounded-full blur-3xl group-hover:bg-primary/10 transition-all"></div>
-                        <div className="flex justify-between items-center">
-                            <div>
-                                <span className="material-symbols-outlined text-primary/80 mb-1 block">group</span>
-                                <p className="text-[11px] text-slate-400 font-black uppercase tracking-widest mb-1">Clientes Activos Hoy</p>
-                                <p className="text-2xl font-black text-white">{stats.newClients}</p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-[10px] text-primary font-black bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
-                                    + {stats.newClients} hoy
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Chart Section */}
-                <div className="bg-navy-card p-5 rounded-3xl border border-white/5 shadow-xl">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Actividad de la Semana</h2>
-                        <span className="text-[10px] bg-primary/20 text-primary px-2 py-1 rounded-full font-bold">Ventas ($)</span>
-                    </div>
-                    <div className="relative h-40 w-full flex items-end justify-between px-2">
-                        <div className="absolute inset-0 chart-gradient rounded-xl overflow-hidden opacity-50"></div>
-                        {weeklyActivity.map((value, index) => {
-                            const maxVal = Math.max(...weeklyActivity, 1);
-                            const height = (value / (maxVal * 1.1)) * 100;
-                            const isToday = (new Date().getDay() === (index === 6 ? 0 : index + 1));
-
-                            return (
-                                <div key={index} className="flex flex-col items-center justify-end h-full flex-1 group relative z-10 px-1">
-                                    <div
-                                        className={`w-full max-w-[12px] rounded-t-lg transition-all duration-1000 ease-out ${isToday ? 'bg-accent shadow-[0_0_20px_rgba(255,160,0,0.6)]' : 'bg-primary/40 group-hover:bg-primary/80'}`}
-                                        style={{ height: `${Math.max(height, 5)}%` }}
-                                    ></div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                    <div className="flex justify-between mt-4 text-[10px] font-bold text-slate-500 uppercase px-1">
-                        <span>Lun</span>
-                        <span>Mar</span>
-                        <span>Mié</span>
-                        <span>Jue</span>
-                        <span>Vie</span>
-                        <span>Sáb</span>
-                        <span>Dom</span>
-                    </div>
-                </div>
-
-                {/* Action Buttons */}
+                {/* Action Buttons (Repositioned) */}
                 <div className="grid grid-cols-1 gap-4">
                     {userPermissions?.can_earn && (
                         <button
@@ -900,10 +830,10 @@ const Home = () => {
                                 }
                                 setIsModalOpen(true);
                             }}
-                            className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-full flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(57,224,121,0.2)] active:scale-[0.98] transition-all"
+                            className="w-full bg-primary hover:opacity-90 text-white h-20 rounded-[2.5rem] flex items-center justify-center gap-5 shadow-xl shadow-primary/20 active:scale-[0.98] transition-all"
                         >
-                            <span className="material-symbols-outlined font-black !text-3xl">add_shopping_cart</span>
-                            <span className="text-lg font-extrabold uppercase tracking-tight">Registrar Venta</span>
+                            <span className="material-symbols-outlined font-black !text-4xl">add_shopping_cart</span>
+                            <span className="text-xl font-black uppercase tracking-tight">Registrar Venta</span>
                         </button>
                     )}
 
@@ -916,36 +846,121 @@ const Home = () => {
                                 }
                                 startRedeemScanner();
                             }}
-                            className="w-full bg-accent hover:bg-yellow-500 text-navy-dark h-16 rounded-full flex items-center justify-center gap-3 shadow-[0_8px_30_rgb(255,160,0,0.2)] active:scale-[0.98] transition-all"
+                            className="w-full bg-[#22C55E] hover:opacity-90 text-white h-20 rounded-[2.5rem] flex items-center justify-center gap-5 shadow-xl shadow-[#22C55E]/20 active:scale-[0.98] transition-all"
                         >
-                            <span className="material-symbols-outlined font-black !text-3xl">redeem</span>
-                            <span className="text-lg font-extrabold uppercase tracking-tight">Canjear Premio</span>
+                            <span className="material-symbols-outlined font-black !text-4xl">redeem</span>
+                            <span className="text-xl font-black uppercase tracking-tight">Canjear Premio</span>
                         </button>
                     )}
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-white p-5 rounded-3xl border-2 border-[#595A5B] shadow-sm relative overflow-hidden group">
+                        <div className="absolute -right-2 -top-2 bg-primary/5 size-16 rounded-full blur-2xl group-hover:bg-primary/10 transition-all"></div>
+                        <span className="material-symbols-outlined text-primary mb-2 block">payments</span>
+                        <p className="text-[11px] text-slate-500 font-black uppercase tracking-widest mb-1">Ventas Hoy</p>
+                        <div className="flex items-baseline gap-1">
+                            <p className="text-2xl font-black text-slate-900">${stats.sales}</p>
+                            <p className="text-[10px] text-slate-400 font-bold">{stats.transactions} tx</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-3xl border-2 border-[#595A5B] shadow-sm relative overflow-hidden group">
+                        <div className="absolute -right-2 -top-2 bg-yellow-500/5 size-16 rounded-full blur-2xl group-hover:bg-yellow-500/10 transition-all"></div>
+                        <span className="material-symbols-outlined text-warning mb-2 block">stars</span>
+                        <p className="text-[11px] text-slate-500 font-black uppercase tracking-widest mb-1">Puntos Dados</p>
+                        <p className="text-2xl font-black text-slate-900">
+                            {stats.points >= 1000 ? (stats.points / 1000).toFixed(1) + 'k' : stats.points}
+                        </p>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-3xl border-2 border-[#595A5B] shadow-sm relative overflow-hidden group col-span-2">
+                        <div className="absolute -right-4 -top-4 bg-primary/5 size-24 rounded-full blur-3xl group-hover:bg-primary/10 transition-all"></div>
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <span className="material-symbols-outlined text-primary/80 mb-1 block">group</span>
+                                <p className="text-[11px] text-slate-500 font-black uppercase tracking-widest mb-1">Clientes Activos Hoy</p>
+                                <p className="text-2xl font-black text-slate-900">{stats.newClients}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] text-primary font-black bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                                    + {stats.newClients} hoy
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Chart Section */}
+                <div className="bg-white p-5 rounded-3xl border-2 border-[#595A5B] shadow-sm">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-sm font-bold text-slate-700 uppercase tracking-widest">Actividad de la Semana</h2>
+                        <span className="text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-full font-bold">Ventas ($)</span>
+                    </div>
+                    <div className="relative h-40 w-full flex items-end justify-between px-2">
+                        <div className="absolute inset-0 bg-slate-50/50 rounded-xl overflow-hidden"></div>
+                        {weeklyActivity.map((value, index) => {
+                            const maxVal = Math.max(...weeklyActivity, 1);
+                            const height = (value / (maxVal * 1.1)) * 100;
+                            const isToday = (new Date().getDay() === (index === 6 ? 0 : index + 1));
+
+                            return (
+                                <div key={index} className="flex flex-col items-center justify-end h-full flex-1 group relative z-10 px-1">
+                                    <div
+                                        className={`w-full max-w-[12px] rounded-t-lg transition-all duration-1000 ease-out ${isToday ? 'bg-warning shadow-[0_0_20px_rgba(245,158,11,0.3)]' : 'bg-primary/30 group-hover:bg-primary/60'}`}
+                                        style={{ height: `${Math.max(height, 5)}%` }}
+                                    ></div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div className="flex justify-between mt-4 text-[10px] font-black text-slate-400 uppercase px-1 tracking-widest">
+                        <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+                    </div>
+                </div>
+
+
+                {/* Indicadores de Gestión KPI */}
+                <div className="space-y-4 py-2">
+                    <button
+                        onClick={() => navigate('/kpi')}
+                        className="w-full flex items-center justify-between p-4 bg-white border-2 border-[#595A5B] rounded-[2rem] shadow-sm hover:bg-slate-50 transition-colors active:scale-[0.98]"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="size-10 rounded-full bg-[#1E293B] flex items-center justify-center text-white border border-[#334155] shadow-inner">
+                                <span className="material-symbols-outlined !text-xl">insights</span>
+                            </div>
+                            <span className="font-black text-slate-800 tracking-tight text-lg">Indicadores de Gestión (KPI)</span>
+                        </div>
+                        <span className="material-symbols-outlined text-slate-400">
+                            chevron_right
+                        </span>
+                    </button>
                 </div>
 
                 {/* Activity Section */}
                 <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                        <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Actividad Reciente</h2>
-                        <a className="text-xs font-bold text-accent" href="#">Ver todo</a>
+                        <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest">Actividad Reciente</h2>
+                        <a className="text-xs font-black text-primary" href="#">Ver todo</a>
                     </div>
 
                     <div className="space-y-3">
                         {activities.length > 0 ? activities.map((activity) => (
-                            <div key={activity.id} className="flex items-center justify-between p-4 bg-navy-card rounded-full border border-white/5">
+                            <div key={activity.id} className="flex items-center justify-between p-4 bg-white rounded-3xl border-2 border-[#595A5B] shadow-sm">
                                 <div className="flex items-center gap-4">
-                                    <div className={`w-10 h-10 rounded-full ${activity.type === 'EARN' ? 'bg-primary/10' : 'bg-accent/10'} flex items-center justify-center`}>
-                                        <span className={`material-symbols-outlined ${activity.type === 'EARN' ? 'text-primary' : 'text-accent'} !text-xl`}>
+                                    <div className={`w-10 h-10 rounded-full ${activity.type === 'EARN' ? 'bg-primary/10 text-primary' : 'bg-warning/10 text-warning'} flex items-center justify-center`}>
+                                        <span className={`material-symbols-outlined !text-xl`}>
                                             {activity.type === 'EARN' ? 'add_task' : 'stars'}
                                         </span>
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-sm font-bold truncate">{activity.profiles?.full_name || 'Cliente'}</p>
-                                        <p className="text-[11px] text-slate-400">{formatTime(activity.created_at)}</p>
+                                        <p className="text-sm font-black text-slate-900 truncate">{activity.profiles?.full_name || 'Cliente'}</p>
+                                        <p className="text-[10px] text-slate-500 font-medium">{formatTime(activity.created_at)}</p>
                                     </div>
                                 </div>
-                                <p className={`text-sm font-extrabold ${activity.type === 'EARN' ? 'text-primary' : 'text-accent'}`}>
+                                <p className={`text-sm font-black ${activity.type === 'EARN' ? 'text-primary' : 'text-warning'}`}>
                                     {activity.points_amount > 0 ? '+' : ''}{activity.points_amount} pts
                                 </p>
                             </div>
@@ -967,21 +982,21 @@ const Home = () => {
             {/* REGISTER SALE MODAL */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
-                    <div className="absolute inset-0 bg-navy-dark/95 backdrop-blur-md" onClick={closeModal}></div>
+                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={closeModal}></div>
 
-                    <div className="relative w-full max-w-[340px] bg-navy-card border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+                    <div className="relative w-full max-w-[340px] bg-white border-2 border-[#595A5B] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
                         <div className="p-6">
                             <div className="relative flex items-center gap-4 mb-6 pt-1">
-                                <div className="size-12 rounded-xl bg-primary/20 flex items-center justify-center text-primary border border-primary/30 shadow-[0_0_20px_rgba(57,224,121,0.2)]">
+                                <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-sm">
                                     <span className="material-symbols-outlined !text-2xl font-bold">point_of_sale</span>
                                 </div>
                                 <div className="flex-1">
-                                    <h2 className="text-xl font-black text-white leading-tight tracking-tight">Asignación</h2>
+                                    <h2 className="text-xl font-black text-slate-900 leading-tight tracking-tight">Asignación</h2>
                                     <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mt-0.5">REGISTRAR VENTA</p>
                                 </div>
                                 <button
                                     onClick={closeModal}
-                                    className="absolute -top-2 -right-2 size-10 rounded-full bg-navy-card border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 shadow-2xl transition-all active:scale-95 group"
+                                    className="absolute -top-2 -right-2 size-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-50 shadow-sm transition-all active:scale-95 group"
                                 >
                                     <span className="material-symbols-outlined !text-xl group-hover:rotate-90 transition-transform">close</span>
                                 </button>
@@ -990,14 +1005,14 @@ const Home = () => {
                             {saleStep === 1 ? (
                                 <div className="space-y-6">
                                     <div className="grid grid-cols-1 gap-4">
-                                        <div className="bg-navy-dark/80 border border-white/5 rounded-3xl p-6 shadow-inner space-y-4">
+                                        <div className="bg-slate-50 border-2 border-[#595A5B] rounded-3xl p-6 shadow-inner space-y-4">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400">
+                                                    <div className="size-10 rounded-xl bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-400 shadow-sm">
                                                         <span className="material-symbols-outlined text-xl">currency_exchange</span>
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none">Tasa de Cambio</span>
+                                                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest leading-none">Tasa de Cambio</span>
                                                         <span className={`text-[9px] font-black uppercase tracking-[0.2em] mt-2 flex items-center gap-2 ${isRateSuccessful ? 'text-primary' : 'text-orange-400'}`}>
                                                             <span className={`size-2 rounded-full ${isFetchingRate ? 'bg-orange-500 animate-spin border-t-transparent border-2' : isRateSuccessful ? 'bg-primary animate-pulse' : 'bg-orange-400'}`}></span>
                                                             {isFetchingRate ? 'Buscando...' : isRateSuccessful ? 'Oficial BCV OK' : 'Usando Manual'}
@@ -1019,15 +1034,15 @@ const Home = () => {
                                                             setAmount((parseFloat(amountBs) / numRate).toFixed(2));
                                                         }
                                                     }}
-                                                    className="w-full bg-navy-card border border-primary/30 h-16 rounded-2xl px-4 text-center text-4xl font-black text-primary focus:ring-4 focus:ring-primary/10 focus:border-primary/50 outline-none transition-all group-hover:border-primary shadow-lg"
+                                                    className="w-full bg-white border-2 border-[#595A5B]  -2xl px-4 text-center text-4xl font-black text-slate-900 focus:ring-4 focus:ring-primary/10 focus:border-primary/40 outline-none transition-all shadow-sm"
                                                 />
-                                                <label className="absolute -top-2.5 left-6 bg-navy-dark px-3 text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] border border-white/5 rounded-full shadow-lg">Valor USD en Bolívares</label>
+                                                <label className="absolute -top-2.5 left-6 bg-slate-50 px-3 text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] border-2 border-[#595A5B] rounded-full shadow-sm">Valor USD en Bolívares</label>
                                             </div>
                                         </div>
 
                                         <div className="space-y-4">
                                             <div className="relative group">
-                                                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-lg font-black text-slate-500 group-focus-within:text-white transition-colors">Bs.</span>
+                                                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-lg font-black text-slate-400 group-focus-within:text-primary transition-colors">Bs.</span>
                                                 <input
                                                     type="number"
                                                     value={amountBs}
@@ -1040,7 +1055,7 @@ const Home = () => {
                                                             setAmount('');
                                                         }
                                                     }}
-                                                    className="w-full bg-navy-dark/50 border border-white/10 h-16 rounded-2xl text-2xl font-black text-white pl-14 pr-4 focus:ring-4 focus:ring-primary/10 outline-none transition-all"
+                                                    className="w-full bg-slate-50 border-2 border-[#595A5B]  -2xl text-2xl font-black text-slate-900 pl-14 pr-4 focus:ring-4 focus:ring-primary/10 outline-none transition-all"
                                                     placeholder="Monto Bs."
                                                 />
                                             </div>
@@ -1060,10 +1075,10 @@ const Home = () => {
                                                             setAmountBs('');
                                                         }
                                                     }}
-                                                    className="w-full bg-navy-dark border-2 border-primary/20 h-24 rounded-3xl text-5xl font-black text-white pl-16 pr-6 focus:ring-8 focus:ring-primary/10 focus:border-primary/40 outline-none transition-all shadow-2xl"
+                                                    className="w-full bg-white border-2 border-primary/20 h-24 rounded-3xl text-5xl font-black text-slate-900 pl-16 pr-6 focus:ring-8 focus:ring-primary/10 focus:border-primary/40 outline-none transition-all shadow-2xl"
                                                     placeholder="0.00"
                                                 />
-                                                <label className="absolute -top-3 left-8 bg-navy-card px-3 py-0.5 text-[9px] font-black text-primary uppercase tracking-widest border border-primary/20 rounded-full shadow-lg">Recibir en USD</label>
+                                                <label className="absolute -top-3 left-8 bg-white px-3 py-0.5 text-[9px] font-black text-primary uppercase tracking-widest border border-primary/20 rounded-full shadow-lg">Recibir en USD</label>
                                             </div>
                                         </div>
                                     </div>
@@ -1072,7 +1087,7 @@ const Home = () => {
                                         <button
                                             disabled={!amount || parseFloat(amount) <= 0 || isFetchingRate}
                                             onClick={startScanner}
-                                            className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-2xl font-black text-lg uppercase shadow-[0_10px_25px_rgba(57,224,121,0.2)] flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale transition-all active:scale-95"
+                                            className="w-full bg-primary hover:bg-primary/90 text-white h-16 rounded-2xl font-black text-lg uppercase shadow-[0_10px_25px_rgba(34,197,94,0.2)] flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale transition-all active:scale-95"
                                         >
                                             Escanear QR
                                             <span className="material-symbols-outlined !text-2xl">qr_code_scanner</span>
@@ -1080,7 +1095,7 @@ const Home = () => {
 
                                         <button
                                             onClick={() => setSaleStep(3)}
-                                            className="w-full bg-white/5 hover:bg-white/10 text-white h-14 rounded-full font-bold text-sm uppercase transition-all flex items-center justify-center gap-2 border border-white/10"
+                                            className="w-full bg-slate-50 hover:bg-slate-100 text-slate-500 h-14 rounded-full font-bold text-sm uppercase transition-all flex items-center justify-center gap-2 border-2 border-[#595A5B]"
                                         >
                                             O buscar por correo
                                             <span className="material-symbols-outlined text-base">mail</span>
@@ -1089,7 +1104,7 @@ const Home = () => {
                                 </div>
                             ) : saleStep === 2 ? (
                                 <div className="space-y-6 text-center">
-                                    <div className="bg-navy-dark rounded-3xl overflow-hidden border border-white/10 relative min-h-[300px] flex items-center justify-center">
+                                    <div className="bg-navy-dark rounded-3xl overflow-hidden border-2 border-[#595A5B] relative min-h-[300px] flex items-center justify-center">
                                         {isProcessing ? (
                                             <div className="flex flex-col items-center gap-4">
                                                 <span className="animate-spin material-symbols-outlined text-primary text-5xl">refresh</span>
@@ -1129,7 +1144,7 @@ const Home = () => {
                                                 autoFocus
                                                 value={searchEmail}
                                                 onChange={(e) => setSearchEmail(e.target.value)}
-                                                className="w-full bg-navy-dark border border-white/10 h-14 rounded-full text-white px-4 focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium"
+                                                className="w-full bg-slate-50 border-2 border-[#595A5B]  -full text-slate-900 px-4 focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium"
                                                 placeholder="ejemplo@correo.com"
                                             />
                                         </div>
@@ -1139,7 +1154,7 @@ const Home = () => {
                                         <button
                                             disabled={!searchEmail || isProcessing}
                                             onClick={handleManualSearch}
-                                            className="w-full bg-primary hover:bg-primary/90 text-navy-dark h-16 rounded-full font-black text-lg uppercase shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
+                                            className="w-full bg-primary hover:bg-primary/90 text-white h-16 rounded-full font-black text-lg uppercase shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all font-display"
                                         >
                                             {isProcessing ? 'Validando...' : 'Validar y Registrar'}
                                             <span className="material-symbols-outlined">how_to_reg</span>
@@ -1162,21 +1177,21 @@ const Home = () => {
             {/* REDEEM REWARD MODAL */}
             {isRedeemModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
-                    <div className="absolute inset-0 bg-navy-dark/95 backdrop-blur-md" onClick={closeRedeemModal}></div>
+                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={closeRedeemModal}></div>
 
-                    <div className="relative w-full max-w-md bg-navy-card border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col max-h-[90vh]">
+                    <div className="relative w-full max-w-md bg-white border-2 border-[#595A5B] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col max-h-[90vh]">
                         <div className="p-8 pb-4 shrink-0">
                             <div className="relative flex items-center gap-4 mb-2 pt-2">
-                                <div className="size-12 rounded-full bg-accent/20 flex items-center justify-center text-accent border border-accent/30 shadow-[0_0_20px_rgba(255,160,0,0.2)]">
+                                <div className="size-12 rounded-full bg-warning/10 flex items-center justify-center text-warning border border-warning/20 shadow-sm">
                                     <span className="material-symbols-outlined !text-3xl font-bold">redeem</span>
                                 </div>
                                 <div className="flex-1">
-                                    <h2 className="text-2xl font-black text-white leading-tight tracking-tight">Canje de Premio</h2>
+                                    <h2 className="text-2xl font-black text-slate-900 leading-tight tracking-tight">Canje de Premio</h2>
                                     <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mt-1">RECOMPENSAS DEL CLUB</p>
                                 </div>
                                 <button
                                     onClick={closeRedeemModal}
-                                    className="absolute -top-4 -right-4 size-12 rounded-full bg-navy-card border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 shadow-2xl transition-all active:scale-95 group"
+                                    className="absolute -top-4 -right-4 size-12 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-400 hover:text-slate-900 shadow-xl transition-all active:scale-95 group"
                                 >
                                     <span className="material-symbols-outlined group-hover:rotate-90 transition-transform">close</span>
                                 </button>
@@ -1186,29 +1201,29 @@ const Home = () => {
                         <div className="flex-1 overflow-y-auto custom-scrollbar p-8 pt-0">
                             {redeemStep === 1 ? (
                                 <div className="space-y-6 text-center">
-                                    <div className="bg-navy-dark rounded-3xl overflow-hidden border border-white/10 relative min-h-[300px] flex items-center justify-center">
+                                    <div className="bg-slate-50 rounded-3xl overflow-hidden border-2 border-[#595A5B] relative min-h-[300px] flex items-center justify-center">
                                         {isProcessing ? (
                                             <div className="flex flex-col items-center gap-4">
-                                                <span className="animate-spin material-symbols-outlined text-accent text-5xl">refresh</span>
-                                                <p className="font-bold text-sm text-accent">Buscando cliente...</p>
+                                                <span className="animate-spin material-symbols-outlined text-warning text-5xl">refresh</span>
+                                                <p className="font-bold text-sm text-warning">Buscando cliente...</p>
                                             </div>
                                         ) : (
                                             <div id="redeem-reader" className="w-full"></div>
                                         )}
                                     </div>
-                                    <p className="text-slate-400 text-sm font-medium">Escanea el código QR del cliente para ver sus puntos disponibles.</p>
+                                    <p className="text-slate-500 text-sm font-medium">Escanea el código QR del cliente para ver sus puntos disponibles.</p>
                                 </div>
                             ) : (
                                 <div className="space-y-6">
-                                    <div className="bg-navy-dark/50 border border-white/10 rounded-3xl p-5 flex items-center gap-4 shadow-inner">
+                                    <div className="bg-slate-50 border-2 border-[#595A5B] rounded-3xl p-5 flex items-center gap-4 shadow-inner">
                                         <div className="size-14 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
                                             <span className="material-symbols-outlined text-primary text-2xl">person</span>
                                         </div>
                                         <div>
-                                            <h3 className="text-lg font-black text-white">{redeemClient?.profiles?.full_name}</h3>
+                                            <h3 className="text-lg font-black text-slate-900">{redeemClient?.profiles?.full_name}</h3>
                                             <div className="flex items-center gap-2 mt-1">
-                                                <span className="material-symbols-outlined text-accent text-lg">stars</span>
-                                                <span className="text-xl font-black text-accent">{redeemClient?.current_points?.toLocaleString()} pts</span>
+                                                <span className="material-symbols-outlined text-warning text-lg">stars</span>
+                                                <span className="text-xl font-black text-warning">{redeemClient?.current_points?.toLocaleString()} pts</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1224,21 +1239,21 @@ const Home = () => {
                                                             key={reward.id}
                                                             disabled={!canAfford || isProcessing}
                                                             onClick={() => handleProcessRedeem(reward)}
-                                                            className={`bg-navy-card/40 border ${canAfford ? 'border-white/10 hover:border-accent/40' : 'border-red-500/20 opacity-60'} p-3 rounded-2xl flex items-center gap-4 transition-all group text-left relative overflow-hidden`}
+                                                            className={`bg-white border ${canAfford ? 'border-[#595A5B] hover:border-primary shadow-sm active:scale-95' : 'border-[#595A5B] opacity-50 cursor-not-allowed'} p-3 rounded-2xl flex items-center gap-4 transition-all group text-left relative overflow-hidden`}
                                                         >
-                                                            <div className="size-16 rounded-xl bg-white/5 overflow-hidden flex items-center justify-center border border-white/10">
+                                                            <div className="size-16 rounded-xl bg-slate-50 overflow-hidden flex items-center justify-center border-2 border-[#595A5B]">
                                                                 {reward.image_url ? (
                                                                     <img src={reward.image_url} alt={reward.name} className="w-full h-full object-cover" />
                                                                 ) : (
-                                                                    <span className="material-symbols-outlined text-slate-600 text-2xl">redeem</span>
+                                                                    <span className="material-symbols-outlined text-slate-400">redeem</span>
                                                                 )}
                                                             </div>
                                                             <div className="flex-1 min-w-0">
-                                                                <h5 className="font-bold text-sm text-slate-100 truncate">{reward.name}</h5>
-                                                                <p className="text-[10px] text-accent font-black tracking-widest mt-1">{reward.cost_points} PTS</p>
+                                                                <h5 className="font-bold text-sm text-slate-900 truncate">{reward.name}</h5>
+                                                                <p className="text-[10px] text-warning font-black tracking-widest mt-1">{reward.cost_points} PTS</p>
                                                             </div>
                                                             {canAfford ? (
-                                                                <span className="material-symbols-outlined text-accent opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+                                                                <span className="material-symbols-outlined text-warning opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
                                                             ) : (
                                                                 <span className="text-[9px] font-black text-red-500 uppercase">Faltan puntos</span>
                                                             )}
@@ -1252,7 +1267,7 @@ const Home = () => {
                                     </div>
                                     <button
                                         onClick={() => setRedeemStep(1)}
-                                        className="w-full text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-white py-2 transition-colors"
+                                        className="w-full text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-slate-900 py-2 transition-colors"
                                     >
                                         ← Escanear otro cliente
                                     </button>
@@ -1265,21 +1280,21 @@ const Home = () => {
 
             {/* Business QR Modal (For customer affiliation) */}
             {isBusinessQRModalOpen && (
-                <div className="fixed inset-0 z-[115] flex items-center justify-center p-6 bg-navy-dark/95 backdrop-blur-2xl animate-in fade-in duration-300">
-                    <div className="bg-navy-card w-full max-w-[340px] rounded-[3rem] border border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+                <div className="fixed inset-0 z-[115] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-[340px] rounded-[3rem] border-2 border-[#595A5B] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
                         {/* Header */}
                         <div className="p-8 pb-4 text-center space-y-2">
-                            <div className="size-16 rounded-2xl bg-primary/20 flex items-center justify-center text-primary mx-auto mb-4">
+                            <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4 border border-primary/20">
                                 <span className="material-symbols-outlined !text-4xl">storefront</span>
                             </div>
-                            <h3 className="text-xl font-black text-white leading-tight uppercase tracking-tight">QR de Afiliación</h3>
-                            <p className="text-xs text-slate-400 font-medium">Invita a tus clientes a escanear este código para unirse a tu club de lealtad.</p>
+                            <h3 className="text-xl font-black text-slate-900 leading-tight uppercase tracking-tight">QR de Afiliación</h3>
+                            <p className="text-xs text-slate-500 font-medium px-2">Invita a tus clientes a escanear este código para unirse a tu club.</p>
                         </div>
 
                         {/* QR Area */}
                         <div className="px-8 py-6 flex flex-col items-center">
-                            <div className="bg-white p-6 rounded-[2.5rem] shadow-2xl relative">
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-navy-dark rounded-full border border-white/20 text-[10px] font-black text-primary uppercase tracking-widest">
+                            <div className="bg-white p-6 rounded-[2.5rem] shadow-xl border-2 border-[#595A5B] relative">
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-white rounded-full border-2 border-[#595A5B] text-[10px] font-black text-primary uppercase tracking-widest shadow-sm">
                                     {profile?.business_members?.[0]?.businesses?.business_code || '------'}
                                 </div>
                                 <QRCodeSVG
@@ -1289,7 +1304,7 @@ const Home = () => {
                                     includeMargin={false}
                                 />
                             </div>
-                            <p className="mt-8 text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] text-center px-4">
+                            <p className="mt-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-center px-4">
                                 "Tus clientes se afilian al instante con solo escanear"
                             </p>
                         </div>
@@ -1298,7 +1313,7 @@ const Home = () => {
                         <div className="p-8 pt-2">
                             <button
                                 onClick={() => setIsBusinessQRModalOpen(false)}
-                                className="w-full h-14 bg-primary text-navy-dark rounded-full font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-[0_10px_30px_rgba(57,224,121,0.2)]"
+                                className="w-full h-14 bg-primary text-white rounded-full font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/20"
                             >
                                 LISTO
                             </button>

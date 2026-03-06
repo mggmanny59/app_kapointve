@@ -5,58 +5,63 @@ const Notification = ({ type = 'success', title, message, onClose, duration = 50
 
     // Auto-dismiss disabled per user request to force manual closure
     useEffect(() => {
-        // We keep the useEffect structure if needed for other side effects, 
-        // but the timer logic is removed.
     }, [onClose]);
 
     if (!isVisible) return null;
 
     const styles = {
         success: {
-            border: 'border-primary/20',
-            bg: 'bg-primary/10',
+            border: 'border-green-100',
+            bg: 'bg-green-50',
             icon: 'check_circle',
-            iconColor: 'text-primary',
-            glow: 'shadow-[0_0_30px_-10px_rgba(57,224,121,0.3)]'
+            iconColor: 'text-green-500',
+            button: 'bg-green-500 text-white shadow-green-200'
         },
         error: {
-            border: 'border-red-500/20',
-            bg: 'bg-red-500/10',
-            icon: 'error',
+            border: 'border-red-100',
+            bg: 'bg-red-50',
+            icon: 'report',
             iconColor: 'text-red-500',
-            glow: 'shadow-[0_0_30px_-10px_rgba(239,68,68,0.3)]'
+            button: 'bg-red-500 text-white shadow-red-200'
+        },
+        warning: {
+            border: 'border-amber-100',
+            bg: 'bg-amber-50',
+            icon: 'warning',
+            iconColor: 'text-amber-500',
+            button: 'bg-amber-500 text-white shadow-amber-200'
         }
     };
 
     const currentStyle = styles[type] || styles.success;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 pointer-events-none">
-            <div className={`max-w-sm w-full bg-navy-card border ${currentStyle.border} rounded-3xl p-6 shadow-2xl ${currentStyle.glow} flex flex-col items-center text-center gap-4 pointer-events-auto animate-in zoom-in fade-in duration-300`}>
-                {/* Icon */}
-                <div className={`size-16 rounded-full ${currentStyle.bg} flex items-center justify-center border ${currentStyle.border} mb-2`}>
-                    <span className={`material-symbols-outlined !text-4xl ${currentStyle.iconColor} animate-bounce-short`}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="max-w-[340px] w-full bg-white border border-white rounded-[2.5rem] p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] flex flex-col items-center text-center animate-in zoom-in-95 duration-400">
+                {/* Icon Circle */}
+                <div className={`size-20 rounded-[2rem] ${currentStyle.bg} flex items-center justify-center border-4 border-white shadow-inner mb-6`}>
+                    <span className={`material-symbols-outlined !text-4xl ${currentStyle.iconColor} font-black`}>
                         {currentStyle.icon}
                     </span>
                 </div>
 
                 {/* Content */}
-                <div className="space-y-2">
-                    <h4 className="font-black text-white text-xl uppercase tracking-wider">
+                <div className="space-y-3 mb-8">
+                    <h4 className="font-black text-slate-900 text-2xl tracking-tight leading-tight">
                         {title}
                     </h4>
-                    <p className="text-base text-slate-400 font-medium leading-relaxed whitespace-pre-line">
+                    <p className="text-sm text-slate-400 font-bold leading-relaxed px-2">
                         {message}
                     </p>
                 </div>
 
-                {/* Button for center layout */}
+                {/* Confirm Button */}
                 <button
                     onClick={() => {
                         setIsVisible(false);
                         setTimeout(onClose, 300);
                     }}
-                    className="mt-2 px-8 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-base hover:bg-white/10 transition-colors w-full"
+                    className={`w-full h-14 rounded-2xl ${currentStyle.button || 'bg-slate-900 text-white'} font-black text-xs uppercase tracking-[0.2em] shadow-xl transition-all active:scale-[0.97] hover:brightness-110 pointer-events-auto`}
                 >
                     Entendido
                 </button>

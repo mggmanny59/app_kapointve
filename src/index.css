@@ -2,18 +2,18 @@
 
 :root {
     --font-display: 'Outfit', system-ui, sans-serif;
-    --color-primary: #22c55e;
+    --color-primary: rgb(255, 101, 14);
     --color-accent: #f98418;
-    --color-navy-dark: #0f172a;
-    --color-navy-card: #1e293b;
-    --color-border-subtle: rgba(255, 255, 255, 0.1);
-    --color-slate-subtitle: #94a3b8;
+    --color-navy-dark: rgb(240, 242, 245);
+    --color-navy-card: #FFFFFF;
+    --color-border-subtle: rgba(0, 0, 0, 0.05);
+    --color-slate-subtitle: #64748b;
 }
 
 body {
     font-family: var(--font-display);
     background-color: var(--color-navy-dark);
-    color: white;
+    color: #1e293b;
     margin: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -25,10 +25,12 @@ body {
     white-space: nowrap;
     word-wrap: normal;
     direction: ltr;
+    font-feature-settings: 'liga';
     -webkit-font-feature-settings: 'liga';
     -webkit-font-smoothing: antialiased;
     overflow: hidden;
-    text-indent: -9999px; /* Hide text until font loads */
+    text-indent: -9999px;
+    /* Hide text until font loads */
 }
 
 /* When font is loaded, Google Fonts replaces the class or handles the indent */
@@ -60,14 +62,27 @@ body {
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @keyframes float {
-    0% { transform: translateY(0px) rotate(3deg); }
-    50% { transform: translateY(-15px) rotate(-3deg); }
-    100% { transform: translateY(0px) rotate(3deg); }
+    0% {
+        transform: translateY(0px) rotate(3deg);
+    }
+
+    50% {
+        transform: translateY(-15px) rotate(-3deg);
+    }
+
+    100% {
+        transform: translateY(0px) rotate(3deg);
+    }
 }
 
 .animate-float {
@@ -78,10 +93,10 @@ body {
     --font-display: 'Outfit', system-ui, sans-serif;
     --radius-card: 2rem;
     --radius-btn: 9999px;
-    --color-primary: #22c55e;
+    --color-primary: rgb(255, 101, 14);
     --color-accent: #f98418;
-    --color-navy-dark: #0f172a;
-    --color-navy-card: #1e293b;
-    --color-border-subtle: rgba(255, 255, 255, 0.1);
-    --color-slate-subtitle: #94a3b8;
+    --color-navy-dark: rgb(240, 242, 245);
+    --color-navy-card: #FFFFFF;
+    --color-border-subtle: rgba(0, 0, 0, 0.05);
+    --color-slate-subtitle: #64748b;
 }

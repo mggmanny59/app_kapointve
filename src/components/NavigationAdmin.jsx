@@ -13,25 +13,22 @@ const NavigationAdmin = () => {
     ];
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 h-20 bg-navy-card/95 backdrop-blur-2xl border-t border-white/5 flex items-center justify-around px-4 pb-2 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+        <nav className="fixed bottom-0 left-0 right-0 h-20 bg-white/80 backdrop-blur-xl border-t border-[#595A5B] flex items-center justify-around px-4 pb-2 z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] antialiased">
             {adminNavItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 return (
                     <button
                         key={item.path}
                         onClick={() => navigate(item.path)}
-                        className={`flex flex-col items-center gap-1.5 transition-all duration-300 relative group ${isActive ? 'text-primary' : 'text-slate-500 hover:text-slate-300'
+                        className={`flex flex-col items-center gap-1.5 transition-all duration-300 relative group min-w-[70px] ${isActive ? 'text-primary' : 'text-slate-400 hover:text-slate-600'
                             }`}
                     >
-                        {isActive && (
-                            <div className="absolute -top-10 w-12 h-12 bg-primary/20 blur-2xl rounded-full animate-pulse" />
-                        )}
-                        <div className={`size-10 rounded-2xl flex items-center justify-center transition-all ${isActive ? 'bg-primary/10 border border-primary/20 shadow-[0_0_15px_rgba(57,224,121,0.2)]' : 'bg-transparent'}`}>
-                            <span className={`material-symbols-outlined !text-2xl ${isActive ? 'font-bold scale-110' : 'group-hover:scale-110'} transition-transform`}>
+                        <div className={`size-11 rounded-2xl flex items-center justify-center transition-all ${isActive ? 'bg-primary/10 shadow-lg shadow-primary/10 border border-primary/20' : 'bg-transparent'}`}>
+                            <span className={`material-symbols-outlined !text-2xl ${isActive ? 'font-black scale-105' : 'group-hover:scale-110 font-medium'} transition-transform`}>
                                 {item.icon}
                             </span>
                         </div>
-                        <span className={`text-[9px] font-black uppercase tracking-[0.15em] leading-none ${isActive ? 'opacity-100' : 'opacity-60'}`}>
+                        <span className={`text-[9px] font-black uppercase tracking-[0.15em] leading-none transition-all ${isActive ? 'opacity-100' : 'opacity-60'}`}>
                             {item.label}
                         </span>
                     </button>

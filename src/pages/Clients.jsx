@@ -14,6 +14,7 @@ const Clients = () => {
     const [selectedClient, setSelectedClient] = useState(null);
     const [clientSummary, setClientSummary] = useState(null);
     const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+    const [recentTransactions, setRecentTransactions] = useState([]);
 
     // Notification Modal States
     const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
@@ -26,20 +27,23 @@ const Clients = () => {
         try {
             const { data: transactions, error } = await supabase
                 .from('transactions')
-                .select('type, amount_fiat, points_amount')
+                .select('*, rewards(name)')
                 .eq('profile_id', client.profile_id)
-                .eq('business_id', client.business_id);
+                .eq('business_id', client.business_id)
+                .order('created_at', { ascending: false });
 
             if (error) throw error;
+            setRecentTransactions(transactions || []);
 
             const summary = transactions.reduce((acc, tx) => {
                 if (tx.type === 'EARN') {
                     acc.totalPurchases += 1;
+                    acc.totalPurchasedAmount = (acc.totalPurchasedAmount || 0) + (Number(tx.amount_fiat) || 0);
                 } else if (tx.type === 'REDEEM') {
                     acc.totalRedeemedPoints += Math.abs(tx.points_amount);
                 }
                 return acc;
-            }, { totalPurchases: 0, totalRedeemedPoints: 0 });
+            }, { totalPurchases: 0, totalRedeemedPoints: 0, totalPurchasedAmount: 0 });
 
             setClientSummary({
                 ...summary,
@@ -128,24 +132,32 @@ const Clients = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-navy-dark flex items-center justify-center">
+            <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
                 <span className="animate-spin material-symbols-outlined text-primary text-4xl">refresh</span>
             </div>
         );
     }
 
     return (
-        <div className="relative flex min-h-screen w-full flex-col pb-24 bg-navy-dark font-display text-white antialiased">
-            <header className="pt-8 pb-4 px-6 sticky top-0 bg-navy-dark/80 backdrop-blur-md z-40">
+        <div className="relative flex min-h-screen w-full flex-col pb-24 bg-[#f8fafc] font-display text-slate-900 antialiased">
+            <header className="pt-8 pb-4 px-6 sticky top-0 bg-[#f8fafc]/80 backdrop-blur-md z-40 border-b border-[#595A5B]">
                 <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-2xl font-extrabold tracking-tight">Mis <span className="text-primary">Clientes</span></h1>
+                    <div className="flex items-center gap-3">
+                        <div className="bg-white p-2 shadow-sm border-2 border-[#595A5B]" style={{ borderRadius: '12px' }}>
+                            <span className="material-symbols-outlined text-primary !text-2xl">groups</span>
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-black text-slate-900 leading-tight tracking-tight">Clientes</h2>
+                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mt-0.5">CLIENTES AFILIADOS</p>
+                        </div>
+                    </div>
                     <div className="flex gap-2">
                         <button
                             onClick={() => {
                                 setNotificationTarget(null);
                                 setIsNotificationModalOpen(true);
                             }}
-                            className="w-10 h-10 rounded-full bg-primary/20 border border-primary/20 flex items-center justify-center text-primary hover:bg-primary hover:text-navy-dark transition-all active:scale-90 shadow-lg shadow-primary/10"
+                            className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all active:scale-90 shadow-sm"
                             title="Comunicado Masivo"
                         >
                             <span className="material-symbols-outlined text-xl font-black">campaign</span>
@@ -154,25 +166,25 @@ const Clients = () => {
                 </div>
                 <div className="flex gap-3">
                     <div className="relative flex-1">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 text-xl font-black">search</span>
                         <input
-                            className="w-full bg-navy-card border border-white/10 rounded-xl py-3 pl-11 pr-4 text-sm focus:ring-primary focus:border-primary placeholder:text-slate-500 outline-none"
+                            className="w-full bg-white border-2 border-[#595A5B] rounded-2xl py-3.5 pl-12 pr-4 text-sm font-bold text-slate-900 focus:ring-4 focus:ring-primary/10 focus:border-primary/40 placeholder:text-slate-400 outline-none transition-all shadow-sm"
                             placeholder="Buscar por nombre o celular..."
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <button className="w-12 h-12 rounded-xl bg-navy-card border border-white/10 flex items-center justify-center text-slate-300">
-                        <span className="material-symbols-outlined">tune</span>
+                    <button className="w-12 h-12 rounded-2xl bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-500 shadow-sm active:scale-95 transition-transform">
+                        <span className="material-symbols-outlined font-black">tune</span>
                     </button>
                 </div>
             </header>
 
-            <div className="px-6 mb-4">
+            <div className="px-6 py-4">
                 <div className="flex items-center gap-2">
-                    <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></div>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Clientes: {clients.length}</span>
+                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Panel de Clientes • {clients.length} Registrados</span>
                 </div>
             </div>
 
@@ -183,138 +195,186 @@ const Clients = () => {
                         <div
                             key={client.id}
                             onClick={() => fetchClientSummary(client)}
-                            className="bg-navy-card p-4 rounded-2xl border border-white/5 shadow-lg flex items-center gap-4 active:bg-white/5 transition-colors cursor-pointer group hover:border-primary/30"
+                            className="bg-white p-4 rounded-2xl border-2 border-[#595A5B] shadow-sm flex items-center gap-4 active:scale-[0.98] transition-all cursor-pointer group hover:border-primary/40 hover:shadow-md"
                         >
-                            <div className={`w-12 h-12 rounded-full ${color.bg} flex items-center justify-center border ${color.border} shrink-0`}>
-                                <span className={`${color.text} font-bold text-lg`}>{getInitials(client.profiles?.full_name)}</span>
+                            <div className={`w-14 h-14 rounded-2xl ${color.bg} flex items-center justify-center border ${color.border} shrink-0 shadow-sm transition-transform group-hover:scale-105`}>
+                                <span className={`${color.text} font-black text-xl`}>{getInitials(client.profiles?.full_name)}</span>
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start">
-                                    <h3 className="font-bold text-slate-100 truncate">{client.profiles?.full_name || 'Sin nombre'}</h3>
-                                    <span className="text-[10px] text-slate-500 font-medium uppercase">{getLastSeenText(client.last_activity)}</span>
+                                    <h3 className="font-extrabold text-slate-900 truncate tracking-tight text-base">{client.profiles?.full_name || 'Sin nombre'}</h3>
+                                    <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded-full border-2 border-[#595A5B]">{getLastSeenText(client.last_activity)}</span>
                                 </div>
-                                <p className="text-xs text-slate-400 mb-1">{client.profiles?.phone || 'Sin teléfono'}</p>
+                                <p className="text-[11px] text-slate-500 font-bold tracking-tight mb-1">{client.profiles?.phone || 'Sin teléfono'}</p>
                                 <div className="flex items-center gap-1.5">
-                                    <span className="material-symbols-outlined text-accent text-sm">stars</span>
-                                    <span className="text-sm font-extrabold text-accent">{client.current_points?.toLocaleString() || 0} pts</span>
+                                    <span className="material-symbols-outlined text-warning text-xs font-black">stars</span>
+                                    <span className="text-[13px] font-black text-warning tracking-tight">{client.current_points?.toLocaleString() || 0} PTS</span>
                                 </div>
                             </div>
-                            <span className="material-symbols-outlined text-slate-600">chevron_right</span>
+                            <span className="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">chevron_right</span>
                         </div>
                     );
                 }) : (
-                    <div className="text-center py-10 opacity-50">
-                        <span className="material-symbols-outlined text-4xl mb-2">person_off</span>
-                        <p className="text-sm font-medium">No se encontraron clientes</p>
+                    <div className="text-center py-20 px-10 bg-white rounded-[2rem] border border-dashed border-[#595A5B] shadow-sm">
+                        <span className="material-symbols-outlined text-slate-200 !text-6xl mb-4 font-black">person_off</span>
+                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">No se encontraron clientes</p>
                     </div>
                 )}
             </main>
 
-            {/* Client Summary Modal - Compact Centered Style */}
+            {/* Client Summary Modal */}
             {selectedClient && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy-dark/90 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-navy-card w-full max-w-[340px] rounded-[2.5rem] border border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 duration-300">
-                        {/* Modal Header & Profile */}
-                        <div className="relative p-7 pb-5 bg-gradient-to-b from-white/5 to-transparent border-b border-white/5">
-                            <button
-                                onClick={() => setSelectedClient(null)}
-                                className="absolute top-5 right-5 size-8 rounded-full bg-navy-dark border border-white/10 flex items-center justify-center text-slate-500 hover:text-white transition-all active:scale-90"
-                            >
-                                <span className="material-symbols-outlined !text-lg">close</span>
-                            </button>
+                <div className="fixed inset-0 z-[60] flex flex-col bg-white overflow-y-auto animate-in slide-in-from-right duration-300">
+                    {/* Top Action Bar */}
+                    <div className="sticky top-0 left-0 right-0 p-6 flex justify-between items-center z-50 bg-white/80 backdrop-blur-md border-b border-[#595A5B]">
+                        <button
+                            onClick={() => setSelectedClient(null)}
+                            className="size-11 rounded-full bg-slate-50 border-2 border-[#595A5B] flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all active:scale-90"
+                        >
+                            <span className="material-symbols-outlined !text-xl font-black">arrow_back</span>
+                        </button>
+                        <h1 className="text-lg font-black text-slate-800 tracking-tight">Detalle del Cliente</h1>
+                        <button className="size-11 rounded-full bg-slate-50 border-2 border-[#595A5B] flex items-center justify-center text-primary active:scale-90">
+                            <span className="material-symbols-outlined !text-xl font-black text-[#2563EB]">edit</span>
+                        </button>
+                    </div>
 
-                            <div className="flex flex-col items-center">
-                                <div className={`size-20 rounded-full mb-4 flex items-center justify-center text-2xl font-black border-4 border-navy-dark bg-primary shadow-[0_0_30px_rgba(57,224,121,0.2)] text-navy-dark`}>
-                                    {getInitials(selectedClient.profiles?.full_name)}
-                                </div>
-                                <h2 className="text-xl font-black text-white tracking-tight leading-tight text-center">{selectedClient.profiles?.full_name}</h2>
-                                <div className="flex items-center gap-2 mt-2 px-3 py-1 rounded-full bg-white/5 border border-white/5">
-                                    <span className="material-symbols-outlined !text-[10px] text-slate-500">phone</span>
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{selectedClient.profiles?.phone || 'Sin contacto'}</span>
+                    <div className="p-6 space-y-8 pb-32">
+                        {/* Orange Profile Card */}
+                        <div className="relative overflow-hidden bg-[rgb(255,101,14)] p-8 rounded-[2rem] shadow-xl shadow-orange-500/20 text-white flex flex-col items-center">
+                            <div className="relative z-10 text-center space-y-2">
+                                <h2 className="text-3xl font-black tracking-tight">{selectedClient.profiles?.full_name}</h2>
+                                <p className="text-sm font-bold opacity-80">{selectedClient.profiles?.email || selectedClient.profiles?.phone || 'sin-contacto@email.com'}</p>
+                                <div className="mt-4 inline-flex items-center gap-2 px-6 py-2 bg-white/20 backdrop-blur-md rounded-full border border-white/30">
+                                    <span className="text-[11px] font-black uppercase tracking-widest">Miembro Gold</span>
                                 </div>
                             </div>
+                            <span className="material-symbols-outlined absolute -right-8 -bottom-8 text-white/[0.1] !text-[160px] font-black pointer-events-none rotate-12">
+                                person
+                            </span>
                         </div>
 
-                        {/* Modal Content */}
-                        <div className="p-7 pt-6 space-y-6">
-                            {isLoadingSummary ? (
-                                <div className="py-10 flex flex-col items-center justify-center gap-4">
-                                    <div className="size-10 rounded-full border-4 border-primary/10 border-t-primary animate-spin"></div>
-                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none">Generando informe...</p>
-                                </div>
-                            ) : clientSummary && (
-                                <>
-                                    {/* Main Points Card */}
-                                    <div className="text-center space-y-1">
-                                        <p className="text-[11px] font-black text-primary uppercase tracking-[0.4em]">Balance Actual</p>
-                                        <div className="flex items-center justify-center gap-2">
-                                            <span className="text-4xl font-black text-white">{clientSummary.currentPoints?.toLocaleString()}</span>
-                                            <span className="text-sm font-black text-primary uppercase tracking-widest">pts</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Major Stats Group */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {/* VISITAS CARD */}
-                                        <div className="bg-navy-dark border border-white/5 p-4 rounded-3xl flex flex-col items-center text-center space-y-2">
-                                            <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                                                <span className="material-symbols-outlined !text-xl font-black">shopping_bag</span>
-                                            </div>
-                                            <div>
-                                                <p className="text-xl font-black text-white">{clientSummary.totalPurchases}</p>
-                                                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-0.5">Visitas</p>
-                                            </div>
-                                        </div>
-
-                                        {/* CANJEADOS CARD */}
-                                        <div className="bg-navy-dark border border-white/5 p-4 rounded-3xl flex flex-col items-center text-center space-y-2">
-                                            <div className="size-9 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
-                                                <span className="material-symbols-outlined !text-xl font-black">history</span>
-                                            </div>
-                                            <div>
-                                                <p className="text-xl font-black text-white">{clientSummary.totalRedeemedPoints?.toLocaleString()}</p>
-                                                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-0.5">Canjeados</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* TOTAL HISTORICO */}
-                                    <div className="bg-navy-dark/50 border border-white/5 p-4 rounded-3xl relative overflow-hidden">
-                                        <div className="flex items-center justify-between relative z-10">
-                                            <div className="flex items-center gap-3">
-                                                <div className="size-11 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 shadow-inner">
-                                                    <span className="material-symbols-outlined !text-xl font-black">add_moderator</span>
-                                                </div>
-                                                <div className="space-y-0.5">
-                                                    <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] leading-none">Total Histórico</p>
-                                                    <p className="text-lg font-black text-white">{clientSummary.lifetimePoints?.toLocaleString()} <span className="text-[10px] text-orange-500 ml-1">PTS</span></p>
-                                                </div>
-                                            </div>
-                                            <span className="material-symbols-outlined text-white/[0.03] !text-4xl absolute -right-2 top-1/2 -translate-y-1/2 font-black">trending_up</span>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-
-                            <div className="flex flex-col gap-3">
-                                <button
-                                    onClick={() => {
-                                        setNotificationTarget(selectedClient);
-                                        setIsNotificationModalOpen(true);
-                                    }}
-                                    className="w-full bg-white/5 text-white h-14 rounded-full font-black text-[12px] uppercase tracking-[0.2em] border border-white/10 active:scale-95 hover:bg-white/10 transition-all flex items-center justify-center gap-2"
-                                >
-                                    <span className="material-symbols-outlined text-sm font-black">send</span>
-                                    Enviar Mensaje
-                                </button>
-
-                                <button
-                                    onClick={() => setSelectedClient(null)}
-                                    className="w-full bg-primary text-navy-dark h-14 rounded-full font-black text-[12px] uppercase tracking-[0.2em] shadow-[0_10px_25px_rgba(57,224,121,0.2)] active:scale-95 hover:bg-primary/90 transition-all"
-                                >
-                                    Cerrar Resumen
-                                </button>
+                        {isLoadingSummary ? (
+                            <div className="py-20 flex flex-col items-center justify-center gap-4">
+                                <div className="size-12 rounded-full border-4 border-primary/10 border-t-primary animate-spin"></div>
+                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none">Cargando perfil...</p>
                             </div>
+                        ) : clientSummary && (
+                            <div className="space-y-8">
+                                {/* Key Stats Section */}
+                                <div className="space-y-4">
+                                    <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] px-1">ESTADÍSTICAS CLAVE</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="bg-white border-2 border-[#595A5B] p-6 rounded-[1.5rem] shadow-sm flex flex-col gap-3">
+                                            <div className="flex items-center gap-2 text-primary">
+                                                <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                                    <span className="material-symbols-outlined !text-sm">stars</span>
+                                                </div>
+                                                <span className="text-[10px] font-black uppercase tracking-wider">Puntos Totales</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-2xl font-black text-slate-900">{clientSummary.currentPoints?.toLocaleString()}</p>
+                                                <div className="flex items-center gap-1 text-[#10b981]">
+                                                    <span className="material-symbols-outlined !text-[14px]">trending_up</span>
+                                                    <span className="text-[10px] font-bold">+150 este mes</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white border-2 border-[#595A5B] p-6 rounded-[1.5rem] shadow-sm flex flex-col gap-3">
+                                            <div className="flex items-center gap-2 text-[#2563EB]">
+                                                <div className="size-8 rounded-full bg-blue-50 flex items-center justify-center">
+                                                    <span className="material-symbols-outlined !text-sm">payments</span>
+                                                </div>
+                                                <span className="text-[10px] font-black uppercase tracking-wider">Compras Totales</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-2xl font-black text-slate-900">${clientSummary.totalPurchasedAmount?.toLocaleString() || '0.00'}</p>
+                                                <div className="flex items-center gap-1 text-[#10b981]">
+                                                    <span className="material-symbols-outlined !text-[14px]">trending_up</span>
+                                                    <span className="text-[10px] font-bold">+5% vs avg</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Visits Section */}
+                                <div className="bg-white border-2 border-[#595A5B] p-6 rounded-[1.5rem] shadow-sm space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <div className="size-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#2563EB]">
+                                                <span className="material-symbols-outlined !text-xl">calendar_today</span>
+                                            </div>
+                                            <span className="text-sm font-bold text-slate-700">Visitas Totales</span>
+                                        </div>
+                                        <p className="text-2xl font-black text-slate-900">{clientSummary.totalPurchases}</p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-[#2563EB] rounded-full transition-all duration-1000"
+                                                style={{ width: `${Math.min((clientSummary.totalPurchases / 20) * 100, 100)}%` }}
+                                            ></div>
+                                        </div>
+                                        <p className="text-[10px] font-bold text-slate-500 text-center">Próxima recompensa a las 20 visitas</p>
+                                    </div>
+                                </div>
+
+                                {/* Recent Activity Section */}
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center px-1">
+                                        <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">ACTIVIDAD RECIENTE</h3>
+                                        <button className="text-[11px] font-black text-primary uppercase tracking-wider">Ver todo</button>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {recentTransactions.slice(0, 3).map((tx) => (
+                                            <div key={tx.id} className="bg-white p-4 rounded-[1.25rem] border-2 border-[#595A5B] shadow-sm flex items-center gap-4">
+                                                <div className={`size-12 rounded-[1rem] flex items-center justify-center shrink-0 ${tx.type === 'EARN' ? 'bg-blue-50 text-[#2563EB]' : 'bg-orange-50 text-orange-500'}`}>
+                                                    <span className="material-symbols-outlined">
+                                                        {tx.type === 'EARN' ? 'shopping_bag' : 'redeem'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="font-bold text-slate-900 truncate tracking-tight">
+                                                        {tx.type === 'EARN' ? 'Compra en Tienda' : tx.rewards?.name || 'Recompensa Canjeada'}
+                                                    </h4>
+                                                    <p className="text-[10px] text-slate-500 font-bold uppercase">
+                                                        {new Date(tx.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })} • {new Date(tx.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right shrink-0">
+                                                    <p className="text-sm font-black text-slate-900">
+                                                        {tx.type === 'EARN' ? `$${tx.amount_fiat || '0.00'}` : (tx.rewards?.name || 'Canje')}
+                                                    </p>
+                                                    <p className={`text-[11px] font-black ${tx.type === 'EARN' ? 'text-primary' : 'text-slate-500'}`}>
+                                                        {tx.type === 'EARN' ? '+' : '-'}{Math.abs(tx.points_amount)} pts
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="flex gap-4 pt-4">
+                            <button
+                                onClick={() => {
+                                    setNotificationTarget(selectedClient);
+                                    setIsNotificationModalOpen(true);
+                                }}
+                                className="flex-1 bg-primary text-white h-14 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-orange-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                            >
+                                <span className="material-symbols-outlined !text-lg">send</span>
+                                Mensaje
+                            </button>
+                            <button
+                                onClick={() => setSelectedClient(null)}
+                                className="flex-1 bg-slate-100 text-slate-600 h-14 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] active:scale-95 transition-all"
+                            >
+                                Volver
+                            </button>
                         </div>
                     </div>
                 </div>

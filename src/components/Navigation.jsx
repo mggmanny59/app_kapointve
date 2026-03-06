@@ -24,11 +24,11 @@ const Navigation = () => {
     }, [user]);
 
     const navItems = [
-        { path: '/dashboard', label: 'Panel', icon: 'dashboard' },
-        { path: '/clients', label: 'Clientes', icon: 'group' },
-        { path: '/prizes', label: 'Premios', icon: 'featured_seasonal_and_gifts', adminOnly: true },
+        { path: '/dashboard', label: 'Panel', icon: 'grid_view' },
+        { path: '/clients', label: 'Clientes', icon: 'face' },
+        { path: '/prizes', label: 'Premios', icon: 'cards' },
         { path: '/settings', label: 'Ajustes', icon: 'settings' },
-        { path: '/platform-admin', label: 'Control', icon: 'admin_panel_settings', superAdminOnly: true }
+        { path: '/platform-admin', label: 'Admin', icon: 'admin_panel_settings', superAdminOnly: true }
     ];
 
     // Filter items based on role and super admin status
@@ -39,22 +39,27 @@ const Navigation = () => {
     });
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 h-20 bg-navy-card/90 backdrop-blur-xl border-t border-white/10 flex items-center justify-around px-6 pb-2 z-50">
+        <nav className="fixed bottom-0 left-0 right-0 h-20 bg-white/80 backdrop-blur-2xl border-t border-[#595A5B] flex items-center justify-around px-4 pb-2 z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.03)] antialiased">
             {visibleItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 return (
                     <button
                         key={item.path}
                         onClick={() => navigate(item.path)}
-                        className={`flex flex-col items-center gap-1 transition-all ${isActive ? 'text-primary' : 'text-slate-500 hover:text-primary/70'
+                        className={`flex flex-col items-center gap-1.5 transition-all duration-300 relative group min-w-[64px] ${isActive ? 'text-primary' : 'text-slate-500 hover:text-slate-700'
                             }`}
                     >
-                        <span className={`material-symbols-outlined ${isActive ? 'font-bold' : ''}`}>
-                            {item.icon}
-                        </span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider">
+                        <div className={`size-10 rounded-2xl flex items-center justify-center transition-all ${isActive ? 'bg-primary/10 shadow-lg shadow-primary/5 border border-primary/20' : 'bg-transparent'}`}>
+                            <span className={`material-symbols-outlined !text-[22px] transition-transform ${isActive ? 'font-black scale-110' : 'group-hover:scale-110 font-medium'}`}>
+                                {item.icon}
+                            </span>
+                        </div>
+                        <span className={`text-[9px] font-black uppercase tracking-[0.15em] leading-none transition-all ${isActive ? 'opacity-100' : 'opacity-85'}`}>
                             {item.label}
                         </span>
+                        {isActive && (
+                            <div className="absolute -bottom-1 size-1 bg-primary rounded-full shadow-[0_0_8px_rgba(255,101,14,0.6)]" />
+                        )}
                     </button>
                 );
             })}

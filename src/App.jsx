@@ -8,6 +8,7 @@ import PrizeDesigner from './pages/PrizeDesigner';
 import BusinessSettings from './pages/BusinessSettings';
 import StaffManagement from './pages/StaffManagement';
 import PlatformControl from './pages/PlatformControl';
+import KPIDashboard from './pages/KPIDashboard';
 import { useAuth } from './context/AuthContext';
 import BackNavigationHandler from './components/BackNavigationHandler';
 
@@ -90,6 +91,14 @@ function App() {
           element={
             <AdminRoute>
               <StaffManagement />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/kpi"
+          element={
+            <AdminRoute>
+              <KPIDashboard />
             </AdminRoute>
           }
         />

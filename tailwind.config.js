@@ -8,12 +8,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#22C55E", // Green accent
-        accent: "#F59E0B", // Amber accent
-        "navy-dark": "#0F172A", // Background
-        "navy-card": "#1E293B", // Containers
-        "slate-subtitle": "#94A3B8",
-        border: "#334155"
+        primary: "rgb(255, 101, 14)",
+        success: "#10b981",
+        warning: "#f59e0b",
+        danger: "#ef4444",
+        "bg-light": "rgb(240, 242, 245)",
+        "card-white": "#FFFFFF",
+        "slate-subtitle": "#64748b",
+        border: "#e2e8f0"
       },
       fontFamily: {
         display: ["Inter", "sans-serif"],

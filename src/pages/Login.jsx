@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import AuthLayout from '../components/AuthLayout';
+
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -127,110 +127,145 @@ const Login = () => {
     };
 
     return (
-        <AuthLayout
-            title="Bienvenido a KPoint"
-            footerText="¿Nuevo aquí?"
-            footerLinkText="Regístrate"
-            footerLinkHref="/register"
-        >
-            {/* Role Tabs */}
-            <div className="flex bg-navy-dark p-1 rounded-card border border-border-subtle mb-4">
-                <button
-                    type="button"
-                    onClick={() => setActiveTab('client')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-bold transition-all ${activeTab === 'client'
-                        ? 'bg-primary text-navy-dark shadow-lg shadow-primary/20'
-                        : 'text-slate-subtitle hover:text-white'
-                        }`}
-                >
-                    <span className="material-symbols-outlined text-lg">shopping_bag</span>
-                    Soy Cliente
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setActiveTab('admin')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-bold transition-all ${activeTab === 'admin'
-                        ? 'bg-primary text-navy-dark shadow-lg shadow-primary/20'
-                        : 'text-slate-subtitle hover:text-white'
-                        }`}
-                >
-                    <span className="material-symbols-outlined text-lg">storefront</span>
-                    Dueño
-                </button>
+        <div className="h-[100dvh] w-full flex flex-col bg-white text-slate-900 font-display overflow-hidden relative">
+            {/* Fondo con imagen original y degradado ampliado hacia blanco puro */}
+            <div className="absolute inset-0 z-0 overflow-hidden">
+                <img
+                    src="/BannerLogin.png"
+                    alt="Background"
+                    className="w-full h-[65vh] object-cover object-top opacity-90"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent via-[45%] to-white to-[85%]"></div>
             </div>
 
-            <div className="mb-3 text-center">
-                <h3 className="text-xl font-bold text-white">
-                    {activeTab === 'client' ? 'Acceso Clientes' : 'Acceso Negocio'}
-                </h3>
-                <p className="text-sm text-slate-subtitle mt-0">
-                    {activeTab === 'client'
-                        ? 'Consulta tus puntos y premios'
-                        : 'Gestiona tu inventario y clientes'}
-                </p>
+            <div className="relative z-10 flex flex-col flex-1 px-6 pt-[22vh] pb-8 justify-between">
+                <div>
+                    {/* Logo / Brand Header */}
+                    <div className="flex flex-col items-center mb-6">
+                        <div className="bg-white p-3.5 rounded-[24px] shadow-xl mb-3 border border-white/50 flex flex-col items-center gap-1">
+                            <img
+                                src="/Logo KPoint Solo K (sin Fondo).png"
+                                alt="Logo KPoint"
+                                className="w-8 h-8 object-contain"
+                            />
+                            <h1 className="text-xl font-black tracking-tighter">
+                                <span className="text-[rgb(0,152,235)]">K</span>
+                                <span className="text-[#ff6a00]">P</span>
+                                <span className="text-black">oint</span>
+                            </h1>
+                        </div>
+                    </div>
+
+                    {/* Login Card (Stitch Inspired) */}
+                    <div className="max-w-[440px] w-full mx-auto bg-white/95 backdrop-blur-sm rounded-[32px] shadow-2xl shadow-slate-200/50 p-6 border border-white">
+                        <div className="text-center mb-5">
+                            <h2 className="text-lg font-bold text-slate-900 leading-tight">¡Bienvenido de nuevo!</h2>
+                            <p className="text-xs text-slate-500 font-medium">Ingresa para acceder a tus beneficios</p>
+                        </div>
+
+                        {/* Role Tabs */}
+                        <div className="flex bg-slate-50 p-1 rounded-2xl border-2 border-[#595A5B] mb-5 text-xs">
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('client')}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold transition-all ${activeTab === 'client'
+                                    ? 'bg-[#ff6a00] text-white shadow-lg'
+                                    : 'text-slate-500 hover:text-slate-900'
+                                    }`}
+                            >
+                                <span className="material-symbols-outlined text-base">shopping_bag</span>
+                                Cliente
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('admin')}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold transition-all ${activeTab === 'admin'
+                                    ? 'bg-[#ff6a00] text-white shadow-lg'
+                                    : 'text-slate-500 hover:text-slate-900'
+                                    }`}
+                            >
+                                <span className="material-symbols-outlined text-base">storefront</span>
+                                Dueño
+                            </button>
+                        </div>
+
+                        {/* Formulario */}
+                        <form onSubmit={handleLogin} className="space-y-3.5" autoComplete="off">
+                            <div className="flex flex-col gap-1">
+                                <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">Correo Electrónico</label>
+                                <div className="relative group text-sm">
+                                    <input
+                                        type="email"
+                                        className="w-full rounded-2xl border-[#595A5B] bg-slate-50/50 text-slate-900 focus:outline-none focus:border-[#ff6a00] focus:ring-1 focus:ring-[#ff6a00] h-12 px-4 pl-11 transition-all"
+                                        placeholder="ejemplo@correo.com"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                    />
+                                    <span className="material-symbols-outlined absolute left-3.5 top-3 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors text-xl">mail</span>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <div className="flex justify-between items-center px-1">
+                                    <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest opacity-70">Contraseña</label>
+                                    <a className="text-[#ff6a00] text-[10px] font-black hover:underline" href="#">¿Olvidaste tu clave?</a>
+                                </div>
+                                <div className="relative group text-sm">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        className="w-full rounded-2xl border-[#595A5B] bg-slate-50/50 text-slate-900 focus:outline-none focus:border-[#ff6a00] focus:ring-1 focus:ring-[#ff6a00] h-12 px-4 pl-11 pr-11 transition-all"
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                    />
+                                    <span className="material-symbols-outlined absolute left-3.5 top-3 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors text-xl">lock</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3.5 top-3 text-slate-300 hover:text-[#ff6a00] transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-xl">
+                                            {showPassword ? 'visibility_off' : 'visibility'}
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-[#ff6a00] hover:bg-[#ff8c3a] text-white font-black h-13 rounded-2xl shadow-xl shadow-[#ff6a00]/20 transition-all flex items-center justify-center gap-3 disabled:opacity-70 active:scale-[0.98] mt-3"
+                            >
+                                {loading ? (
+                                    <span className="animate-spin material-symbols-outlined">refresh</span>
+                                ) : (
+                                    <>
+                                        <span className="text-sm">{activeTab === 'client' ? 'Ver mis Puntos' : 'Entrar al Panel'}</span>
+                                        <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                                    </>
+                                )}
+                            </button>
+                        </form>
+
+                        <div className="mt-6 text-center pt-2 border-t border-[#595A5B]">
+                            <p className="text-slate-500 text-[11px] font-medium">
+                                ¿Aún no tienes cuenta?
+                                <a className="text-[#ff6a00] font-bold hover:underline ml-1" href="/register">Regístrate</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer Credits */}
+                <div className="max-w-[440px] w-full mx-auto mt-auto pb-2 text-center">
+                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest opacity-60">
+                        Desarrollado por CloudNets 2026 - Venezuela
+                    </p>
+                </div>
             </div>
-
-            <form onSubmit={handleLogin} className="flex flex-col gap-3" autoComplete="off">
-                <label className="flex flex-col w-full">
-                    <span className="text-slate-200 text-xs font-bold leading-normal pb-1 ml-1">
-                        Correo Electrónico
-                    </span>
-                    <div className="relative group">
-                        <input
-                            type="email"
-                            autoComplete="off"
-                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all"
-                            placeholder="correo@ejemplo.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                        <span className="material-symbols-outlined absolute right-4 top-2.5 text-slate-subtitle">mail</span>
-                    </div>
-                </label>
-
-                <label className="flex flex-col w-full">
-                    <span className="text-slate-200 text-xs font-bold leading-normal pb-1 ml-1">
-                        Contraseña
-                    </span>
-                    <div className="relative group">
-                        <input
-                            type={showPassword ? "text" : "password"}
-                            autoComplete="new-password"
-                            className="form-input flex w-full rounded-xl text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-border-subtle bg-navy-dark h-11 placeholder:text-slate-500 px-4 py-2 font-medium transition-all pr-12"
-                            placeholder="••••••••"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-2.5 text-slate-subtitle hover:text-white transition-colors"
-                        >
-                            <span className="material-symbols-outlined">
-                                {showPassword ? 'visibility_off' : 'visibility'}
-                            </span>
-                        </button>
-                    </div>
-                </label>
-
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3 bg-primary hover:bg-primary/90 text-navy-dark font-black text-lg rounded-full shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-1 disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                    {loading ? (
-                        <span className="animate-spin material-symbols-outlined">refresh</span>
-                    ) : (
-                        <>
-                            <span>{activeTab === 'client' ? 'Ver mis Puntos' : 'Entrar al Panel'}</span>
-                            <span className="material-symbols-outlined text-xl">arrow_forward</span>
-                        </>
-                    )}
-                </button>
-            </form>
-        </AuthLayout>
+        </div>
     );
 };
 
