@@ -8,7 +8,9 @@ import { useNotification } from '../context/NotificationContext';
 import { useMessages } from '../context/MessageContext';
 import Navigation from '../components/Navigation';
 import MessageCenter from '../components/MessageCenter';
+import SendNotificationModal from '../components/SendNotificationModal';
 import { subscribeUserToPush, sendPushToProfile } from '../lib/pushNotifications';
+import { forceAppUpdate } from '../utils/appUpdate';
 
 const Home = () => {
     const { user, signOut } = useAuth();
@@ -46,6 +48,7 @@ const Home = () => {
     const [isBusinessQRModalOpen, setIsBusinessQRModalOpen] = useState(false);
     const [showPushBanner, setShowPushBanner] = useState(false);
     const [isSubscribed, setIsSubscribed] = useState(false);
+    const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
 
     useEffect(() => {
         const checkPushStatus = async () => {
@@ -741,6 +744,17 @@ const Home = () => {
                         )}
                     </button>
                     <button
+                        onClick={() => {
+                            if (confirm('Se reiniciará la aplicación para buscar actualizaciones. ¿Continuar?')) {
+                                forceAppUpdate();
+                            }
+                        }}
+                        className="w-10 h-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center hover:text-primary transition-colors shadow-sm"
+                        title="Forzar actualización"
+                    >
+                        <span className="material-symbols-outlined !text-[20px]">sync</span>
+                    </button>
+                    <button
                         onClick={signOut}
                         className="w-10 h-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center hover:text-red-500 transition-colors shadow-sm"
                     >
@@ -852,6 +866,14 @@ const Home = () => {
                             <span className="text-xl font-black uppercase tracking-tight">Canjear Premio</span>
                         </button>
                     )}
+
+                    <button
+                        onClick={() => setIsNotificationModalOpen(true)}
+                        className="w-full bg-slate-900 border-2 border-[#595A5B] text-white h-20 rounded-[2.5rem] flex items-center justify-center gap-5 shadow-xl active:scale-[0.98] transition-all"
+                    >
+                        <span className="material-symbols-outlined font-black !text-4xl">campaign</span>
+                        <span className="text-xl font-black uppercase tracking-tight">Enviar Comunicado</span>
+                    </button>
                 </div>
 
                 {/* Stats Grid */}
@@ -977,6 +999,13 @@ const Home = () => {
             <MessageCenter
                 isOpen={isMessageCenterOpen}
                 onClose={() => setIsMessageCenterOpen(false)}
+            />
+
+            {/* MASS NOTIFICATION MODAL */}
+            <SendNotificationModal
+                isOpen={isNotificationModalOpen}
+                onClose={() => setIsNotificationModalOpen(false)}
+                businessId={profile?.business_members?.[0]?.business_id}
             />
 
             {/* REGISTER SALE MODAL */}

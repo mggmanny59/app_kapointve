@@ -9,6 +9,8 @@ import BusinessSettings from './pages/BusinessSettings';
 import StaffManagement from './pages/StaffManagement';
 import PlatformControl from './pages/PlatformControl';
 import KPIDashboard from './pages/KPIDashboard';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import { useAuth } from './context/AuthContext';
 import BackNavigationHandler from './components/BackNavigationHandler';
 
@@ -46,6 +48,8 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route
           path="/dashboard"
           element={

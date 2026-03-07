@@ -209,7 +209,7 @@ const Login = () => {
                             <div className="flex flex-col gap-1">
                                 <div className="flex justify-between items-center px-1">
                                     <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest opacity-70">Contraseña</label>
-                                    <a className="text-[#ff6a00] text-[10px] font-black hover:underline" href="#">¿Olvidaste tu clave?</a>
+                                    <Link className="text-[#ff6a00] text-[10px] font-black hover:underline" to="/forgot-password">¿Olvidaste tu clave?</Link>
                                 </div>
                                 <div className="relative group text-sm">
                                     <input

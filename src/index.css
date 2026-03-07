@@ -40,6 +40,15 @@ body {
     width: auto;
 }
 
+.custom-scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.custom-scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
 }

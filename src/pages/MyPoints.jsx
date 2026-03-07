@@ -7,6 +7,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { useNotification } from '../context/NotificationContext';
 import { useMessages } from '../context/MessageContext';
 import MessageCenter from '../components/MessageCenter';
+import { forceAppUpdate } from '../utils/appUpdate';
 
 const MyPoints = () => {
     const { user, signOut } = useAuth();
@@ -97,48 +98,44 @@ const MyPoints = () => {
     useEffect(() => {
         if (!user) return;
 
-        console.log('Configurando escucha Realtime para el usuario:', user.id);
+        console.log('🔄 Iniciando canal Realtime para usuario:', user.id);
 
         const channel = supabase
             .channel(`client-updates-${user.id}`)
-            // 1. Listen for new REDEEM transactions
             .on('postgres_changes', {
                 event: 'INSERT',
                 schema: 'public',
                 table: 'transactions',
                 filter: `profile_id=eq.${user.id}`
             }, (payload) => {
-                console.log('Nueva transacción detectada:', payload.new.type);
+                console.log('💳 Nueva transacción detectada:', payload.new.type);
+                fetchUserData();
+
                 if (payload.new.type === 'REDEEM') {
-                    showNotification('success', '¡Canje Confirmado!', 'Tu premio ha sido procesado con éxito.');
+                    showNotification('success', '¡Canje Realizado!', 'Tu premio ha sido procesado con éxito.');
                     setShowRedemptionQR(null);
-                    fetchUserData();
+                } else if (payload.new.type === 'EARN') {
+                    showNotification('success', '¡Puntos Acumulados!', 'Has ganado nuevos puntos.');
                 }
             })
-            // 2. Listen for point updates in loyalty cards (Fallback/Double Check)
             .on('postgres_changes', {
                 event: 'UPDATE',
                 schema: 'public',
                 table: 'loyalty_cards',
                 filter: `profile_id=eq.${user.id}`
             }, (payload) => {
-                console.log('Actualización de puntos detectada en tarjeta.');
+                console.log('✨ Actualización de puntos detectada.');
                 fetchUserData();
-                // If the QR is open, close it because points changed (likely due to a scan)
-                if (showRedemptionQR) {
-                    setShowRedemptionQR(null);
-                    showNotification('info', 'Puntos Actualizados', 'Tu saldo se ha actualizado correctamente.');
-                }
             })
             .subscribe((status) => {
-                console.log('Estado de suscripción Realtime:', status);
+                console.log('📡 Estado Realtime:', status);
             });
 
         return () => {
-            console.log('Limpiando canal Realtime');
+            console.log('🚫 Cerrando canal Realtime');
             supabase.removeChannel(channel);
         };
-    }, [user, showRedemptionQR]); // Added showRedemptionQR to check its state inside the update listener
+    }, [user]);
 
     const startScanner = () => {
         setIsScannerOpen(true);
@@ -265,6 +262,17 @@ const MyPoints = () => {
                         )}
                     </button>
                     <button
+                        onClick={() => {
+                            if (confirm('Se actualizará la aplicación para buscar nuevas mejoras. ¿Continuar?')) {
+                                forceAppUpdate();
+                            }
+                        }}
+                        className="w-10 h-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center hover:text-primary transition-colors shadow-sm"
+                        title="Actualizar"
+                    >
+                        <span className="material-symbols-outlined !text-[20px]">sync</span>
+                    </button>
+                    <button
                         onClick={signOut}
                         className="w-10 h-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-300 hover:text-red-500 transition-colors shadow-sm"
                     >
@@ -363,28 +371,40 @@ const MyPoints = () => {
                     </div>
 
                     {loyaltyCards.length > 0 ? (
-                        <div className="space-y-3">
+                        <div className="flex gap-4 overflow-x-auto pb-4 px-1 snap-x snap-mandatory custom-scrollbar-hide">
                             {loyaltyCards.map((card) => (
                                 <div
                                     key={card.id}
                                     onClick={() => card.businesses && fetchBusinessPrizes(card.businesses)}
-                                    className="bg-white p-4 rounded-[1.5rem] border-2 border-[#595A5B] shadow-sm flex items-center gap-4 active:scale-[0.98] transition-all cursor-pointer group hover:border-primary/40 hover:shadow-md"
+                                    className="min-w-[280px] bg-[rgb(202,250,137)] p-5 rounded-[2.5rem] border-2 border-[#595A5B] shadow-sm flex flex-col gap-4 active:scale-[0.98] transition-all cursor-pointer group hover:border-primary/40 hover:shadow-md snap-center"
                                 >
-                                    <div className="size-12 rounded-xl bg-slate-50 border-2 border-[#595A5B] p-2 flex items-center justify-center overflow-hidden shrink-0">
-                                        {card.businesses?.logo_url ? (
-                                            <img src={card.businesses.logo_url} alt={card.businesses.name} className="w-full h-full object-contain" />
-                                        ) : (
-                                            <span className="material-symbols-outlined text-primary">storefront</span>
-                                        )}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="font-bold text-slate-900 truncate tracking-tight">{card.businesses?.name}</h3>
-                                        <div className="flex items-center gap-1 mt-0.5">
-                                            <span className="material-symbols-outlined text-warning text-sm">stars</span>
-                                            <span className="text-sm font-black text-warning tracking-tight">{card.current_points?.toLocaleString()} pts</span>
+                                    <div className="flex items-center gap-4">
+                                        <div className="size-14 rounded-2xl bg-slate-50 border-2 border-[#595A5B] p-2 flex items-center justify-center overflow-hidden shrink-0">
+                                            {card.businesses?.logo_url ? (
+                                                <img src={card.businesses.logo_url} alt={card.businesses.name} className="w-full h-full object-contain" />
+                                            ) : (
+                                                <span className="material-symbols-outlined text-primary text-2xl">storefront</span>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-black text-slate-900 truncate tracking-tight text-lg">{card.businesses?.name}</h3>
+                                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest leading-none mt-1">Socio Activo</p>
                                         </div>
                                     </div>
-                                    <span className="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
+
+                                    <div className="flex items-center justify-between bg-slate-50 border-2 border-[#595A5B] rounded-2xl p-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Saldo Actual</span>
+                                            <div className="flex items-center gap-1.5 mt-1">
+                                                <span className="material-symbols-outlined text-warning text-xl font-black">stars</span>
+                                                <span className="text-2xl font-black text-warning tracking-tighter leading-none">{card.current_points?.toLocaleString()}</span>
+                                                <span className="text-[10px] font-black text-warning uppercase ml-1">pts</span>
+                                            </div>
+                                        </div>
+                                        <div className="size-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-300 group-hover:text-primary group-hover:border-primary transition-all">
+                                            <span className="material-symbols-outlined font-black">chevron_right</span>
+                                        </div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
