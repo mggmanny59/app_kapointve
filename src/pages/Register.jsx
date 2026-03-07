@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useNotification } from '../context/NotificationContext';
 
@@ -391,7 +391,7 @@ const Register = () => {
                         <div className="mt-4 text-center pt-2 border-t border-[#595A5B] shrink-0">
                             <p className="text-slate-500 text-[11px] font-medium">
                                 ¿Ya tienes cuenta?
-                                <a className="text-[#ff6a00] font-bold hover:underline ml-1" href="/login">Inicia sesión</a>
+                                <Link className="text-[#ff6a00] font-bold hover:underline ml-1" to="/login">Inicia sesión</Link>
                             </p>
                         </div>
                     </div>

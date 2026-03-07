@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useNotification } from '../context/NotificationContext';
 
@@ -252,7 +252,7 @@ const Login = () => {
                         <div className="mt-6 text-center pt-2 border-t border-[#595A5B]">
                             <p className="text-slate-500 text-[11px] font-medium">
                                 ¿Aún no tienes cuenta?
-                                <a className="text-[#ff6a00] font-bold hover:underline ml-1" href="/register">Regístrate</a>
+                                <Link className="text-[#ff6a00] font-bold hover:underline ml-1" to="/register">Regístrate</Link>
                             </p>
                         </div>
                     </div>
