@@ -21,7 +21,7 @@ export default defineConfig({
         description: 'Tu monedero digital de fidelización',
         theme_color: '#0f172a',
         background_color: '#ffffff',
-        display: 'standalone',
+        display: 'fullscreen',
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
