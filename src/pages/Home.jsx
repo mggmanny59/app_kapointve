@@ -259,48 +259,43 @@ const Home = () => {
         }
     }, [isModalOpen, saleStep]);
 
-    // Real-time listener for points/transactions
+    // Real-time listener for business activity
     useEffect(() => {
-        if (!user) return;
+        if (!user || !profile?.business_members?.[0]?.business_id) return;
 
-        // Subscribe to transactions for the current user
+        const currentBizId = profile.business_members[0].business_id;
+        console.log(`Configurando Realtime para negocio: ${currentBizId}`);
+
         const channel = supabase
-            .channel(`user_transactions_${user.id}`)
+            .channel(`business-activity-${currentBizId}`)
             .on(
                 'postgres_changes',
                 {
                     event: 'INSERT',
                     schema: 'public',
                     table: 'transactions',
-                    filter: `profile_id=eq.${user.id}`
+                    filter: `business_id=eq.${currentBizId}`
                 },
                 (payload) => {
-                    console.log('Real-time transaction detected:', payload);
-                    fetchDashboardData();
-                    // Optional: Show a local notification for the client
-                    if (userRole === 'client') {
-                        showNotification('success', '¡Puntos!', 'Has recibido una nueva actualización de puntos.');
+                    console.log('Operación de negocio detectada:', payload.new);
 
-                        // If browser supports web notifications and permission is granted, show a local one too
-                        if ('Notification' in window && Notification.permission === 'granted') {
-                            new Notification('KPoint Update', {
-                                body: payload.new.type === 'EARN'
-                                    ? `¡Has ganado puntos en ${business?.name || 'un comercio'}!`
-                                    : 'Se ha procesado un canje de puntos.',
-                                icon: '/favicon.ico'
-                            });
-                        }
+                    // Notificar visualmente en el dashboard
+                    if (payload.new.type === 'EARN') {
+                        showNotification('success', '¡Nueva Venta!', `Se han asignado ${payload.new.points_amount} puntos.`);
+                    } else if (payload.new.type === 'REDEEM') {
+                        showNotification('success', '¡Canje Realizado!', 'Un cliente ha canjeado sus puntos.');
                     }
+
+                    // Actualizar estadísticas del dashboard
+                    fetchDashboardData();
                 }
             )
-            .subscribe((status) => {
-                console.log('Supabase Realtime Status:', status);
-            });
+            .subscribe();
 
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [user, userRole, business]);
+    }, [user, profile]);
 
     const startScanner = () => {
         setSaleStep(2);
@@ -834,7 +829,7 @@ const Home = () => {
                 </div>
 
                 {/* Action Buttons (Repositioned) */}
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                     {userPermissions?.can_earn && (
                         <button
                             onClick={() => {
@@ -844,10 +839,10 @@ const Home = () => {
                                 }
                                 setIsModalOpen(true);
                             }}
-                            className="w-full bg-primary hover:opacity-90 text-white h-20 rounded-[2.5rem] flex items-center justify-center gap-5 shadow-xl shadow-primary/20 active:scale-[0.98] transition-all"
+                            className="w-full bg-primary hover:opacity-95 hover:scale-[1.02] text-white h-14 rounded-2xl flex items-center justify-center gap-2 border-2 border-[#1E293B] shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
                         >
-                            <span className="material-symbols-outlined font-black !text-4xl">add_shopping_cart</span>
-                            <span className="text-xl font-black uppercase tracking-tight">Registrar Venta</span>
+                            <span className="material-symbols-outlined font-black !text-2xl">add_shopping_cart</span>
+                            <span className="text-sm font-black uppercase tracking-tight">Registrar Venta</span>
                         </button>
                     )}
 
@@ -860,20 +855,12 @@ const Home = () => {
                                 }
                                 startRedeemScanner();
                             }}
-                            className="w-full bg-[#22C55E] hover:opacity-90 text-white h-20 rounded-[2.5rem] flex items-center justify-center gap-5 shadow-xl shadow-[#22C55E]/20 active:scale-[0.98] transition-all"
+                            className="w-full bg-[#22C55E] hover:opacity-95 hover:scale-[1.02] text-white h-14 rounded-2xl flex items-center justify-center gap-2 border-2 border-[#1E293B] shadow-lg shadow-[#22C55E]/20 active:scale-[0.98] transition-all"
                         >
-                            <span className="material-symbols-outlined font-black !text-4xl">redeem</span>
-                            <span className="text-xl font-black uppercase tracking-tight">Canjear Premio</span>
+                            <span className="material-symbols-outlined font-black !text-2xl">redeem</span>
+                            <span className="text-sm font-black uppercase tracking-tight">Canjear Premio</span>
                         </button>
                     )}
-
-                    <button
-                        onClick={() => setIsNotificationModalOpen(true)}
-                        className="w-full bg-slate-900 border-2 border-[#595A5B] text-white h-20 rounded-[2.5rem] flex items-center justify-center gap-5 shadow-xl active:scale-[0.98] transition-all"
-                    >
-                        <span className="material-symbols-outlined font-black !text-4xl">campaign</span>
-                        <span className="text-xl font-black uppercase tracking-tight">Enviar Comunicado</span>
-                    </button>
                 </div>
 
                 {/* Stats Grid */}
@@ -990,6 +977,17 @@ const Home = () => {
                             <p className="text-center text-slate-500 py-4 text-sm font-medium italic">Sin actividad reciente</p>
                         )}
                     </div>
+                </div>
+
+                {/* Secondary Action - Moved to end */}
+                <div className="pt-2">
+                    <button
+                        onClick={() => setIsNotificationModalOpen(true)}
+                        className="w-full bg-[#1E293B] hover:bg-slate-800 hover:scale-[1.01] border-2 border-[#334155] text-white h-14 rounded-2xl flex items-center justify-center gap-3 shadow-lg active:scale-[0.98] transition-all"
+                    >
+                        <span className="material-symbols-outlined font-black !text-2xl">notifications_active</span>
+                        <span className="text-base font-black uppercase tracking-tight">Enviar Comunicado</span>
+                    </button>
                 </div>
             </main>
 

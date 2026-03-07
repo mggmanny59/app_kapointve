@@ -11,6 +11,7 @@ import PlatformControl from './pages/PlatformControl';
 import KPIDashboard from './pages/KPIDashboard';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import ActivityHistory from './pages/ActivityHistory';
 import { useAuth } from './context/AuthContext';
 import BackNavigationHandler from './components/BackNavigationHandler';
 
@@ -71,6 +72,14 @@ function App() {
           element={
             <ProtectedRoute>
               <MyPoints />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/activity-history"
+          element={
+            <ProtectedRoute>
+              <ActivityHistory />
             </ProtectedRoute>
           }
         />
