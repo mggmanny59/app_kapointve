@@ -70,6 +70,8 @@ const Home = () => {
                                 user_agent: navigator.userAgent
                             }, { onConflict: 'profile_id,subscription' });
                             console.log('Push subscription synced on load');
+                            // Diagnóstico silencioso para asegurar registro
+                            sessionStorage.setItem('push_synced', 'true');
                         }
                     }
                 }
@@ -83,7 +85,7 @@ const Home = () => {
         if (sub) {
             setShowPushBanner(false);
             setIsSubscribed(true);
-            showNotification('success', '¡Excelente!', 'Has activado las notificaciones push correctamente.');
+            showNotification('success', '¡Excelente!', '¡Buzón digital registrado con éxito! Tu dispositivo ya puede recibir avisos de KPoint.');
 
             // Register subscription in Supabase (logic is inside subscribeUserToPush, 
             // but we can ensure it here if needed)
