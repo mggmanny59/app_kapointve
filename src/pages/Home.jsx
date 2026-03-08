@@ -56,24 +56,35 @@ const Home = () => {
                 if (Notification.permission === 'default') {
                     setShowPushBanner(true);
                 } else if (Notification.permission === 'granted') {
-                    setIsSubscribed(true);
-                    // Proactivamente asegurar que la suscripción esté en la DB
+                    // Solo marcar como suscrito si realmente existe una suscripción activa
                     const registration = await navigator.serviceWorker.ready;
                     const sub = await registration.pushManager.getSubscription();
                     if (sub) {
-                        // Sincronizar con Supabase
-                        const { data: { user } } = await supabase.auth.getUser();
-                        if (user) {
-                            // La función subscribeUserToPush manejará la inserción de manera segura sin UPSERTs de JSONB
+                        setIsSubscribed(true);
+                        // Proactivamente asegurar que la suscripción esté en la DB
+                        const { data: { user: currentUser } } = await supabase.auth.getUser();
+                        if (currentUser) {
                             await subscribeUserToPush();
-                            console.log('Push subscription checked on load');
-                            sessionStorage.setItem('push_synced', 'true');
+                            console.log('Push subscription synced on load (Client)');
                         }
+                    } else {
+                        // Tenemos permiso pero NO hay suscripción activa
+                        setIsSubscribed(false);
+                        setShowPushBanner(true);
                     }
+                } else if (Notification.permission === 'denied') {
+                    // Si está denegado, no mostramos banner (política de navegador)
+                    setIsSubscribed(false);
                 }
+            } else {
+                console.log('Notificaciones no soportadas en este navegador/dispositivo.');
             }
         };
+        // Ejecutar inmediatamente
         checkPushStatus();
+
+        // Ejecutar cuando el usuario esté listo
+        if (user) checkPushStatus();
     }, [user]);
 
     const handleEnablePush = async () => {
@@ -815,13 +826,32 @@ const Home = () => {
                     </h2>
 
                     <div className="mt-4 space-y-1 ml-1">
-                        <p className="text-lg font-black text-primary uppercase tracking-wider flex items-center gap-2">
-                            <span className="material-symbols-outlined !text-[20px]">person</span>
-                            {profile?.full_name || 'Cargando...'}
-                        </p>
-                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] opacity-80">
-                            Administrador del Local
-                        </p>
+                        <div className="flex items-center gap-2">
+                            <p className="text-lg font-black text-primary uppercase tracking-wider">
+                                {profile?.full_name || 'Cargando...'}
+                            </p>
+                            <div className={`size-3 rounded-full border-2 border-white shadow-sm ${isSubscribed ? 'bg-green-500' : 'bg-red-400'}`}
+                                title={isSubscribed ? 'Suscrito a notificaciones' : 'Sin suscripción activa'}></div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-widest opacity-80">
+                                {isSubscribed ? 'Alertas: Activas' : 'Alertas: Desconectadas'}
+                            </p>
+                            {!isSubscribed && (
+                                <button
+                                    onClick={handleEnablePush}
+                                    className="text-[10px] font-black text-primary underline underline-offset-4 decoration-2 decoration-primary/30 hover:decoration-primary transition-all uppercase tracking-widest"
+                                >
+                                    ¡ACTIVAR AHORA!
+                                </button>
+                            )}
+                            {(!('Notification' in window)) && (
+                                <span className="text-[8px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 uppercase">
+                                    Navegador no soporta Push
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
 
