@@ -282,22 +282,24 @@ const MyPoints = () => {
                     </div>
                     <div className="flex gap-4 overflow-x-auto pb-4 snap-x">
                         {loyaltyCards.map((card) => (
-                            <div key={card.id} onClick={() => fetchBusinessPrizes(card.businesses)} className="min-w-[280px] bg-[rgb(202,250,137)] p-5 rounded-[2.5rem] border-2 border-[#595A5B] snap-center cursor-pointer">
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="size-14 rounded-2xl bg-white border-2 border-[#595A5B] p-2 flex items-center justify-center overflow-hidden">
-                                        {card.businesses?.logo_url ? <img src={card.businesses.logo_url} className="w-full h-full object-contain" /> : <span className="material-symbols-outlined text-primary text-2xl">store</span>}
+                            <div key={card.id} onClick={() => fetchBusinessPrizes(card.businesses)} className="min-w-[280px] bg-[rgb(255,150,32)] p-6 rounded-[2.5rem] border-2 border-[#595A5B] snap-center cursor-pointer relative overflow-hidden">
+                                <div className="flex items-center gap-4 mb-5">
+                                    <div className="size-20 min-w-[80px] rounded-3xl bg-white border-2 border-[#595A5B] p-2 flex items-center justify-center overflow-hidden shadow-sm">
+                                        {card.businesses?.logo_url ? <img src={card.businesses.logo_url} className="w-full h-full object-contain" /> : <span className="material-symbols-outlined text-primary text-3xl">store</span>}
                                     </div>
-                                    <h3 className="font-black text-slate-900 text-lg truncate">{card.businesses?.name}</h3>
+                                    <h3 className="font-extrabold text-slate-900 text-xl leading-tight truncate">{card.businesses?.name}</h3>
                                 </div>
-                                <div className="bg-white border-2 border-[#595A5B] rounded-2xl p-4 flex justify-between items-center">
+                                <div className="bg-white border-2 border-[#595A5B] rounded-[1.5rem] p-3 pl-5 pr-5 flex justify-between items-center w-[92%] mx-auto shadow-inner">
                                     <div>
-                                        <span className="text-[9px] font-black text-slate-500 uppercase">Saldo Actual</span>
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                            <span className="material-symbols-outlined text-warning text-xl font-black">stars</span>
-                                            <span className="text-2xl font-black text-warning leading-none">{card.current_points}</span>
+                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Saldo Disponible</span>
+                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                            <span className="material-symbols-outlined text-amber-500 text-lg font-black">stars</span>
+                                            <span className="text-2xl font-black text-slate-900 leading-none">{card.current_points}</span>
                                         </div>
                                     </div>
-                                    <span className="material-symbols-outlined text-slate-300">chevron_right</span>
+                                    <div className="size-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center">
+                                        <span className="material-symbols-outlined text-slate-400 text-lg">chevron_right</span>
+                                    </div>
                                 </div>
                             </div>
                         ))}
