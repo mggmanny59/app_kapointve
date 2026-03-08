@@ -379,11 +379,24 @@ const Home = () => {
             showNotification('success', '¡Puntos Asignados!', 'La venta se ha procesado y los puntos han sido cargados al cliente.');
             fetchDashboardData();
 
-            // Enviar notificación Push al cliente
+            // 1. BROADCAST REALTIME: Envío directo al cliente para actualización INSTANTÁNEA
+            const pointsToGain = (parseFloat(amount) * (business?.points_per_dollar || 10)).toFixed(0);
+            const broadcastChannel = supabase.channel(`client-points-realtime-${clientId}`);
+            broadcastChannel.send({
+                type: 'broadcast',
+                event: 'points_earned',
+                payload: {
+                    businessName: business?.name || 'Comercio',
+                    points: pointsToGain,
+                    amountUSD: amount
+                }
+            });
+
+            // 2. NOTIFICACIÓN PUSH: Para cuando el app está cerrada
             sendPushToProfile({
                 profileId: clientId,
                 title: business?.name || 'KPoint',
-                message: `¡Has ganado ${(parseFloat(amount) * (business?.points_per_dollar || 10)).toFixed(0)} puntos!`,
+                message: `¡Has ganado ${pointsToGain} puntos!`,
                 url: '/my-points'
             });
         } catch (err) {

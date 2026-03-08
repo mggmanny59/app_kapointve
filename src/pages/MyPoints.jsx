@@ -95,24 +95,30 @@ const MyPoints = () => {
     useEffect(() => {
         if (!user) return;
 
-        // Listener para actualizaciones en tiempo real
+        // Listener de Doble Seguridad: Broadcast Directo + Postgres Changes
         const channel = supabase
             .channel(`client-points-realtime-${user.id}`)
+            .on('broadcast', { event: 'points_earned' }, (payload) => {
+                console.log('¡Broadcast de puntos recibido!', payload);
+                showNotification('success', '¡Puntos Recibidos!', `Acabas de ganar ${payload.payload.points} nuevos puntos en ${payload.payload.businessName}.`);
+                fetchUserData();
+
+                // Opción: Cerrar cualquier modal abierto (como el del código QR) para que vean el saldo
+                setShowMainQRModal(false);
+            })
             .on('postgres_changes', {
                 event: 'INSERT',
                 schema: 'public',
                 table: 'transactions',
                 filter: `profile_id=eq.${user.id}`
-            }, async (payload) => {
-                console.log('Nueva transacción detectada:', payload.new);
-
-                // Refrescar datos con un pequeño retraso para permitir que los triggers de DB completen
-                setTimeout(() => fetchUserData(), 500);
-
+            }, (payload) => {
+                console.log('Cambio en base de datos detectado:', payload.new);
+                fetchUserData();
                 if (payload.new.type === 'EARN') {
-                    showNotification('success', '¡Puntos Recibidos!', `Has ganado ${payload.new.points_amount} nuevos puntos.`);
+                    // Solo mostramos si no hemos mostrado el broadcast ya
+                    showNotification('success', '¡Saldo Actualizado!', `Has acumulado ${payload.new.points_amount} puntos.`);
                 } else if (payload.new.type === 'REDEEM') {
-                    showNotification('success', '¡Canje Exitoso!', 'Tu premio ha sido procesado correctamente.');
+                    showNotification('success', '¡Canje Procesado!', 'Tu premio ha sido procesado con éxito.');
                     setShowRedemptionQR(null);
                 }
             })
@@ -121,14 +127,13 @@ const MyPoints = () => {
                 schema: 'public',
                 table: 'loyalty_cards',
                 filter: `profile_id=eq.${user.id}`
-            }, (payload) => {
-                console.log('Actualización de tarjeta detectada:', payload.new);
-                // Si la tarjeta se actualiza (ya sea por puntos o actividad), refrescamos el balance
+            }, () => {
                 fetchUserData();
             })
             .subscribe((status) => {
+                console.log('Estado canal Realtime Cliente:', status);
                 if (status === 'SUBSCRIBED') {
-                    console.log('Suscrito a cambios en tiempo real para el cliente');
+                    console.log('--- Canal de Tiempo Real ACTIVADO para este cliente ---');
                 }
             });
 
@@ -330,23 +335,127 @@ const MyPoints = () => {
             </main>
 
             {/* Modals */}
+            {/* Premium Rewards Gallery */}
+            {/* Premium Rewards Gallery - Light Version */}
             {selectedBusiness && (
-                <div className="fixed inset-0 z-[60] bg-[#f8fafc] overflow-y-auto pb-32">
-                    <div className="sticky top-0 p-6 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-[#595A5B] z-50">
-                        <div className="flex items-center gap-3">
-                            <span className="material-symbols-outlined text-primary text-3xl">redeem</span>
-                            <h1 className="text-xl font-black uppercase">Premios</h1>
-                        </div>
-                        <button onClick={() => setSelectedBusiness(null)} className="size-12 rounded-full border-2 border-[#595A5B] flex items-center justify-center"><span className="material-symbols-outlined">close</span></button>
-                    </div>
-                    {/* Prizes list... simplified for brevity, following pattern */}
-                    <div className="p-6 grid grid-cols-2 gap-4">
-                        {businessPrizes.map(p => (
-                            <div key={p.id} onClick={() => (loyaltyCards.find(c => c.business_id === selectedBusiness.id)?.current_points >= p.cost_points) && setShowRedemptionQR(p)} className="bg-white border-2 border-[#595A5B] rounded-[2rem] p-4 text-center">
-                                <h4 className="text-sm font-black">{p.name}</h4>
-                                <div className="mt-2 text-warning font-black text-xs">{p.cost_points} pts</div>
+                <div className="fixed inset-0 z-[60] bg-white overflow-y-auto pb-32">
+                    {/* Header */}
+                    <div className="sticky top-0 px-6 pt-8 pb-4 bg-white/90 backdrop-blur-xl z-50 flex items-center justify-between border-b border-slate-100">
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-amber-500 font-black text-2xl">card_giftcard</span>
+                                <h1 className="text-xl font-black text-slate-900 uppercase tracking-tighter leading-none">Canje de Premios</h1>
                             </div>
-                        ))}
+
+                            <div className="flex items-center gap-2 mt-2.5 bg-slate-50 border border-slate-200 pl-3 pr-4 py-1.5 rounded-2xl w-fit shadow-sm">
+                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Tu Saldo:</span>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="material-symbols-outlined text-lg text-amber-500 font-black">stars</span>
+                                    <span className="text-base font-black text-amber-600 leading-none">
+                                        {loyaltyCards.find(c => c.business_id === selectedBusiness.id)?.current_points || 0}
+                                        <span className="text-[10px] ml-0.5 text-amber-500/80">PTS</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setSelectedBusiness(null)}
+                            className="size-10 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 flex items-center justify-center active:scale-90 transition-all"
+                        >
+                            <span className="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+
+                    <div className="p-6">
+                        {businessPrizes.length > 0 ? (
+                            <div className="grid grid-cols-1 gap-5">
+                                {businessPrizes.map(p => {
+                                    const userPoints = loyaltyCards.find(c => c.business_id === selectedBusiness.id)?.current_points || 0;
+                                    const isAffordable = userPoints >= p.cost_points;
+                                    const progress = Math.min((userPoints / p.cost_points) * 100, 100);
+
+                                    return (
+                                        <div
+                                            key={p.id}
+                                            onClick={() => isAffordable && setShowRedemptionQR(p)}
+                                            className={`relative bg-white rounded-[2rem] border-2 transition-all p-1 overflow-hidden shadow-lg shadow-slate-200/50 ${isAffordable ? 'border-[#22C55E] scale-100 active:scale-[0.98]' : 'border-rose-400/40 opacity-95'}`}
+                                        >
+                                            <div className="flex items-center gap-4 p-4">
+                                                {/* Prize Image Container */}
+                                                <div className="size-24 min-w-[96px] bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 overflow-hidden">
+                                                    {p.image_url ? (
+                                                        <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <span className="material-symbols-outlined text-slate-300 !text-4xl">inventory_2</span>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <h4 className="text-sm font-black text-slate-900 uppercase truncate pr-2">{p.name}</h4>
+                                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${isAffordable ? 'bg-[#22C55E]/10 text-[#22C55E]' : 'bg-rose-100 text-rose-600'}`}>
+                                                            {isAffordable ? 'LISTO' : 'BLOQUEADO'}
+                                                        </span>
+                                                    </div>
+
+                                                    {p.description && (
+                                                        <p className="text-[10px] text-slate-500 font-medium leading-tight line-clamp-2 mb-3">
+                                                            {p.description}
+                                                        </p>
+                                                    )}
+
+                                                    <div className="flex items-center justify-between mt-auto">
+                                                        <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-xl border border-slate-100">
+                                                            <span className="material-symbols-outlined text-amber-500 text-sm font-black">stars</span>
+                                                            <span className="text-xs font-black text-amber-600">{p.cost_points} PTS</span>
+                                                        </div>
+
+                                                        {isAffordable ? (
+                                                            <div className="size-8 rounded-full bg-[#22C55E] flex items-center justify-center text-white shadow-lg shadow-[#22C55E]/20">
+                                                                <span className="material-symbols-outlined font-black text-lg">check</span>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="text-right">
+                                                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Faltan {p.cost_points - userPoints} pts</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Progress Bar for Locked Rewards - Subtle version */}
+                                            {!isAffordable && (
+                                                <div className="h-1.5 w-full bg-slate-50 flex border-t border-slate-100">
+                                                    <div
+                                                        className="h-full bg-amber-400 transition-all duration-500"
+                                                        style={{ width: `${progress}%` }}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-20 text-center">
+                                <span className="material-symbols-outlined text-6xl text-slate-100">sentiment_dissatisfied</span>
+                                <p className="mt-4 text-slate-400 font-bold">Aún no hay premios cargados para este negocio.</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Persuasive Bottom Banner - Solid & Fixed */}
+                    <div className="fixed bottom-0 left-0 right-0 p-5 pb-8 bg-primary shadow-[0_-10px_40px_rgba(34,197,94,0.2)] flex items-center gap-4 border-t border-white/10 z-[70] rounded-t-[2.5rem]">
+                        <div className="size-12 min-w-[48px] bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+                            <span className="material-symbols-outlined text-white font-black text-2xl">rocket_launch</span>
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="text-[14px] font-black text-white leading-tight uppercase tracking-tight">¡Llega más lejos!</h4>
+                            <p className="text-[12px] text-white/90 font-medium leading-tight">
+                                Cada visita te acerca a tu próximo premio. ¡Sigue sumando y desbloquea beneficios hoy!
+                            </p>
+                        </div>
+                        <span className="material-symbols-outlined text-white/40 text-xl">chevron_right</span>
                     </div>
                 </div>
             )}
