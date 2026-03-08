@@ -282,32 +282,32 @@ const MyPoints = () => {
                     </div>
                     <div className="flex gap-4 overflow-x-auto pb-4 snap-x">
                         {loyaltyCards.map((card) => (
-                            <div key={card.id} onClick={() => fetchBusinessPrizes(card.businesses)} className="min-w-[300px] bg-[rgb(255,150,32)] p-6 rounded-[2.5rem] border-2 border-[#595A5B] snap-center cursor-pointer shadow-lg">
+                            <div key={card.id} onClick={() => fetchBusinessPrizes(card.businesses)} className="min-w-[280px] bg-[rgb(255,150,32)] p-4 rounded-[2rem] border-2 border-[#595A5B] snap-center cursor-pointer shadow-lg">
                                 {/* Top Section: Logo + Points Box */}
-                                <div className="flex items-center gap-4 mb-6">
-                                    {/* Large Logo */}
-                                    <div className="size-24 min-w-[96px] rounded-[2rem] bg-white border-2 border-[#595A5B] p-3 flex items-center justify-center overflow-hidden shadow-sm">
-                                        {card.businesses?.logo_url ? <img src={card.businesses.logo_url} className="w-full h-full object-contain" /> : <span className="material-symbols-outlined text-primary text-5xl">store</span>}
+                                <div className="flex items-center gap-3 mb-3">
+                                    {/* Logo Container */}
+                                    <div className="size-20 min-w-[80px] rounded-[1.5rem] bg-white border-2 border-[#595A5B] p-2.5 flex items-center justify-center overflow-hidden shadow-sm">
+                                        {card.businesses?.logo_url ? <img src={card.businesses.logo_url} className="w-full h-full object-contain" /> : <span className="material-symbols-outlined text-primary text-4xl">store</span>}
                                     </div>
 
-                                    {/* Narrow Points Box */}
-                                    <div className="flex-1 bg-white border-2 border-[#595A5B] rounded-[1.5rem] p-3 flex justify-between items-center shadow-inner">
+                                    {/* Points Box */}
+                                    <div className="flex-1 bg-white border-2 border-[#595A5B] rounded-[1.25rem] p-2.5 flex justify-between items-center shadow-inner">
                                         <div>
-                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Saldo Disponible</span>
+                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter leading-none">Saldo</span>
                                             <div className="flex items-center gap-1 mt-0.5">
-                                                <span className="material-symbols-outlined text-amber-500 text-lg font-black">stars</span>
-                                                <span className="text-xl font-black text-slate-900 leading-none">{card.current_points}</span>
+                                                <span className="material-symbols-outlined text-amber-500 text-base font-black">stars</span>
+                                                <span className="text-lg font-black text-slate-900 leading-none">{card.current_points}</span>
                                             </div>
                                         </div>
-                                        <div className="size-7 min-w-[28px] rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center">
-                                            <span className="material-symbols-outlined text-slate-400 text-sm">chevron_right</span>
+                                        <div className="size-6 min-w-[24px] rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center">
+                                            <span className="material-symbols-outlined text-slate-400 text-xs">chevron_right</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Bottom Section: Business Name */}
                                 <div className="px-1">
-                                    <h3 className="font-extrabold text-slate-900 text-2xl leading-[1.1] line-clamp-2 italic">
+                                    <h3 className="font-extrabold text-slate-900 text-lg leading-tight line-clamp-1">
                                         {card.businesses?.name}
                                     </h3>
                                 </div>
