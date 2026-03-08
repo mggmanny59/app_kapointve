@@ -57,6 +57,7 @@ const KPIDashboard = () => {
                 let top10Share = 0;
                 let top10Chart = [];
                 let retentionChart = [];
+                let totalUsersCount = 0;
 
                 if (allEarnTx && allEarnTx.length > 0) {
                     txCount = allEarnTx.length;
@@ -75,7 +76,7 @@ const KPIDashboard = () => {
                     });
 
                     const users = Object.values(clientMap);
-                    const totalUsersCount = users.length;
+                    totalUsersCount = users.length;
 
                     // CALC: Recencia Promedio (D├¡as)
                     let totalDiffDays = 0;
