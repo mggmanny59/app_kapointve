@@ -221,7 +221,10 @@ const Home = () => {
         try {
             const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-bcv-rate`, {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+                }
             });
             const data = await response.json();
 
