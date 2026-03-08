@@ -56,12 +56,6 @@ const ActivityHistory = () => {
         <div className="relative flex min-h-screen w-full flex-col pb-24 bg-[#F0F2F5] font-display text-slate-900 antialiased">
             {/* Header */}
             <header className="pt-8 pb-4 px-6 flex items-center gap-4 sticky top-0 bg-[#F0F2F5]/80 backdrop-blur-md z-40">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="size-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-500 hover:text-primary transition-all active:scale-95 shadow-sm"
-                >
-                    <span className="material-symbols-outlined">arrow_back</span>
-                </button>
                 <div>
                     <h1 className="text-xl font-black tracking-tight text-slate-900 leading-tight">Historial de <span className="text-primary">Actividad</span></h1>
                     <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.1em]">TODAS TUS TRANSACCIONES</p>
