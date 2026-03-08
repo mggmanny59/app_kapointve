@@ -19,7 +19,8 @@ const KPIDashboard = () => {
         averageRecencyDays: 0,
         top10SharePercentage: 0,
         top10Data: [],
-        retentionData: []
+        retentionData: [],
+        totalClients: 0
     });
 
     const PIE_COLORS = ['#F59E0B', '#22C55E']; // Warning (Nuevos) and Primary (Fieles)
@@ -127,7 +128,8 @@ const KPIDashboard = () => {
                     averageRecencyDays: avgRecency,
                     top10SharePercentage: top10Share,
                     top10Data: top10Chart,
-                    retentionData: retentionChart
+                    retentionData: retentionChart,
+                    totalClients: totalUsersCount
                 });
 
             } catch (err) {
@@ -206,6 +208,21 @@ const KPIDashboard = () => {
                                 <div className="relative z-10 mt-4">
                                     <p className="text-[11px] text-slate-500 font-black uppercase tracking-[0.15em] mb-1">Ticket Promedio</p>
                                     <p className="text-4xl font-black text-slate-900 tracking-tight">${kpiData.aov.toFixed(2)}</p>
+                                </div>
+                            </div>
+
+                            {/* KPI: Total Clientes (NUEVO) */}
+                            <div className="bg-white p-6 rounded-[2.5rem] border-2 border-[#595A5B] shadow-sm relative overflow-hidden group">
+                                <div className="absolute -right-2 -top-2 bg-amber-500/5 size-20 rounded-full blur-2xl group-hover:bg-amber-500/10 transition-all"></div>
+                                <div className="flex items-center justify-between mb-2 z-10 relative">
+                                    <div className="size-12 rounded-[1rem] bg-amber-500/10 flex items-center justify-center text-amber-500 shadow-inner">
+                                        <span className="material-symbols-outlined !text-2xl font-black">groups</span>
+                                    </div>
+                                    <span className="text-[10px] border-2 border-amber-500/20 bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full font-black tracking-widest uppercase">Base</span>
+                                </div>
+                                <div className="relative z-10 mt-4">
+                                    <p className="text-[11px] text-slate-500 font-black uppercase tracking-[0.15em] mb-1">Clientes Totales</p>
+                                    <p className="text-4xl font-black text-slate-900 tracking-tight">{kpiData.totalClients}</p>
                                 </div>
                             </div>
 
