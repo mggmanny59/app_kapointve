@@ -25,23 +25,31 @@ function urlBase64ToUint8Array(base64String) {
 export async function subscribeUserToPush() {
     try {
         // 1. Verificar si Service Worker y Push están disponibles
-        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-            console.warn('Las notificaciones Push no están soportadas en este navegador.');
-            return null;
+        if (!('serviceWorker' in navigator)) {
+            throw new Error('Navegador: Service Worker no soportado.');
+        }
+        if (!('PushManager' in window)) {
+            throw new Error('Navegador: PushManager no soportado.');
         }
 
         // 2. Obtener el registro del Service Worker
         const registration = await navigator.serviceWorker.ready;
+        if (!registration) {
+            throw new Error('Service Worker: No está listo para registro.');
+        }
 
         // 3. Solicitar permiso al usuario
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
-            console.log('El usuario denegó el permiso para notificaciones.');
-            return null;
+            throw new Error('Permiso denegado por el usuario.');
         }
 
         // 4. Suscribir al usuario con la llave pública VAPID
         const publicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+        if (!publicVapidKey) {
+            throw new Error('Configuración: Falta VAPID Key pública.');
+        }
+
         const subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
@@ -53,8 +61,6 @@ export async function subscribeUserToPush() {
         if (user) {
             const subscriptionJSON = subscription.toJSON();
 
-            // Buscar si ya existe la suscripción (usando el unique endpoint url o al menos evitando duplicados tontos)
-            // Ya que no podemos hacer upsert fácilmente con JSONB en Supabase desde el cliente sin RPC
             const { data: existing } = await supabase
                 .from('push_subscriptions')
                 .select('id')
@@ -71,33 +77,24 @@ export async function subscribeUserToPush() {
                         user_agent: navigator.userAgent
                     });
 
-                if (error) {
-                    console.error('Error saving push subscription to Supabase:', error);
-                } else {
-                    console.log('Suscripción Push guardada correctamente en Supabase.');
-                }
+                if (error) throw new Error(`DB Error: ${error.message}`);
+                console.log('Suscripción Push guardada correctamente.');
             } else {
-                // Ya existe al menos una suscripción para este dispositivo/navegador, la actualizamos para estar seguros
                 const { error } = await supabase
                     .from('push_subscriptions')
-                    .update({
-                        subscription: subscriptionJSON
-                    })
+                    .update({ subscription: subscriptionJSON })
                     .eq('id', existing[0].id);
 
-                if (error) {
-                    console.error('Error updating push subscription in Supabase:', error);
-                } else {
-                    console.log('Suscripción Push actualizada correctamente en Supabase.');
-                }
+                if (error) throw new Error(`DB Update Error: ${error.message}`);
+                console.log('Suscripción Push actualizada correctamente.');
             }
             return subscription;
         }
 
         return null;
     } catch (error) {
-        console.error('Error al suscribir a notificaciones Push:', error);
-        return null;
+        console.error('Error detallado de suscripción:', error);
+        throw error; // Lanzar para que Home.jsx o MyPoints.jsx atrapen el mensaje
     }
 }
 

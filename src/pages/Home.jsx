@@ -88,16 +88,15 @@ const Home = () => {
     }, [user]);
 
     const handleEnablePush = async () => {
-        const sub = await subscribeUserToPush();
-        if (sub) {
-            setShowPushBanner(false);
-            setIsSubscribed(true);
-            showNotification('success', '¡Excelente!', '¡Buzón digital registrado con éxito! Tu dispositivo ya puede recibir avisos de KPoint.');
-
-            // Register subscription in Supabase (logic is inside subscribeUserToPush, 
-            // but we can ensure it here if needed)
-        } else {
-            showNotification('warning', 'Aviso', 'No se pudieron activar las notificaciones. Asegúrate de dar los permisos en tu navegador.');
+        try {
+            const sub = await subscribeUserToPush();
+            if (sub) {
+                setShowPushBanner(false);
+                setIsSubscribed(true);
+                showNotification('success', '¡Excelente!', '¡Buzón digital registrado con éxito! Tu dispositivo ya puede recibir avisos de KPoint.');
+            }
+        } catch (error) {
+            showNotification('warning', 'Aviso', `No se pudieron activar las notificaciones: ${error.message}`);
         }
     };
 
