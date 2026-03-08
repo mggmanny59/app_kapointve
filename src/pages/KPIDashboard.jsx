@@ -31,7 +31,7 @@ const KPIDashboard = () => {
             try {
                 setLoading(true);
 
-                // 1. Encontrar a qu├® negocio est├í atado el usuario logueado
+                // 1. Encontrar a qué negocio está atado el usuario logueado
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('business_members!inner(business_id)')
@@ -41,7 +41,7 @@ const KPIDashboard = () => {
                 const bizId = profile?.business_members[0]?.business_id;
                 if (!bizId) return;
 
-                // 2. Traer transacciones de acumulaci├│n (Ventas)
+                // 2. Traer transacciones de acumulación (Ventas)
                 const { data: allEarnTx } = await supabase
                     .from('transactions')
                     .select('amount_fiat, profile_id, created_at')
@@ -78,7 +78,7 @@ const KPIDashboard = () => {
                     const users = Object.values(clientMap);
                     totalUsersCount = users.length;
 
-                    // CALC: Recencia Promedio (D├¡as)
+                    // CALC: Recencia Promedio (Días)
                     let totalDiffDays = 0;
                     let diffCount = 0;
 
@@ -236,13 +236,13 @@ const KPIDashboard = () => {
                                 </div>
                                 <div className="relative z-10 mt-4">
                                     <p className="text-[11px] text-slate-500 font-black uppercase tracking-[0.15em] mb-1">Recencia Promedio</p>
-                                    <p className="text-4xl font-black text-slate-900 tracking-tight">{kpiData.averageRecencyDays.toFixed(1)} <span className="text-lg text-slate-400">d├¡as</span></p>
+                                    <p className="text-4xl font-black text-slate-900 tracking-tight">{kpiData.averageRecencyDays.toFixed(1)} <span className="text-lg text-slate-400">días</span></p>
                                     <div className="mt-4 pt-4 border-t-2 border-slate-100">
                                         <p className="text-[11px] text-slate-600 font-bold leading-relaxed flex items-start gap-2">
                                             <span className="material-symbols-outlined !text-[16px] text-blue-500">info</span>
                                             <span>
-                                                "Tus clientes suelen volver cada {kpiData.averageRecencyDays.toFixed(0)} d├¡as".
-                                                <br /><span className="text-slate-400">Alerta de Antigravity: Si vemos que este n├║mero sube a {(kpiData.averageRecencyDays + 5).toFixed(0)} d├¡as, lanzaremos una promoci├│n para reactivarlos.</span>
+                                                "Tus clientes suelen volver cada {kpiData.averageRecencyDays.toFixed(0)} días".
+                                                <br /><span className="text-slate-400">Alerta de Antigravity: Si vemos que este número sube a {(kpiData.averageRecencyDays + 5).toFixed(0)} días, lanzaremos una promoción para reactivarlos.</span>
                                             </span>
                                         </p>
                                     </div>
@@ -290,8 +290,8 @@ const KPIDashboard = () => {
                                 <div className="relative z-10">
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
-                                            <p className="text-[11px] text-slate-500 font-black uppercase tracking-[0.15em] mb-1">Adquisici├│n vs Lealtad</p>
-                                            <p className="text-xl font-black text-slate-900 tracking-tight">Composici├│n de Clientes</p>
+                                            <p className="text-[11px] text-slate-500 font-black uppercase tracking-[0.15em] mb-1">Adquisición vs Lealtad</p>
+                                            <p className="text-xl font-black text-slate-900 tracking-tight">Composición de Clientes</p>
                                         </div>
                                     </div>
 
@@ -337,8 +337,8 @@ const KPIDashboard = () => {
                                         <p className="text-[11px] text-slate-600 font-bold leading-relaxed flex items-start gap-2">
                                             <span className="material-symbols-outlined !text-[16px] text-[#F59E0B]">psychology_alt</span>
                                             <span>
-                                                "┬┐Vives de gente nueva o de gente fiel?"
-                                                <br /><span className="text-slate-400">Esto te ayudar├í a evaluar tus campa├▒as de captaci├│n.</span>
+                                                "¿Vives de gente nueva o de gente fiel?"
+                                                <br /><span className="text-slate-400">Esto te ayudará a evaluar tus campañas de captación.</span>
                                             </span>
                                         </p>
                                     </div>
