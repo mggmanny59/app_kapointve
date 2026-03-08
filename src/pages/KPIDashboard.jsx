@@ -242,7 +242,7 @@ const KPIDashboard = () => {
                                             <span className="material-symbols-outlined !text-[16px] text-blue-500">info</span>
                                             <span>
                                                 "Tus clientes suelen volver cada {kpiData.averageRecencyDays.toFixed(0)} días".
-                                                <br /><span className="text-slate-400">Alerta de Antigravity: Si vemos que este número sube a {(kpiData.averageRecencyDays + 5).toFixed(0)} días, lanzaremos una promoción para reactivarlos.</span>
+                                                <br /><span className="text-slate-400">Alerta de <span className="font-extrabold text-[#F59E0B]">KPoint</span>: Si vemos que este número sube a {(kpiData.averageRecencyDays + 5).toFixed(0)} días, lanzaremos una promoción para reactivarlos.</span>
                                             </span>
                                         </p>
                                     </div>
