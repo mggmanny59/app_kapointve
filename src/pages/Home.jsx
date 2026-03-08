@@ -64,13 +64,9 @@ const Home = () => {
                         // Sincronizar con Supabase
                         const { data: { user } } = await supabase.auth.getUser();
                         if (user) {
-                            await supabase.from('push_subscriptions').upsert({
-                                profile_id: user.id,
-                                subscription: sub.toJSON(),
-                                user_agent: navigator.userAgent
-                            }, { onConflict: 'profile_id,subscription' });
-                            console.log('Push subscription synced on load');
-                            // Diagnóstico silencioso para asegurar registro
+                            // La función subscribeUserToPush manejará la inserción de manera segura sin UPSERTs de JSONB
+                            await subscribeUserToPush();
+                            console.log('Push subscription checked on load');
                             sessionStorage.setItem('push_synced', 'true');
                         }
                     }

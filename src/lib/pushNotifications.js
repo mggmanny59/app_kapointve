@@ -51,18 +51,46 @@ export async function subscribeUserToPush() {
         const { data: { user } } = await supabase.auth.getUser();
 
         if (user) {
-            const { error } = await supabase
-                .from('push_subscriptions')
-                .upsert({
-                    profile_id: user.id,
-                    subscription: subscription.toJSON(),
-                    user_agent: navigator.userAgent
-                }, {
-                    onConflict: 'profile_id,subscription'
-                });
+            const subscriptionJSON = subscription.toJSON();
 
-            if (error) throw error;
-            console.log('Suscripción Push guardada correctamente en Supabase.');
+            // Buscar si ya existe la suscripción (usando el unique endpoint url o al menos evitando duplicados tontos)
+            // Ya que no podemos hacer upsert fácilmente con JSONB en Supabase desde el cliente sin RPC
+            const { data: existing } = await supabase
+                .from('push_subscriptions')
+                .select('id')
+                .eq('profile_id', user.id)
+                .eq('user_agent', navigator.userAgent)
+                .limit(1);
+
+            if (!existing || existing.length === 0) {
+                const { error } = await supabase
+                    .from('push_subscriptions')
+                    .insert({
+                        profile_id: user.id,
+                        subscription: subscriptionJSON,
+                        user_agent: navigator.userAgent
+                    });
+
+                if (error) {
+                    console.error('Error saving push subscription to Supabase:', error);
+                } else {
+                    console.log('Suscripción Push guardada correctamente en Supabase.');
+                }
+            } else {
+                // Ya existe al menos una suscripción para este dispositivo/navegador, la actualizamos para estar seguros
+                const { error } = await supabase
+                    .from('push_subscriptions')
+                    .update({
+                        subscription: subscriptionJSON
+                    })
+                    .eq('id', existing[0].id);
+
+                if (error) {
+                    console.error('Error updating push subscription in Supabase:', error);
+                } else {
+                    console.log('Suscripción Push actualizada correctamente en Supabase.');
+                }
+            }
             return subscription;
         }
 
@@ -88,6 +116,11 @@ export async function sendPushToProfile({ profileId, title, message, url = '/das
         });
 
         if (error) throw error;
+
+        if (data && data.success === false) {
+            return { success: false, error: data.message || 'Error desconocido' };
+        }
+
         return data;
     } catch (error) {
         console.error('Error enviando notificación push:', error);

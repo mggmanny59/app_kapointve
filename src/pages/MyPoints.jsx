@@ -108,11 +108,7 @@ const MyPoints = () => {
                     if (sub) {
                         const { data: { user: currentUser } } = await supabase.auth.getUser();
                         if (currentUser) {
-                            await supabase.from('push_subscriptions').upsert({
-                                profile_id: currentUser.id,
-                                subscription: sub.toJSON(),
-                                user_agent: navigator.userAgent
-                            }, { onConflict: 'profile_id,subscription' });
+                            await subscribeUserToPush();
                             console.log('Push subscription synced on load (Client)');
                         }
                     } else {
