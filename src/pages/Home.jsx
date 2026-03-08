@@ -221,25 +221,19 @@ const Home = () => {
         setIsFetchingRate(true);
         setIsRateSuccessful(false);
         try {
-            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-bcv-rate`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
-                }
-            });
-            const data = await response.json();
+            const { data, error } = await supabase.functions.invoke('get-bcv-rate', { method: 'GET' });
 
-            if (data.rate) {
-                console.log('Exchange Rate fetched:', data.rate, 'Source:', data.source);
+            if (error) throw error;
+
+            if (data?.rate) {
+                console.log('Exchange Rate fetched:', data.rate);
                 setExchangeRate(parseFloat(data.rate).toFixed(2));
                 setIsRateSuccessful(true);
-                // Update Bolivares if amount USD is already present
                 if (amount) {
                     setAmountBs((parseFloat(amount) * data.rate).toFixed(2));
                 }
             } else {
-                console.error('BCV Function Error:', data.error);
+                console.error('BCV Function Error:', data?.error);
                 setIsRateSuccessful(false);
             }
         } catch (err) {

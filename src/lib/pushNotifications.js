@@ -78,25 +78,17 @@ export async function subscribeUserToPush() {
  */
 export async function sendPushToProfile({ profileId, title, message, url = '/dashboard' }) {
     try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return { success: false, error: 'No hay sesión activa' };
-
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-push`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${session.access_token}`,
-                'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
-            },
-            body: JSON.stringify({
+        const { data, error } = await supabase.functions.invoke('send-push', {
+            body: {
                 profile_id: profileId,
                 title,
                 message,
                 url
-            })
+            }
         });
 
-        return await response.json();
+        if (error) throw error;
+        return data;
     } catch (error) {
         console.error('Error enviando notificación push:', error);
         return { success: false, error: error.message };
