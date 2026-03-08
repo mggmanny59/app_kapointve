@@ -8,6 +8,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useMessages } from '../context/MessageContext';
 import MessageCenter from '../components/MessageCenter';
 import Navigation from '../components/Navigation';
+import { subscribeUserToPush, sendPushToProfile } from '../lib/pushNotifications';
 import { forceAppUpdate } from '../utils/appUpdate';
 
 const MyPoints = () => {
@@ -27,6 +28,8 @@ const MyPoints = () => {
     const { unreadCount } = useMessages();
     const [isScannerOpen, setIsScannerOpen] = useState(false);
     const [isProcessingScanner, setIsProcessingScanner] = useState(false);
+    const [showPushBanner, setShowPushBanner] = useState(false);
+    const [isSubscribed, setIsSubscribed] = useState(false);
 
     useEffect(() => {
         const handleOpenMessages = () => setIsMessageCenterOpen(true);
@@ -91,6 +94,48 @@ const MyPoints = () => {
     useEffect(() => {
         if (user) fetchUserData();
     }, [user]);
+
+    useEffect(() => {
+        const checkPushStatus = async () => {
+            if ('Notification' in window) {
+                if (Notification.permission === 'default') {
+                    setShowPushBanner(true);
+                } else if (Notification.permission === 'granted') {
+                    setIsSubscribed(true);
+                    // Proactivamente asegurar que la suscripción esté en la DB
+                    const registration = await navigator.serviceWorker.ready;
+                    const sub = await registration.pushManager.getSubscription();
+                    if (sub) {
+                        const { data: { user: currentUser } } = await supabase.auth.getUser();
+                        if (currentUser) {
+                            await supabase.from('push_subscriptions').upsert({
+                                profile_id: currentUser.id,
+                                subscription: sub.toJSON(),
+                                user_agent: navigator.userAgent
+                            }, { onConflict: 'profile_id,subscription' });
+                            console.log('Push subscription synced on load (Client)');
+                        }
+                    } else {
+                        // Si hay permiso pero no suscripción, intentar crearla silenciosamente
+                        console.log('Permission granted but no subscription found, attempting silent subscribe...');
+                        await subscribeUserToPush();
+                    }
+                }
+            }
+        };
+        checkPushStatus();
+    }, [user]);
+
+    const handleEnablePush = async () => {
+        const sub = await subscribeUserToPush();
+        if (sub) {
+            setShowPushBanner(false);
+            setIsSubscribed(true);
+            showNotification('success', '¡Excelente!', '¡Buzón digital registrado con éxito! Tu dispositivo ya puede recibir avisos de KPoint.');
+        } else {
+            showNotification('warning', 'Aviso', 'No se pudieron activar las notificaciones. Asegúrate de dar los permisos en tu navegador.');
+        }
+    };
 
     useEffect(() => {
         if (!user) return;
@@ -232,6 +277,35 @@ const MyPoints = () => {
                     </button>
                 </div>
             </header>
+
+            {/* Banner de Notificaciones para Clientes */}
+            {showPushBanner && (
+                <div className="mx-6 mb-6 p-5 bg-navy-card rounded-[2rem] border-2 border-[#F59E0B] shadow-xl animate-in slide-in-from-top duration-500">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="size-14 rounded-2xl bg-[#F59E0B]/10 flex items-center justify-center text-[#F59E0B] border border-[#F59E0B]/20">
+                            <span className="material-symbols-outlined !text-3xl">notifications_active</span>
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter">¡Deseas recibir avisos!</h3>
+                            <p className="text-[11px] text-slate-500 font-medium leading-relaxed mt-0.5">Entérate de inmediato cuando ganes puntos o canjees tus premios favoritos.</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleEnablePush}
+                            className="flex-1 bg-primary text-white h-11 rounded-2xl text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/20"
+                        >
+                            Activar ahora
+                        </button>
+                        <button
+                            onClick={() => setShowPushBanner(false)}
+                            className="px-5 h-11 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:bg-slate-50 active:scale-95 transition-all"
+                        >
+                            Después
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <main className="px-6 py-4 space-y-6">
                 {/* Welcome Card */}
