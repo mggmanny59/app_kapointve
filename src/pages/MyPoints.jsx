@@ -97,39 +97,42 @@ const MyPoints = () => {
 
     useEffect(() => {
         const checkPushStatus = async () => {
-            if ('Notification' in window) {
-                if (Notification.permission === 'default') {
-                    setShowPushBanner(true);
-                } else if (Notification.permission === 'granted') {
+            if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+
+            if (Notification.permission === 'default') {
+                // Nunca ha decidido -> mostrar banner
+                setShowPushBanner(true);
+            } else if (Notification.permission === 'granted') {
+                // Tiene permiso: verificar si hay suscripción real
+                const registration = await navigator.serviceWorker.ready;
+                const sub = await registration.pushManager.getSubscription();
+                if (sub) {
                     setIsSubscribed(true);
-                    // Proactivamente asegurar que la suscripción esté en la DB
-                    const registration = await navigator.serviceWorker.ready;
-                    const sub = await registration.pushManager.getSubscription();
-                    if (sub) {
-                        const { data: { user: currentUser } } = await supabase.auth.getUser();
-                        if (currentUser) {
-                            await subscribeUserToPush();
-                            console.log('Push subscription synced on load (Client)');
-                        }
-                    } else {
-                        // Si hay permiso pero no suscripción, intentar crearla silenciosamente
-                        console.log('Permission granted but no subscription found, attempting silent subscribe...');
-                        await subscribeUserToPush();
-                    }
+                    // Sincronizar con Supabase
+                    await subscribeUserToPush();
+                } else {
+                    // Permiso dado pero suscripción perdida (ej: re-instalación)
+                    setIsSubscribed(false);
+                    setShowPushBanner(true);
                 }
+            } else {
+                // 'denied' -> no podemos hacer nada
+                setIsSubscribed(false);
             }
         };
-        checkPushStatus();
+        if (user) checkPushStatus();
     }, [user]);
 
     const handleEnablePush = async () => {
-        const sub = await subscribeUserToPush();
-        if (sub) {
-            setShowPushBanner(false);
-            setIsSubscribed(true);
-            showNotification('success', '¡Excelente!', '¡Buzón digital registrado con éxito! Tu dispositivo ya puede recibir avisos de KPoint.');
-        } else {
-            showNotification('warning', 'Aviso', 'No se pudieron activar las notificaciones. Asegúrate de dar los permisos en tu navegador.');
+        try {
+            const sub = await subscribeUserToPush();
+            if (sub) {
+                setShowPushBanner(false);
+                setIsSubscribed(true);
+                showNotification('success', '¡Excelente!', '¡Buzón digital registrado con éxito! Tu dispositivo ya puede recibir avisos de KPoint.');
+            }
+        } catch (error) {
+            showNotification('warning', 'Aviso', `No se pudieron activar: ${error.message}`);
         }
     };
 
@@ -312,6 +315,25 @@ const MyPoints = () => {
                         <span className="material-symbols-outlined text-white text-base font-black">stars</span>
                         <p className="text-white text-[10px] font-black uppercase tracking-[0.15em]">¡TODO LISTO PARA GANAR!</p>
                     </div>
+
+                    {/* Indicador de Alertas Push */}
+                    <div className="mt-4 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <div className={`size-2.5 rounded-full ${isSubscribed ? 'bg-green-300 shadow-[0_0_8px_rgba(134,239,172,0.8)]' : 'bg-white/50'}`}></div>
+                            <span className="text-[10px] font-black text-white/80 uppercase tracking-widest">
+                                {isSubscribed ? 'Alertas Activas' : 'Alertas Desactivadas'}
+                            </span>
+                        </div>
+                        {!isSubscribed && (
+                            <button
+                                onClick={handleEnablePush}
+                                className="text-[10px] font-black bg-white/25 text-white border border-white/40 px-3 py-1.5 rounded-xl hover:bg-white/40 active:scale-95 transition-all uppercase tracking-widest"
+                            >
+                                Activar
+                            </button>
+                        )}
+                    </div>
+
                     <span className="material-symbols-outlined absolute -right-8 -bottom-8 text-white/[0.07] !text-[180px] font-black rotate-12">account_balance_wallet</span>
                 </div>
 
