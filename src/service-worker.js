@@ -16,34 +16,39 @@ clientsClaim();
  * Escuchador para eventos Push
  */
 self.addEventListener('push', (event) => {
-    if (!event.data) {
-        console.log('Evento push recibido sin datos.');
-        return;
-    }
+    let title = '🎉 KPoint';
+    let body = 'Tienes una nueva notificación';
+    let url = '/';
 
     try {
-        const data = event.data.json();
-        const title = data.title || 'KPoint';
-        const options = {
-            body: data.message || 'Tienes una nueva notificación',
-            icon: '/pwa-192x192.png',
-            badge: '/vite.svg', // Icono pequeño para la barra de estado
-            data: {
-                url: data.url || '/'
-            },
-            vibrate: [100, 50, 100],
-            actions: [
-                { action: 'open', title: 'Ver ahora' },
-                { action: 'close', title: 'Cerrar' }
-            ]
-        };
-
-        event.waitUntil(
-            self.registration.showNotification(title, options)
-        );
+        if (event.data) {
+            const data = event.data.json();
+            title = data.title || title;
+            body = data.message || body;
+            url = data.url || url;
+        }
     } catch (error) {
-        console.error('Error al procesar notificación push:', error);
+        console.error('[SW] Error al parsear push data:', error);
+        // Continúa con valores por defecto — no interrumpir la notificación
     }
+
+    const options = {
+        body,
+        icon: '/pwa-192x192.png',
+        badge: '/pwa-192x192.png',
+        data: { url },
+        vibrate: [200, 100, 200],
+        requireInteraction: false,
+        actions: [
+            { action: 'open', title: 'Ver ahora' },
+            { action: 'close', title: 'Cerrar' }
+        ]
+    };
+
+    // SIEMPRE mostrar la notificación — nunca dejar que Chrome muestre el genérico
+    event.waitUntil(
+        self.registration.showNotification(title, options)
+    );
 });
 
 /**
