@@ -8,28 +8,31 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-    // Manejo de CORS
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
     }
 
     try {
         const { profile_id, title, message, url } = await req.json()
+        console.log(`[send-push] Iniciando para profile_id: ${profile_id}`)
 
         if (!profile_id) throw new Error('profile_id is required')
 
-        // Inicializar cliente Supabase con Service Role Key para saltar RLS
         const supabase = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
-        // Configurar llaves VAPID (Deben establecerse en Supabase Secrets)
+        // Verificar VAPID keys
         const publicVapidKey = Deno.env.get('VAPID_PUBLIC_KEY')
         const privateVapidKey = Deno.env.get('VAPID_PRIVATE_KEY')
 
+        console.log(`[send-push] VAPID_PUBLIC_KEY presente: ${!!publicVapidKey}`)
+        console.log(`[send-push] VAPID_PUBLIC_KEY valor: ${publicVapidKey?.substring(0, 20)}...`)
+        console.log(`[send-push] VAPID_PRIVATE_KEY presente: ${!!privateVapidKey}`)
+
         if (!publicVapidKey || !privateVapidKey) {
-            throw new Error('VAPID keys are not configured in environment variables')
+            throw new Error('VAPID keys no configuradas en Supabase Secrets')
         }
 
         webpush.setVapidDetails(
@@ -38,44 +41,59 @@ serve(async (req) => {
             privateVapidKey
         )
 
-        // 1. Buscar todas las suscripciones de este usuario (puede tener varios dispositivos)
+        // Buscar suscripciones del usuario
         const { data: subscriptions, error: subError } = await supabase
             .from('push_subscriptions')
-            .select('id, subscription')
+            .select('id, subscription, user_agent')
             .eq('profile_id', profile_id)
 
-        if (subError) throw subError
+        if (subError) {
+            console.error(`[send-push] Error DB: ${subError.message}`)
+            throw subError
+        }
+
+        console.log(`[send-push] Suscripciones encontradas: ${subscriptions?.length ?? 0}`)
 
         if (!subscriptions || subscriptions.length === 0) {
-            return new Response(JSON.stringify({ success: false, message: 'El usuario no tiene dispositivos suscritos.' }), {
+            return new Response(JSON.stringify({ success: false, message: 'Sin dispositivos suscritos.' }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 status: 200,
             })
         }
 
-        // 2. Preparar el contenido de la notificación
+        // Preparar payload
         const payload = JSON.stringify({
             title: title || 'KPoint',
             message: message || '¡Tienes una nueva actualización!',
             url: url || '/dashboard'
         })
 
-        // 3. Enviar a cada dispositivo
+        console.log(`[send-push] Payload: ${payload}`)
+
+        // Enviar a cada dispositivo con logging detallado
         const sendPromises = subscriptions.map(async (sub) => {
             try {
+                const endpoint = sub.subscription?.endpoint ?? 'sin endpoint'
+                console.log(`[send-push] Enviando a: ${endpoint.substring(0, 60)}...`)
+                console.log(`[send-push] Subscription keys presentes: auth=${!!sub.subscription?.keys?.auth}, p256dh=${!!sub.subscription?.keys?.p256dh}`)
+
                 await webpush.sendNotification(sub.subscription, payload)
+                console.log(`[send-push] ✅ ENVIADO exitosamente a sub.id=${sub.id}`)
                 return { id: sub.id, status: 'sent' }
             } catch (err) {
-                // Si el error es 410 (Gone), la suscripción ya no es válida y debemos borrarla
+                console.error(`[send-push] ❌ ERROR enviando a sub.id=${sub.id}: statusCode=${err.statusCode} body=${err.body} message=${err.message}`)
+
                 if (err.statusCode === 410 || err.statusCode === 404) {
                     await supabase.from('push_subscriptions').delete().eq('id', sub.id)
+                    console.log(`[send-push] Suscripción expirada borrada: ${sub.id}`)
                     return { id: sub.id, status: 'expired_and_deleted' }
                 }
-                return { id: sub.id, status: 'error', error: err.message }
+                return { id: sub.id, status: 'error', error: `${err.statusCode}: ${err.message}`, body: err.body }
             }
         })
 
         const results = await Promise.all(sendPromises)
+        console.log(`[send-push] Resultados: ${JSON.stringify(results)}`)
 
         return new Response(JSON.stringify({ success: true, results }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -83,7 +101,7 @@ serve(async (req) => {
         })
 
     } catch (error) {
-        console.error('Error en Edge Function:', error.message)
+        console.error(`[send-push] Error fatal: ${error.message}`)
         return new Response(JSON.stringify({ error: error.message }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400,
