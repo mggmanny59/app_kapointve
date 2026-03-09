@@ -101,17 +101,55 @@ const Home = () => {
     };
 
     const handleTestPush = async () => {
-        const result = await sendPushToProfile({
-            profileId: user.id,
-            title: 'Prueba de KPoint',
-            message: '¡Funciona! Esta es una notificación push de prueba.',
-            url: '/dashboard'
-        });
+        try {
+            // 1. Buscar todos los clientes del negocio que tienen suscripción push activa
+            const currentBusinessId = profile?.business_members?.[0]?.business_id;
+            if (!currentBusinessId) {
+                showNotification('error', 'Error', 'No se encontró el negocio asociado.');
+                return;
+            }
 
-        if (result.success) {
-            showNotification('success', 'Enviado', 'Se ha enviado la señal de prueba. Debería llegar en unos segundos.');
-        } else {
-            showNotification('error', 'Error', 'No se pudo enviar la prueba: ' + result.error);
+            // 2. Obtener los clientes del negocio (loyalty_cards)
+            const { data: clients, error: clientsError } = await supabase
+                .from('loyalty_cards')
+                .select('profile_id')
+                .eq('business_id', currentBusinessId);
+
+            if (clientsError) throw clientsError;
+
+            if (!clients || clients.length === 0) {
+                showNotification('warning', 'Sin Clientes', 'Este negocio aún no tiene clientes registrados.');
+                return;
+            }
+
+            // 3. Enviar notificación a cada cliente
+            let sent = 0;
+            let noDevice = 0;
+
+            for (const client of clients) {
+                const result = await sendPushToProfile({
+                    profileId: client.profile_id,
+                    title: '🎉 Mensaje de ' + (business?.name || 'KPoint'),
+                    message: '¡Hola! Tienes una notificación de tu negocio favorito.',
+                    url: '/my-points'
+                });
+
+                if (result && result.success !== false) {
+                    sent++;
+                } else {
+                    noDevice++;
+                }
+            }
+
+            if (sent > 0) {
+                showNotification('success', '¡Enviado!', `Notificación enviada a ${sent} cliente(s). ${noDevice > 0 ? `${noDevice} sin dispositivo registrado.` : ''}`);
+            } else {
+                showNotification('warning', 'Aviso', 'Ningún cliente tiene notificaciones activas aún. Pídeles que activen las alertas en su App.');
+            }
+
+        } catch (error) {
+            console.error('Error en prueba push:', error);
+            showNotification('error', 'Error', 'No se pudo enviar la prueba: ' + error.message);
         }
     };
 
