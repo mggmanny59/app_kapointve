@@ -70,7 +70,10 @@ serve(async (req) => {
                 console.log(`[send-push] Enviando a: ${endpoint.substring(0, 60)}...`)
                 console.log(`[send-push] Subscription keys presentes: auth=${!!sub.subscription?.keys?.auth}, p256dh=${!!sub.subscription?.keys?.p256dh}`)
 
-                await webpush.sendNotification(sub.subscription, payload)
+                await webpush.sendNotification(sub.subscription, payload, {
+                    TTL: 86400, // 24 hours
+                    urgency: 'high'
+                })
                 console.log(`[send-push] ✅ ENVIADO exitosamente a sub.id=${sub.id}`)
                 return { id: sub.id, status: 'sent' }
             } catch (err) {

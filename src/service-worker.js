@@ -39,22 +39,20 @@ self.addEventListener('push', (event) => {
         // Continúa con valores por defecto — no interrumpir la notificación
     }
 
+    // Simplificamos radicalmente las opciones para que no haya crash de memoria o red
+    // al intentar descargar iconos, lo cual hace que Chrome genere la alerta genérica
     const options = {
-        body,
-        icon: '/pwa-192x192.png',
-        badge: '/pwa-192x192.png',
-        data: { url },
-        vibrate: [200, 100, 200],
-        requireInteraction: false,
-        actions: [
-            { action: 'open', title: 'Ver ahora' },
-            { action: 'close', title: 'Cerrar' }
-        ]
+        body: body,
+        data: { url: url }
     };
 
-    // SIEMPRE mostrar la notificación — nunca dejar que Chrome muestre el genérico
+    // Promise.resolve explícito y try/catch manual
     event.waitUntil(
         self.registration.showNotification(title, options)
+            .catch(err => {
+                console.error('Error forced fallback showing notification:', err);
+                return self.registration.showNotification('Alerta', { body: 'Mensaje' });
+            })
     );
 });
 
