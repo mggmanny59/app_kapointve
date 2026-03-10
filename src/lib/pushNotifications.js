@@ -48,10 +48,23 @@ export async function subscribeUserToPush() {
         const publicVapidKey = 'BIoF916LzTZ5Wb_keed4lC0-8QlIHoU9p-w5VX2fvgl4iyia8XwR_EZ1fsm6BsEzHeeeAaI8C_qwXUJ197d3gSg';
 
 
-        const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
-        });
+        let subscription;
+        try {
+            subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+            });
+        } catch (subError) {
+            console.warn('Error al suscribir. Posible cambio de VAPID key. Intentando renovar...', subError);
+            const existingSub = await registration.pushManager.getSubscription();
+            if (existingSub) {
+                await existingSub.unsubscribe();
+            }
+            subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+            });
+        }
 
         // 5. Guardar la suscripción en Supabase
         const { data: { user } } = await supabase.auth.getUser();
