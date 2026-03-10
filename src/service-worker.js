@@ -23,36 +23,30 @@ self.addEventListener('message', (event) => {
  * Escuchador para eventos Push
  */
 self.addEventListener('push', (event) => {
-    let title = '🎉 KPoint';
-    let body = 'Tienes una nueva notificación';
-    let url = '/';
+    let title = 'KPoint Notification';
+    let body = 'Tienes un nuevo mensaje en la plataforma.';
+    let urlToOpen = '/';
 
-    try {
-        if (event.data) {
+    if (event.data) {
+        try {
             const data = event.data.json();
             title = data.title || title;
             body = data.message || body;
-            url = data.url || url;
+            urlToOpen = data.url || urlToOpen;
+        } catch (err) {
+            console.error('Error parseando push data', err);
         }
-    } catch (error) {
-        console.error('[SW] Error al parsear push data:', error);
-        // Continúa con valores por defecto — no interrumpir la notificación
     }
 
-    // Simplificamos radicalmente las opciones para que no haya crash de memoria o red
-    // al intentar descargar iconos, lo cual hace que Chrome genere la alerta genérica
     const options = {
         body: body,
-        data: { url: url }
+        icon: '/pwa-192x192.png',
+        badge: '/pwa-192x192.png',
+        data: { url: urlToOpen }
     };
 
-    // Promise.resolve explícito y try/catch manual
     event.waitUntil(
         self.registration.showNotification(title, options)
-            .catch(err => {
-                console.error('Error forced fallback showing notification:', err);
-                return self.registration.showNotification('Alerta', { body: 'Mensaje' });
-            })
     );
 });
 
