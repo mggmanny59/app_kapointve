@@ -309,24 +309,38 @@ const Home = () => {
         setIsFetchingRate(true);
         setIsRateSuccessful(false);
         try {
-            const { data, error } = await supabase.functions.invoke('get-bcv-rate', { method: 'GET' });
+            console.log('Intentando obtener tasa vía Supabase...');
+            const { data, error } = await supabase.functions.invoke('get-bcv-rate');
 
             if (error) throw error;
 
             if (data?.rate) {
-                console.log('Exchange Rate fetched:', data.rate);
-                setExchangeRate(parseFloat(data.rate).toFixed(2));
+                const newRate = parseFloat(data.rate).toFixed(2);
+                setExchangeRate(newRate);
                 setIsRateSuccessful(true);
-                if (amount) {
-                    setAmountBs((parseFloat(amount) * data.rate).toFixed(2));
-                }
-            } else {
-                console.error('BCV Function Error:', data?.error);
-                setIsRateSuccessful(false);
+                if (amount) setAmountBs((parseFloat(amount) * data.rate).toFixed(2));
+                return;
             }
+            throw new Error('Respuesta de Supabase sin tasa');
+
         } catch (err) {
-            console.error('Error fetching rate:', err);
-            setIsRateSuccessful(false);
+            console.warn('Supabase BCV falló, iniciando Plan B (API Pública de respaldo)...');
+            try {
+                // Plan B: API Pública de respaldo (DolarAPI - Oficial)
+                const response = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.promedio) {
+                        const newRate = parseFloat(data.promedio).toFixed(2);
+                        console.log('Tasa obtenida vía Plan B:', newRate);
+                        setExchangeRate(newRate);
+                        setIsRateSuccessful(true);
+                        if (amount) setAmountBs((parseFloat(amount) * data.promedio).toFixed(2));
+                    }
+                }
+            } catch (fallbackErr) {
+                console.error('Error en ambos métodos de obtención de tasa:', fallbackErr);
+            }
         } finally {
             setIsFetchingRate(false);
         }
@@ -1145,9 +1159,13 @@ const Home = () => {
                                         <div className="bg-slate-50 border-2 border-[#595A5B] rounded-3xl p-6 shadow-inner space-y-4">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="size-10 rounded-xl bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-400 shadow-sm">
-                                                        <span className="material-symbols-outlined text-xl">currency_exchange</span>
-                                                    </div>
+                                                    <button
+                                                        onClick={fetchBCVRate}
+                                                        disabled={isFetchingRate}
+                                                        className="size-10 rounded-xl bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-400 hover:text-primary active:scale-90 transition-all shadow-sm disabled:opacity-50"
+                                                    >
+                                                        <span className={`material-symbols-outlined text-xl ${isFetchingRate ? 'animate-spin' : ''}`}>currency_exchange</span>
+                                                    </button>
                                                     <div className="flex flex-col">
                                                         <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest leading-none">Tasa de Cambio</span>
                                                         <span className={`text-[9px] font-black uppercase tracking-[0.2em] mt-2 flex items-center gap-2 ${isRateSuccessful ? 'text-primary' : 'text-orange-400'}`}>
