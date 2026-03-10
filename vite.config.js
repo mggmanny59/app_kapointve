@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      strategy: 'injectManifest',
+      strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'service-worker.js',
       registerType: 'autoUpdate',
