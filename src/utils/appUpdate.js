@@ -1,27 +1,32 @@
 /**
- * Utilidad para forzar la actualización de la PWA y limpiar el cache del navegador.
- * Útil para dispositivos móviles donde el Service Worker es muy agresivo.
+ * Utilidad para forzar la actualización de la PWA SIN destruir la suscripción push.
+ * IMPORTANTE: NO desregistrar el service worker — eso elimina la suscripción push.
  */
 export const forceAppUpdate = async () => {
     try {
-        // 1. Desregistrar todos los Service Workers
+        // 1. Pedir al SW activo que se actualice (sin desregistrar)
         if ('serviceWorker' in navigator) {
-            const registrations = await navigator.serviceWorker.getRegistrations();
-            for (let registration of registrations) {
-                await registration.unregister();
+            const registration = await navigator.serviceWorker.ready;
+            await registration.update(); // Busca nueva versión sin destruir la suscripción
+
+            // Enviar mensaje al SW para activar la nueva versión inmediatamente
+            if (registration.waiting) {
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
             }
         }
 
-        // 2. Limpiar Caches de la Web
+        // 2. Limpiar solo caches de contenido (NO el de precache del SW)
         if ('caches' in window) {
             const cacheNames = await caches.keys();
             await Promise.all(
-                cacheNames.map(cacheName => caches.delete(cacheName))
+                cacheNames
+                    .filter(name => !name.includes('workbox') && !name.includes('precache'))
+                    .map(cacheName => caches.delete(cacheName))
             );
         }
 
-        // 3. Forzar el recargo de la página desde el servidor
-        window.location.reload(true);
+        // 3. Recargar para aplicar cambios
+        window.location.reload();
     } catch (error) {
         console.error('Error al forzar actualización:', error);
         window.location.reload();
