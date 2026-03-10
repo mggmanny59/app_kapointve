@@ -8,7 +8,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useMessages } from '../context/MessageContext';
 import MessageCenter from '../components/MessageCenter';
 import Navigation from '../components/Navigation';
-import { subscribeUserToPush, sendPushToProfile } from '../lib/pushNotifications';
+import { subscribeUserToPush, sendPushToProfile, unsubscribeUserFromPush } from '../lib/pushNotifications';
 import { forceAppUpdate } from '../utils/appUpdate';
 
 const MyPoints = () => {
@@ -133,6 +133,16 @@ const MyPoints = () => {
             }
         } catch (error) {
             showNotification('warning', 'Aviso', `No se pudieron activar: ${error.message}`);
+        }
+    };
+
+    const handleDisablePush = async () => {
+        try {
+            await unsubscribeUserFromPush();
+            setIsSubscribed(false);
+            showNotification('success', 'Aviso', 'Alertas desactivadas correctamente. El buzón fue borrado.');
+        } catch (error) {
+            showNotification('error', 'Error', 'No se pudieron desactivar las alertas.');
         }
     };
 
@@ -324,7 +334,14 @@ const MyPoints = () => {
                                 {isSubscribed ? 'Alertas Activas' : 'Alertas Desactivadas'}
                             </span>
                         </div>
-                        {!isSubscribed && (
+                        {isSubscribed ? (
+                            <button
+                                onClick={handleDisablePush}
+                                className="text-[10px] font-black bg-white/10 text-white/70 border border-white/20 px-3 py-1.5 rounded-xl hover:bg-white/20 active:scale-95 transition-all uppercase tracking-widest"
+                            >
+                                Desactivar
+                            </button>
+                        ) : (
                             <button
                                 onClick={handleEnablePush}
                                 className="text-[10px] font-black bg-white/25 text-white border border-white/40 px-3 py-1.5 rounded-xl hover:bg-white/40 active:scale-95 transition-all uppercase tracking-widest"

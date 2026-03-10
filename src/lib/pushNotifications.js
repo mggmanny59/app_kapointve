@@ -110,6 +110,37 @@ export async function subscribeUserToPush() {
 }
 
 /**
+ * Desuscribe al usuario de las notificaciones Push
+ */
+export async function unsubscribeUserFromPush() {
+    try {
+        if (!('serviceWorker' in navigator)) return false;
+
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+
+        if (subscription) {
+            await subscription.unsubscribe();
+
+            // Borrar de supabase
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                await supabase
+                    .from('push_subscriptions')
+                    .delete()
+                    .eq('profile_id', user.id)
+                    .eq('user_agent', navigator.userAgent);
+            }
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error al desuscribir:', error);
+        return false;
+    }
+}
+
+/**
  * Llama a la Edge Function para enviar una notificación push a un perfil específico
  */
 export async function sendPushToProfile({ profileId, title, message, url = '/dashboard' }) {
