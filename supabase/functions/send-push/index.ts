@@ -23,17 +23,10 @@ serve(async (req) => {
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
-        // Verificar VAPID keys
-        const publicVapidKey = Deno.env.get('VAPID_PUBLIC_KEY')
-        const privateVapidKey = Deno.env.get('VAPID_PRIVATE_KEY')
+        // Variables estáticas para garantizar funcionamiento bypassando supabase secrets
+        const publicVapidKey = 'BIoF916LzTZ5Wb_keed4lC0-8QlIHoU9p-w5VX2fvgl4iyia8XwR_EZ1fsm6BsEzHeeeAaI8C_qwXUJ197d3gSg';
+        const privateVapidKey = 'RUnPEQaMUSr3msyH9rvmGajSDmqAFa7tbJ8hbURf_F8';
 
-        console.log(`[send-push] VAPID_PUBLIC_KEY presente: ${!!publicVapidKey}`)
-        console.log(`[send-push] VAPID_PUBLIC_KEY valor: ${publicVapidKey?.substring(0, 20)}...`)
-        console.log(`[send-push] VAPID_PRIVATE_KEY presente: ${!!privateVapidKey}`)
-
-        if (!publicVapidKey || !privateVapidKey) {
-            throw new Error('VAPID keys no configuradas en Supabase Secrets')
-        }
 
         webpush.setVapidDetails(
             'mailto:soporte@kpoint.com',

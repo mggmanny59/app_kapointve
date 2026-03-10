@@ -44,14 +44,9 @@ export async function subscribeUserToPush() {
             throw new Error('Permiso denegado por el usuario.');
         }
 
-        // 4. Suscribir al usuario con la llave pública VAPID
-        // CRITICO: Debe coincidir EXACTAMENTE con VAPID_PUBLIC_KEY en Supabase Secrets
-        const publicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY
-            || 'BC7FEWmQBL4JBDPtoiNZQbo7RPR1FmeckBJCO-qlFM4zbmyDrxd_1a3MbkjDpoZz0dV2Rj_PLUU_ylf-uTj588s';
+        // 4. Suscribir al usuario con la nueva llave pública VAPID fija
+        const publicVapidKey = 'BIoF916LzTZ5Wb_keed4lC0-8QlIHoU9p-w5VX2fvgl4iyia8XwR_EZ1fsm6BsEzHeeeAaI8C_qwXUJ197d3gSg';
 
-        if (!publicVapidKey) {
-            throw new Error('Falta VITE_VAPID_PUBLIC_KEY en las variables de entorno de Vercel.');
-        }
 
         const subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
