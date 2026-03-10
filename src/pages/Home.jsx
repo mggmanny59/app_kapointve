@@ -109,47 +109,91 @@ const Home = () => {
                 return;
             }
 
-            // 2. Obtener los clientes del negocio (loyalty_cards)
-            const { data: clients, error: clientsError } = await supabase
+            const { data: clients, error: fetchError } = await supabase
                 .from('loyalty_cards')
                 .select('profile_id')
                 .eq('business_id', currentBusinessId);
 
-            if (clientsError) throw clientsError;
+            if (fetchError) throw fetchError;
 
             if (!clients || clients.length === 0) {
-                showNotification('warning', 'Sin Clientes', 'Este negocio aún no tiene clientes registrados.');
+                showNotification('warning', 'Sin clientes', 'No hay clientes registrados para enviarles pruebas.');
                 return;
             }
 
-            // 3. Enviar notificación a cada cliente
-            let sent = 0;
-            let noDevice = 0;
-
+            let successCount = 0;
             for (const client of clients) {
-                const result = await sendPushToProfile({
+                await sendPushToProfile({
                     profileId: client.profile_id,
-                    title: '🎉 Mensaje de ' + (business?.name || 'KPoint'),
-                    message: '¡Hola! Tienes una notificación de tu negocio favorito.',
+                    title: business?.name || 'KPoint',
+                    message: `📢 ¡Mensaje de prueba para todos! Gracias por ser parte de ${business?.name || 'KPoint'}. 🎉`,
                     url: '/my-points'
                 });
-
-                if (result && result.success !== false) {
-                    sent++;
-                } else {
-                    noDevice++;
-                }
+                successCount++;
             }
-
-            if (sent > 0) {
-                showNotification('success', '¡Enviado!', `Notificación enviada a ${sent} cliente(s). ${noDevice > 0 ? `${noDevice} sin dispositivo registrado.` : ''}`);
-            } else {
-                showNotification('warning', 'Aviso', 'Ningún cliente tiene notificaciones activas aún. Pídeles que activen las alertas en su App.');
-            }
+            showNotification('success', 'Prueba Enviada', `Se enviaron ${successCount} avisos.`);
 
         } catch (error) {
             console.error('Error en prueba push:', error);
             showNotification('error', 'Error', 'No se pudo enviar la prueba: ' + error.message);
+        }
+    };
+
+    /**
+     * Envía una notificación Push inteligente "Meta Alcanzada" o personalizada al cliente
+     */
+    const notifyConversion = async (profileId, pointsEarned) => {
+        try {
+            // 1. Obtener nombre del cliente
+            const { data: profileData } = await supabase
+                .from('profiles')
+                .select('full_name')
+                .eq('id', profileId)
+                .single();
+
+            const clientFirstName = profileData?.full_name?.split(' ')[0] || 'Cliente';
+
+            // 2. Obtener saldo actualizado (esperamos un momento para que el trigger procese)
+            await new Promise(resolve => setTimeout(resolve, 800));
+
+            const { data: cardData } = await supabase
+                .from('loyalty_cards')
+                .select('current_points')
+                .eq('profile_id', profileId)
+                .eq('business_id', businessId)
+                .single();
+
+            const currentPoints = cardData?.current_points || 0;
+
+            // 3. Obtener premios activos del comercio
+            const { data: rewards } = await supabase
+                .from('rewards')
+                .select('name, cost_points')
+                .eq('business_id', businessId)
+                .eq('is_active', true)
+                .order('cost_points', { ascending: false });
+
+            // 4. Buscar si alcanzó una meta (el premio más caro que puede pagar)
+            const reachableRewards = rewards?.filter(r => currentPoints >= r.cost_points) || [];
+
+            let pushMessage = '';
+            if (reachableRewards.length > 0) {
+                const topReward = reachableRewards[0];
+                pushMessage = `¡Felicidades ${clientFirstName}! 🎉 Ya tienes suficientes puntos para: ${topReward.name} 🎁✨`;
+            } else {
+                pushMessage = `¡Hola ${clientFirstName}! Sumaste ${pointsEarned} puntos en ${business?.name || 'KPoint'} 🎉 ✨`;
+            }
+
+            // 5. Enviar Push
+            await sendPushToProfile({
+                profileId,
+                title: business?.name || 'KPoint',
+                message: pushMessage,
+                url: '/my-points'
+            });
+
+        } catch (error) {
+            console.error('Error en notifyConversion:', error);
         }
     };
 
@@ -435,13 +479,8 @@ const Home = () => {
                 }
             });
 
-            // 2. NOTIFICACIÓN PUSH: Para cuando el app está cerrada
-            sendPushToProfile({
-                profileId: clientId,
-                title: business?.name || 'KPoint',
-                message: `¡Has ganado ${pointsToGain} puntos!`,
-                url: '/my-points'
-            });
+            // 2. NOTIFICACIÓN PUSH PERSONALIZADA (Opción C: Meta Alcanzada)
+            notifyConversion(clientId, pointsToGain);
         } catch (err) {
             console.error('Error processing sale:', err);
             showNotification('error', 'Error de Escaneo', 'No se pudo procesar la venta. Verifique el código QR.');
@@ -626,11 +665,14 @@ const Home = () => {
             // Refresh UI
             fetchDashboardData();
 
-            // Enviar notificación Push al cliente
+            // 4. Notificación Push Personalizada para Canje
+            const { data: clientProfile } = await supabase.from('profiles').select('full_name').eq('id', client.profile_id).single();
+            const clientName = clientProfile?.full_name?.split(' ')[0] || 'Cliente';
+
             sendPushToProfile({
                 profileId: client.profile_id,
                 title: business?.name || 'KPoint',
-                message: `Has canjeado tus puntos por: ${reward.name}. ¡Disfrútalo!`,
+                message: `¡Genial ${clientName}! 🎁 Disfruta tu premio: ${reward.name}. ✨ ¡Gracias por preferirnos! 🎉`,
                 url: '/my-points'
             });
         } catch (err) {
@@ -694,13 +736,8 @@ const Home = () => {
             showNotification('success', '¡Venta Registrada!', 'Los puntos han sido asignados correctamente al cliente.');
             fetchDashboardData();
 
-            // Enviar notificación Push al cliente
-            sendPushToProfile({
-                profileId: profileData.id,
-                title: business?.name || 'KPoint',
-                message: `¡Has ganado ${(parseFloat(amount) * (business?.points_per_dollar || 10)).toFixed(0)} puntos!`,
-                url: '/my-points'
-            });
+            // 6. Notificación Push Personalizada (Meta Alcanzada)
+            notifyConversion(profileData.id, (parseFloat(amount) * (business?.points_per_dollar || 10)).toFixed(0));
         } catch (err) {
             showNotification('error', 'Error en Registro', err.message);
         } finally {

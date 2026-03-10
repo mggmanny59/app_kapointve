@@ -38,19 +38,12 @@ self.addEventListener('push', (event) => {
         }
     }
 
-    // Ping de diagnóstico a Supabase (para saber si el celular despertó)
-    fetch('https://gtxzmkmwjclwppnkiifi.supabase.co/rest/v1/push_subscriptions?select=id&limit=1', {
-        headers: {
-            'apikey': 'sb_publishable_v_ZfK2QvTQmliN5WlD9_NA_nER5um_T'
-        }
-    }).catch(() => { });
-
     const options = {
-        body: body + ' (' + new Date().toLocaleTimeString() + ')',
+        body: body,
         icon: '/pwa-192x192.png',
         badge: '/pwa-192x192.png',
-        vibrate: [500, 250, 500, 250, 500, 250, 500], // Patrón largo e imposible de ignorar
-        requireInteraction: true, // Fuerza a la notificación a quedarse en pantalla y no irse al fondo
+        vibrate: [500, 250, 500, 250, 500, 250, 500],
+        requireInteraction: true,
         data: { url: urlToOpen }
     };
 
