@@ -844,16 +844,14 @@ const Home = () => {
                     </div>
                 )}
 
-                {/* Botón de prueba (Solo si ya está suscrito) */}
-                {isSubscribed && (
-                    <button
-                        onClick={handleTestPush}
-                        className="w-full bg-navy-card border border-white/5 p-4 rounded-3xl flex items-center justify-center gap-3 text-slate-400 hover:text-white transition-colors group"
-                    >
-                        <span className="material-symbols-outlined text-primary group-hover:animate-bounce">send_and_archive</span>
-                        <span className="text-[10px] font-black uppercase tracking-widest">Enviar Notificación de Prueba</span>
-                    </button>
-                )}
+                {/* Botón de prueba Administrador */}
+                <button
+                    onClick={handleTestPush}
+                    className="w-full bg-navy-card border border-white/5 p-4 rounded-3xl flex items-center justify-center gap-3 text-slate-400 hover:text-white transition-colors group"
+                >
+                    <span className="material-symbols-outlined text-primary group-hover:animate-bounce">send_and_archive</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">Enviar Notificación a Clientes</span>
+                </button>
 
                 {/* Business Info Section */}
                 <div className="flex flex-col">
