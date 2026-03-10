@@ -327,7 +327,7 @@ const MyPoints = () => {
                     </div>
 
                     {/* Indicador de Alertas Push */}
-                    <div className="mt-4 flex items-center justify-between">
+                    <div className="relative z-10 mt-4 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <div className={`size-2.5 rounded-full ${isSubscribed ? 'bg-green-300 shadow-[0_0_8px_rgba(134,239,172,0.8)]' : 'bg-white/50'}`}></div>
                             <span className="text-[10px] font-black text-white/80 uppercase tracking-widest">
@@ -351,7 +351,7 @@ const MyPoints = () => {
                         )}
                     </div>
 
-                    <span className="material-symbols-outlined absolute -right-8 -bottom-8 text-white/[0.07] !text-[180px] font-black rotate-12">account_balance_wallet</span>
+                    <span className="material-symbols-outlined absolute -right-8 -bottom-8 text-white/[0.07] !text-[180px] font-black rotate-12 pointer-events-none select-none">account_balance_wallet</span>
                 </div>
 
                 {/* QR Section */}
