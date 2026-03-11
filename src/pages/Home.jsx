@@ -941,14 +941,22 @@ const Home = () => {
                     </div>
                 </div>
 
-                {/* Show My QR Button (Business Context) */}
                 <div className="flex gap-2">
                     <button
                         onClick={() => setIsBusinessQRModalOpen(true)}
-                        className="flex flex-col items-center justify-center p-4 bg-white border-2 border-[#595A5B] rounded-3xl group active:scale-95 transition-all w-full shadow-sm"
+                        className="w-full h-16 bg-white border-2 border-[#595A5B] rounded-[2rem] flex items-center justify-start px-6 gap-4 group active:scale-95 transition-all shadow-sm relative overflow-hidden"
                     >
-                        <span className="material-symbols-outlined text-primary !text-2xl group-hover:scale-110 transition-transform">qr_code_2</span>
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1">Mi QR de Local</span>
+                        <div className="size-10 rounded-xl bg-orange-50 flex items-center justify-center text-primary shrink-0 border border-primary/10 group-hover:scale-110 transition-transform relative z-10">
+                            <span className="material-symbols-outlined font-black !text-2xl">qr_code_2</span>
+                        </div>
+                        <div className="flex flex-col items-start leading-none text-left relative z-10">
+                            <span className="text-[9px] font-black text-primary/70 uppercase tracking-widest mb-0.5">Invitar Clientes</span>
+                            <span className="text-sm font-black text-slate-800 uppercase tracking-tight">Mi QR de Local</span>
+                        </div>
+                        {/* QR decorativo de fondo */}
+                        <div className="absolute right-[-10%] top-[-20%] opacity-[0.05] rotate-12 pointer-events-none transition-transform group-hover:rotate-0 duration-700">
+                             <span className="material-symbols-outlined !text-[100px] text-slate-900">qr_code_2</span>
+                        </div>
                     </button>
                 </div>
 
@@ -961,12 +969,17 @@ const Home = () => {
                                     showNotification('warning', 'Datos Incompletos', 'Debe completar los datos del formulario "Ajustes del Negocio" para realizar esta acción.');
                                     return;
                                 }
+                                setAmount('0.00');
+                                setAmountBs('0.00');
                                 setIsModalOpen(true);
                             }}
-                            className="w-full bg-primary hover:opacity-95 hover:scale-[1.02] text-white h-14 rounded-2xl flex items-center justify-center gap-2 border-2 border-[#1E293B] shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
+                            className="w-full bg-primary hover:opacity-95 hover:scale-[1.02] text-white h-16 rounded-2xl flex items-center justify-start px-6 gap-4 border-2 border-[#1E293B] shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
                         >
-                            <span className="material-symbols-outlined font-black !text-2xl">add_shopping_cart</span>
-                            <span className="text-sm font-black uppercase tracking-tight">Registrar Venta</span>
+                            <span className="material-symbols-outlined font-black !text-2xl shrink-0">add_shopping_cart</span>
+                            <div className="flex flex-col items-start leading-none text-left">
+                                <span className="text-[9px] font-black opacity-70 uppercase tracking-widest mb-0.5">Ventas</span>
+                                <span className="text-xs font-black uppercase tracking-tight">Registrar Venta</span>
+                            </div>
                         </button>
                     )}
 
@@ -979,45 +992,48 @@ const Home = () => {
                                 }
                                 startRedeemScanner();
                             }}
-                            className="w-full bg-[#22C55E] hover:opacity-95 hover:scale-[1.02] text-white h-14 rounded-2xl flex items-center justify-center gap-2 border-2 border-[#1E293B] shadow-lg shadow-[#22C55E]/20 active:scale-[0.98] transition-all"
+                            className="w-full bg-[#22C55E] hover:opacity-95 hover:scale-[1.02] text-white h-16 rounded-2xl flex items-center justify-start px-6 gap-4 border-2 border-[#1E293B] shadow-lg shadow-[#22C55E]/20 active:scale-[0.98] transition-all"
                         >
-                            <span className="material-symbols-outlined font-black !text-2xl">redeem</span>
-                            <span className="text-sm font-black uppercase tracking-tight">Canjear Premio</span>
+                            <span className="material-symbols-outlined font-black !text-2xl shrink-0">redeem</span>
+                            <div className="flex flex-col items-start leading-none text-left">
+                                <span className="text-[9px] font-black opacity-70 uppercase tracking-widest mb-0.5">Lealtad</span>
+                                <span className="text-xs font-black uppercase tracking-tight">Canjear Premio</span>
+                            </div>
                         </button>
                     )}
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white p-5 rounded-3xl border-2 border-[#595A5B] shadow-sm relative overflow-hidden group">
-                        <div className="absolute -right-2 -top-2 bg-primary/5 size-16 rounded-full blur-2xl group-hover:bg-primary/10 transition-all"></div>
-                        <span className="material-symbols-outlined text-primary mb-2 block">payments</span>
-                        <p className="text-[11px] text-slate-500 font-black uppercase tracking-widest mb-1">Ventas Hoy</p>
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white p-3.5 rounded-3xl border-2 border-[#595A5B] shadow-sm relative overflow-hidden group">
+                        <div className="absolute -right-2 -top-2 bg-primary/5 size-12 rounded-full blur-2xl group-hover:bg-primary/10 transition-all"></div>
+                        <span className="material-symbols-outlined text-primary mb-1 block !text-[20px]">payments</span>
+                        <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-0.5">Ventas Hoy</p>
                         <div className="flex items-baseline gap-1">
-                            <p className="text-2xl font-black text-slate-900">${stats.sales}</p>
-                            <p className="text-[10px] text-slate-400 font-bold">{stats.transactions} tx</p>
+                            <p className="text-lg font-black text-slate-900">${stats.sales}</p>
+                            <p className="text-[9px] text-slate-400 font-bold">{stats.transactions} tx</p>
                         </div>
                     </div>
 
-                    <div className="bg-white p-5 rounded-3xl border-2 border-[#595A5B] shadow-sm relative overflow-hidden group">
-                        <div className="absolute -right-2 -top-2 bg-yellow-500/5 size-16 rounded-full blur-2xl group-hover:bg-yellow-500/10 transition-all"></div>
-                        <span className="material-symbols-outlined text-warning mb-2 block">stars</span>
-                        <p className="text-[11px] text-slate-500 font-black uppercase tracking-widest mb-1">Puntos Dados</p>
-                        <p className="text-2xl font-black text-slate-900">
+                    <div className="bg-white p-3.5 rounded-3xl border-2 border-[#595A5B] shadow-sm relative overflow-hidden group">
+                        <div className="absolute -right-2 -top-2 bg-yellow-500/5 size-12 rounded-full blur-2xl group-hover:bg-yellow-500/10 transition-all"></div>
+                        <span className="material-symbols-outlined text-warning mb-1 block !text-[20px]">stars</span>
+                        <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-0.5">Puntos Dados</p>
+                        <p className="text-lg font-black text-slate-900">
                             {stats.points >= 1000 ? (stats.points / 1000).toFixed(1) + 'k' : stats.points}
                         </p>
                     </div>
 
-                    <div className="bg-white p-5 rounded-3xl border-2 border-[#595A5B] shadow-sm relative overflow-hidden group col-span-2">
-                        <div className="absolute -right-4 -top-4 bg-primary/5 size-24 rounded-full blur-3xl group-hover:bg-primary/10 transition-all"></div>
+                    <div className="bg-white p-3.5 rounded-3xl border-2 border-[#595A5B] shadow-sm relative overflow-hidden group col-span-2">
+                        <div className="absolute -right-4 -top-4 bg-primary/5 size-20 rounded-full blur-3xl group-hover:bg-primary/10 transition-all"></div>
                         <div className="flex justify-between items-center">
                             <div>
-                                <span className="material-symbols-outlined text-primary/80 mb-1 block">group</span>
-                                <p className="text-[11px] text-slate-500 font-black uppercase tracking-widest mb-1">Clientes Activos Hoy</p>
-                                <p className="text-2xl font-black text-slate-900">{stats.newClients}</p>
+                                <span className="material-symbols-outlined text-primary/80 mb-0.5 block !text-[20px]">group</span>
+                                <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-0.5">Clientes Activos Hoy</p>
+                                <p className="text-lg font-black text-slate-900">{stats.newClients}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-[10px] text-primary font-black bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                                <p className="text-[8px] text-primary font-black bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
                                     + {stats.newClients} hoy
                                 </p>
                             </div>
@@ -1026,30 +1042,63 @@ const Home = () => {
                 </div>
 
                 {/* Chart Section */}
-                <div className="bg-white p-5 rounded-3xl border-2 border-[#595A5B] shadow-sm">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-sm font-bold text-slate-700 uppercase tracking-widest">Actividad de la Semana</h2>
-                        <span className="text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-full font-bold">Ventas ($)</span>
+                {/* Chart Section - Rediseño Premium */}
+                <div className="bg-white p-6 rounded-[2.5rem] border-2 border-[#595A5B] shadow-sm relative overflow-hidden">
+                    <div className="flex justify-between items-center mb-8">
+                        <div>
+                            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Análisis Semanal</h2>
+                            <p className="text-sm font-black text-slate-800 uppercase tracking-tight">Rendimiento de Ventas</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                             <div className="size-2 rounded-full bg-primary animate-pulse"></div>
+                             <span className="text-[10px] bg-primary/5 text-primary border border-primary/10 px-3 py-1 rounded-full font-black uppercase tracking-widest">En Vivo</span>
+                        </div>
                     </div>
-                    <div className="relative h-40 w-full flex items-end justify-between px-2">
-                        <div className="absolute inset-0 bg-slate-50/50 rounded-xl overflow-hidden"></div>
+
+                    <div className="relative h-44 w-full flex items-end justify-between px-2">
+                        {/* Líneas de referencia (Grid) */}
+                        <div className="absolute inset-x-0 bottom-0 h-full flex flex-col justify-between opacity-5 pointer-events-none">
+                            <div className="w-full border-t border-slate-900"></div>
+                            <div className="w-full border-t border-slate-900"></div>
+                            <div className="w-full border-t border-slate-900"></div>
+                            <div className="w-full border-t border-slate-900"></div>
+                        </div>
+
                         {weeklyActivity.map((value, index) => {
                             const maxVal = Math.max(...weeklyActivity, 1);
                             const height = (value / (maxVal * 1.1)) * 100;
+                            const days = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
                             const isToday = (new Date().getDay() === (index === 6 ? 0 : index + 1));
 
                             return (
-                                <div key={index} className="flex flex-col items-center justify-end h-full flex-1 group relative z-10 px-1">
+                                <div key={index} className="flex flex-col items-center justify-end h-full flex-1 group relative z-10">
+                                    {/* Tooltip on Hover */}
+                                    <div className="absolute -top-8 px-2 py-1 bg-slate-900 text-white text-[10px] font-black rounded-lg opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100 pointer-events-none shadow-xl border border-white/10">
+                                        ${value}
+                                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45"></div>
+                                    </div>
+
+                                    {/* Bar with gradient */}
                                     <div
-                                        className={`w-full max-w-[12px] rounded-t-lg transition-all duration-1000 ease-out ${isToday ? 'bg-warning shadow-[0_0_20px_rgba(245,158,11,0.3)]' : 'bg-primary/30 group-hover:bg-primary/60'}`}
-                                        style={{ height: `${Math.max(height, 5)}%` }}
-                                    ></div>
+                                        className={`w-[14px] rounded-full transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] relative active:scale-95 shadow-lg ${
+                                            isToday 
+                                            ? 'bg-gradient-to-t from-orange-600 to-orange-400 shadow-orange-500/30' 
+                                            : 'bg-gradient-to-t from-slate-200 to-slate-100 group-hover:from-primary/40 group-hover:to-primary/20 shadow-slate-200/50'
+                                        }`}
+                                        style={{ height: `${Math.max(height, 8)}%` }}
+                                    >
+                                        {isToday && (
+                                            <div className="absolute -inset-1.5 bg-primary/20 rounded-full blur-md animate-pulse"></div>
+                                        )}
+                                    </div>
+
+                                    {/* Day label */}
+                                    <span className={`mt-4 text-[10px] font-black transition-colors ${isToday ? 'text-primary' : 'text-slate-400'}`}>
+                                        {days[index]}
+                                    </span>
                                 </div>
                             );
                         })}
-                    </div>
-                    <div className="flex justify-between mt-4 text-[10px] font-black text-slate-400 uppercase px-1 tracking-widest">
-                        <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
                     </div>
                 </div>
 
@@ -1107,10 +1156,13 @@ const Home = () => {
                 <div className="pt-2">
                     <button
                         onClick={() => setIsNotificationModalOpen(true)}
-                        className="w-full bg-[#1E293B] hover:bg-slate-800 hover:scale-[1.01] border-2 border-[#334155] text-white h-14 rounded-2xl flex items-center justify-center gap-3 shadow-lg active:scale-[0.98] transition-all"
+                        className="w-full bg-[#1E293B] hover:bg-slate-800 hover:scale-[1.01] border-2 border-[#334155] text-white h-16 rounded-2xl flex items-center justify-start px-6 gap-4 shadow-lg active:scale-[0.98] transition-all"
                     >
-                        <span className="material-symbols-outlined font-black !text-2xl">notifications_active</span>
-                        <span className="text-base font-black uppercase tracking-tight">Enviar Comunicado</span>
+                        <span className="material-symbols-outlined font-black !text-2xl shrink-0">notifications_active</span>
+                        <div className="flex flex-col items-start leading-none text-left">
+                            <span className="text-[9px] font-black opacity-60 uppercase tracking-widest mb-0.5">Marketing</span>
+                            <span className="text-sm font-black uppercase tracking-tight">Enviar Comunicado</span>
+                        </div>
                     </button>
                 </div>
             </main>
@@ -1130,74 +1182,64 @@ const Home = () => {
                 businessId={profile?.business_members?.[0]?.business_id}
             />
 
-            {/* REGISTER SALE MODAL */}
+            {/* REGISTER SALE MODAL - FULL SCREEN LIGHT DESIGN */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
-                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={closeModal}></div>
-
-                    <div className="relative w-full max-w-[340px] bg-white border-2 border-[#595A5B] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-                        <div className="p-6">
-                            <div className="relative flex items-center gap-4 mb-6 pt-1">
-                                <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-sm">
-                                    <span className="material-symbols-outlined !text-2xl font-bold">point_of_sale</span>
-                                </div>
-                                <div className="flex-1">
-                                    <h2 className="text-xl font-black text-slate-900 leading-tight tracking-tight">Asignación</h2>
-                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mt-0.5">REGISTRAR VENTA</p>
-                                </div>
-                                <button
-                                    onClick={closeModal}
-                                    className="absolute -top-2 -right-2 size-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-50 shadow-sm transition-all active:scale-95 group"
-                                >
-                                    <span className="material-symbols-outlined !text-xl group-hover:rotate-90 transition-transform">close</span>
-                                </button>
+                <div className="fixed inset-0 z-[100] bg-[#F0F2F5] flex flex-col animate-in fade-in duration-300">
+                    <div className="relative w-full h-full flex flex-col">
+                        {/* Header */}
+                        <div className="px-8 pt-8 pb-4 flex items-center gap-4 shrink-0 bg-[#F0F2F5]">
+                            <div className="w-14 h-16 rounded-[1.25rem] bg-white border-2 border-[#595A5B] flex items-center justify-center shadow-sm shrink-0">
+                                <span className="material-symbols-outlined text-primary !text-3xl">point_of_sale</span>
                             </div>
+                            <div className="flex flex-col flex-1 justify-center">
+                                <h2 className="text-3xl font-black text-[#0F172A] tracking-tight leading-none mb-1.5">Ventas</h2>
+                                <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest leading-none">Registrar Venta</p>
+                            </div>
+                        </div>
 
-                            {saleStep === 1 ? (
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-1 gap-4">
-                                        <div className="bg-slate-50 border-2 border-[#595A5B] rounded-3xl p-6 shadow-inner space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <button
-                                                        onClick={fetchBCVRate}
-                                                        disabled={isFetchingRate}
-                                                        className="size-10 rounded-xl bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-400 hover:text-primary active:scale-90 transition-all shadow-sm disabled:opacity-50"
-                                                    >
-                                                        <span className={`material-symbols-outlined text-xl ${isFetchingRate ? 'animate-spin' : ''}`}>currency_exchange</span>
-                                                    </button>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest leading-none">Tasa de Cambio</span>
-                                                        <span className={`text-[9px] font-black uppercase tracking-[0.2em] mt-2 flex items-center gap-2 ${isRateSuccessful ? 'text-primary' : 'text-orange-400'}`}>
-                                                            <span className={`size-2 rounded-full ${isFetchingRate ? 'bg-orange-500 animate-spin border-t-transparent border-2' : isRateSuccessful ? 'bg-primary animate-pulse' : 'bg-orange-400'}`}></span>
-                                                            {isFetchingRate ? 'Buscando...' : isRateSuccessful ? 'Oficial BCV OK' : 'Usando Manual'}
-                                                        </span>
-                                                    </div>
-                                                </div>
+                        <div className="flex-1 overflow-y-auto custom-scrollbar px-8 pt-5 pb-28 space-y-2 bg-white">
+                            {saleStep === 1 || saleStep === 3 ? (
+                                <div className="space-y-2">
+                                    {/* Three Independent Cards */}
+                                    <div className="space-y-2">
+                                        {/* Card 1: BCV Rate Information */}
+                                        <div className="bg-white border-2 border-[#595A5B] rounded-[1.5rem] p-4 shadow-sm flex items-center justify-between overflow-hidden relative">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Conversión de Moneda</span>
+                                                <h3 className="text-base font-black text-slate-800 leading-none">Tasa Oficial BCV</h3>
                                             </div>
-
-                                            <div className="relative group">
-                                                <input
-                                                    type="number"
-                                                    value={exchangeRate}
-                                                    onChange={(e) => {
-                                                        const rate = e.target.value;
-                                                        setExchangeRate(rate);
-                                                        setIsRateSuccessful(false); // If they edit it, it's manual
-                                                        const numRate = parseFloat(rate);
-                                                        if (amountBs && numRate > 0) {
-                                                            setAmount((parseFloat(amountBs) / numRate).toFixed(2));
-                                                        }
-                                                    }}
-                                                    className="w-full bg-white border-2 border-[#595A5B]  -2xl px-4 text-center text-4xl font-black text-slate-900 focus:ring-4 focus:ring-primary/10 focus:border-primary/40 outline-none transition-all shadow-sm"
-                                                />
-                                                <label className="absolute -top-2.5 left-6 bg-slate-50 px-3 text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] border-2 border-[#595A5B] rounded-full shadow-sm">Valor USD en Bolívares</label>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={fetchBCVRate}
+                                                    className={`size-8 rounded-xl bg-slate-50 border-2 border-slate-100 flex items-center justify-center text-slate-400 hover:text-primary active:scale-90 transition-all ${isFetchingRate ? 'animate-spin' : ''}`}
+                                                    title="Actualizar tasa"
+                                                >
+                                                    <span className="material-symbols-outlined !text-lg">refresh</span>
+                                                </button>
+                                                <div className="bg-orange-50 border-2 border-primary/20 px-3 py-1.5 rounded-xl flex flex-col items-center justify-center min-w-[80px] shadow-sm relative group">
+                                                    <input
+                                                        type="number"
+                                                        value={exchangeRate}
+                                                        onChange={(e) => {
+                                                            const rate = e.target.value;
+                                                            setExchangeRate(rate);
+                                                            setIsRateSuccessful(false);
+                                                            if (amountBs && parseFloat(rate) > 0) {
+                                                                setAmount((parseFloat(amountBs) / parseFloat(rate)).toFixed(2));
+                                                            }
+                                                        }}
+                                                        className="bg-transparent border-none text-lg font-black text-primary w-16 text-center p-0 focus:ring-0 leading-none"
+                                                    />
+                                                    <span className="text-[7px] font-black text-primary/60 uppercase tracking-widest mt-0.5">Bs/USD</span>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <div className="space-y-4">
-                                            <div className="relative group">
-                                                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-lg font-black text-slate-400 group-focus-within:text-primary transition-colors">Bs.</span>
+                                        {/* Card 2: Bolívares Input */}
+                                        <div className="bg-slate-50 border-2 border-[#595A5B] rounded-[1.5rem] p-4 flex flex-col justify-center min-h-[85px] shadow-sm hover:border-primary/30 transition-colors">
+                                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">Monto en Bolívares (BS.)</label>
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-xl font-black text-slate-300 italic">Bs.</span>
                                                 <input
                                                     type="number"
                                                     value={amountBs}
@@ -1210,16 +1252,19 @@ const Home = () => {
                                                             setAmount('');
                                                         }
                                                     }}
-                                                    className="w-full bg-slate-50 border-2 border-[#595A5B]  -2xl text-2xl font-black text-slate-900 pl-14 pr-4 focus:ring-4 focus:ring-primary/10 outline-none transition-all"
-                                                    placeholder="Monto Bs."
+                                                    className="bg-transparent border-none text-3xl font-black text-slate-900 w-full focus:ring-0 p-0 placeholder:text-slate-200"
+                                                    placeholder="0,00"
                                                 />
                                             </div>
+                                        </div>
 
-                                            <div className="relative group">
-                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-4xl font-black text-primary"> $ </span>
+                                        {/* Card 3: USD Input */}
+                                        <div className="bg-orange-50/20 border-2 border-[#595A5B] rounded-[1.5rem] p-4 flex flex-col justify-center min-h-[85px] shadow-sm hover:border-primary/30 transition-colors">
+                                            <p className="text-center text-[9px] font-black text-primary uppercase tracking-[0.2em] mb-1">Recibir en USD</p>
+                                            <div className="flex items-center justify-center gap-2">
+                                                <span className="text-3xl font-black text-primary drop-shadow-sm">$</span>
                                                 <input
                                                     type="number"
-                                                    autoFocus
                                                     value={amount}
                                                     onChange={(e) => {
                                                         const usd = e.target.value;
@@ -1230,101 +1275,102 @@ const Home = () => {
                                                             setAmountBs('');
                                                         }
                                                     }}
-                                                    className="w-full bg-white border-2 border-primary/20 h-24 rounded-3xl text-5xl font-black text-slate-900 pl-16 pr-6 focus:ring-8 focus:ring-primary/10 focus:border-primary/40 outline-none transition-all shadow-2xl"
+                                                    className="bg-transparent border-none text-4xl font-black text-slate-900 w-full text-center focus:ring-0 p-0 placeholder:text-slate-100 selection:bg-primary/10"
                                                     placeholder="0.00"
                                                 />
-                                                <label className="absolute -top-3 left-8 bg-white px-3 py-0.5 text-[9px] font-black text-primary uppercase tracking-widest border border-primary/20 rounded-full shadow-lg">Recibir en USD</label>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col gap-3">
-                                        <button
-                                            disabled={!amount || parseFloat(amount) <= 0 || isFetchingRate}
-                                            onClick={startScanner}
-                                            className="w-full bg-primary hover:bg-primary/90 text-white h-16 rounded-2xl font-black text-lg uppercase shadow-[0_10px_25px_rgba(34,197,94,0.2)] flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale transition-all active:scale-95"
-                                        >
-                                            Escanear QR
-                                            <span className="material-symbols-outlined !text-2xl">qr_code_scanner</span>
-                                        </button>
+                                    {/* Client Identification */}
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Identificación del Cliente</label>
+                                        <div className="flex gap-2">
+                                            <div className="relative flex-1">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-lg">mail</span>
+                                                <input
+                                                    type="email"
+                                                    value={searchEmail}
+                                                    onChange={(e) => setSearchEmail(e.target.value)}
+                                                    className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl h-12 pl-10 pr-3 text-slate-900 font-bold focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all outline-none text-sm"
+                                                    placeholder="Buscar por correo..."
+                                                />
+                                            </div>
+                                            <button
+                                                onClick={startScanner}
+                                                className="size-12 rounded-xl bg-[#1E293B] border-2 border-slate-800 flex items-center justify-center text-white hover:bg-slate-900 transition-all active:scale-95 shadow-xl"
+                                            >
+                                                <span className="material-symbols-outlined !text-xl font-black">qr_code_scanner</span>
+                                            </button>
+                                        </div>
+                                    </div>
 
+                                    {/* Actions */}
+                                    <div className="space-y-1">
                                         <button
-                                            onClick={() => setSaleStep(3)}
-                                            className="w-full bg-slate-50 hover:bg-slate-100 text-slate-500 h-14 rounded-full font-bold text-sm uppercase transition-all flex items-center justify-center gap-2 border-2 border-[#595A5B]"
+                                            disabled={!amount || parseFloat(amount) <= 0 || isProcessing || isFetchingRate}
+                                            onClick={handleManualSearch}
+                                            className="w-full bg-[#22C55E] hover:bg-[#1da850] text-white h-12 rounded-xl font-black text-base uppercase shadow-[0_5px_15px_rgba(34,197,94,0.2)] flex items-center justify-center gap-2 disabled:opacity-30 disabled:grayscale transition-all active:scale-[0.98]"
                                         >
-                                            O buscar por correo
-                                            <span className="material-symbols-outlined text-base">mail</span>
+                                            <span className="material-symbols-outlined !text-xl font-black">check_circle</span>
+                                            {isProcessing ? 'Validando...' : 'Confirmar Registro'}
+                                        </button>
+                                        <button
+                                            onClick={closeModal}
+                                            className="w-full text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] py-2 hover:text-slate-900 transition-colors"
+                                        >
+                                            Cancelar Operación
                                         </button>
                                     </div>
-                                </div>
+
+                                    </div>
                             ) : saleStep === 2 ? (
-                                <div className="space-y-6 text-center">
-                                    <div className="bg-navy-dark rounded-3xl overflow-hidden border-2 border-[#595A5B] relative min-h-[300px] flex items-center justify-center">
+                                <div className="space-y-10 text-center py-8">
+                                    <div className="bg-slate-50 rounded-[2.5rem] overflow-hidden border-2 border-slate-200 relative min-h-[350px] flex items-center justify-center shadow-inner">
                                         {isProcessing ? (
-                                            <div className="flex flex-col items-center gap-4">
-                                                <span className="animate-spin material-symbols-outlined text-primary text-5xl">refresh</span>
-                                                <p className="font-bold text-sm text-primary">Procesando puntos...</p>
+                                            <div className="flex flex-col items-center gap-6">
+                                                <div className="size-20 rounded-full border-4 border-primary/20 border-t-primary animate-spin"></div>
+                                                <p className="font-black text-sm text-primary uppercase tracking-[0.2em]">Sincronizando puntos...</p>
                                             </div>
                                         ) : (
                                             <div id="reader" className="w-full"></div>
                                         )}
                                     </div>
 
-                                    <div className="flex flex-col items-center gap-2">
-                                        <p className="text-slate-200 font-bold">Monto: <span className="text-primary text-xl">${amount}</span></p>
+                                    <div className="flex flex-col items-center gap-6">
+                                        <div className="text-center">
+                                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Monto a registrar</p>
+                                            <p className="text-primary text-6xl font-black tracking-tighter">${amount}</p>
+                                        </div>
                                         <button
                                             onClick={() => {
                                                 if (window.scannerInstance) window.scannerInstance.stop().catch(() => { });
                                                 setSaleStep(1);
                                             }}
-                                            className="text-slate-400 text-sm font-bold flex items-center gap-1 hover:text-white"
+                                            className="px-8 h-12 rounded-full border-2 border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 hover:text-slate-900 hover:border-slate-900 transition-all"
                                         >
                                             <span className="material-symbols-outlined text-base">edit</span>
-                                            Cambiar Monto
+                                            MODIFICAR MONTO
                                         </button>
                                     </div>
                                 </div>
-                            ) : (
-                                <div className="space-y-6">
-                                    <div className="text-center">
-                                        <p className="text-primary text-xl font-black mb-1">${amount}</p>
-                                        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Monto a registrar</p>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-sm font-bold text-slate-400 mb-2 block ml-1">Correo del Cliente</label>
-                                        <div className="relative">
-                                            <input
-                                                type="email"
-                                                autoFocus
-                                                value={searchEmail}
-                                                onChange={(e) => setSearchEmail(e.target.value)}
-                                                className="w-full bg-slate-50 border-2 border-[#595A5B]  -full text-slate-900 px-4 focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium"
-                                                placeholder="ejemplo@correo.com"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="flex flex-col gap-3">
-                                        <button
-                                            disabled={!searchEmail || isProcessing}
-                                            onClick={handleManualSearch}
-                                            className="w-full bg-primary hover:bg-primary/90 text-white h-16 rounded-full font-black text-lg uppercase shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all font-display"
-                                        >
-                                            {isProcessing ? 'Validando...' : 'Validar y Registrar'}
-                                            <span className="material-symbols-outlined">how_to_reg</span>
-                                        </button>
-
-                                        <button
-                                            onClick={() => setSaleStep(1)}
-                                            className="w-full text-slate-400 text-sm font-bold hover:text-white py-2"
-                                        >
-                                            Volver
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
+                            ) : null}
                         </div>
+
+                        {/* Banner de agradecimiento - Fijo al final del dispositivo (Zona Segura) */}
+                        {(saleStep === 1 || saleStep === 3) && (
+                            <div className="bg-primary pt-7 pb-[max(2rem,env(safe-area-inset-bottom))] px-8 shrink-0 shadow-[0_-10px_30px_rgba(255,101,14,0.2)] animate-in slide-in-from-bottom duration-500 rounded-t-[2.5rem]">
+                                <div className="flex items-center gap-4 max-w-lg mx-auto">
+                                    <div className="size-12 rounded-2xl bg-white/20 flex items-center justify-center text-white shrink-0 backdrop-blur-md border border-white/20 shadow-inner">
+                                        <span className="material-symbols-outlined !text-2xl">celebration</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] font-black text-white uppercase tracking-[0.15em] leading-tight">¡Gracias por la compra!</p>
+                                        <p className="text-[10px] font-bold text-white/90 mt-1 leading-relaxed">Cada registro suma puntos para el cliente. ¡Sigamos creciendo!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
@@ -1431,52 +1477,55 @@ const Home = () => {
                         </div>
                     </div>
                 </div>
-            )}
+            )
+            }
 
             {/* Business QR Modal (For customer affiliation) */}
-            {isBusinessQRModalOpen && (
-                <div className="fixed inset-0 z-[115] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-[340px] rounded-[3rem] border-2 border-[#595A5B] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
-                        {/* Header */}
-                        <div className="p-8 pb-4 text-center space-y-2">
-                            <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4 border border-primary/20">
-                                <span className="material-symbols-outlined !text-4xl">storefront</span>
-                            </div>
-                            <h3 className="text-xl font-black text-slate-900 leading-tight uppercase tracking-tight">QR de Afiliación</h3>
-                            <p className="text-xs text-slate-500 font-medium px-2">Invita a tus clientes a escanear este código para unirse a tu club.</p>
-                        </div>
-
-                        {/* QR Area */}
-                        <div className="px-8 py-6 flex flex-col items-center">
-                            <div className="bg-white p-6 rounded-[2.5rem] shadow-xl border-2 border-[#595A5B] relative">
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-white rounded-full border-2 border-[#595A5B] text-[10px] font-black text-primary uppercase tracking-widest shadow-sm">
-                                    {profile?.business_members?.[0]?.businesses?.business_code || '------'}
+            {
+                isBusinessQRModalOpen && (
+                    <div className="fixed inset-0 z-[115] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+                        <div className="bg-white w-full max-w-[340px] rounded-[3rem] border-2 border-[#595A5B] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+                            {/* Header */}
+                            <div className="p-8 pb-4 text-center space-y-2">
+                                <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4 border border-primary/20">
+                                    <span className="material-symbols-outlined !text-4xl">storefront</span>
                                 </div>
-                                <QRCodeSVG
-                                    value={profile?.business_members?.[0]?.businesses?.business_code || 'no-code'}
-                                    size={180}
-                                    level="H"
-                                    includeMargin={false}
-                                />
+                                <h3 className="text-xl font-black text-slate-900 leading-tight uppercase tracking-tight">QR de Afiliación</h3>
+                                <p className="text-xs text-slate-500 font-medium px-2">Invita a tus clientes a escanear este código para unirse a tu club.</p>
                             </div>
-                            <p className="mt-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-center px-4">
-                                "Tus clientes se afilian al instante con solo escanear"
-                            </p>
-                        </div>
 
-                        {/* Action */}
-                        <div className="p-8 pt-2">
-                            <button
-                                onClick={() => setIsBusinessQRModalOpen(false)}
-                                className="w-full h-14 bg-primary text-white rounded-full font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/20"
-                            >
-                                LISTO
-                            </button>
+                            {/* QR Area */}
+                            <div className="px-8 py-6 flex flex-col items-center">
+                                <div className="bg-white p-6 rounded-[2.5rem] shadow-xl border-2 border-[#595A5B] relative">
+                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-white rounded-full border-2 border-[#595A5B] text-[10px] font-black text-primary uppercase tracking-widest shadow-sm">
+                                        {profile?.business_members?.[0]?.businesses?.business_code || '------'}
+                                    </div>
+                                    <QRCodeSVG
+                                        value={profile?.business_members?.[0]?.businesses?.business_code || 'no-code'}
+                                        size={180}
+                                        level="H"
+                                        includeMargin={false}
+                                    />
+                                </div>
+                                <p className="mt-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-center px-4">
+                                    "Tus clientes se afilian al instante con solo escanear"
+                                </p>
+                            </div>
+
+                            {/* Action */}
+                            <div className="p-8 pt-2">
+                                <button
+                                    onClick={() => setIsBusinessQRModalOpen(false)}
+                                    className="w-full h-14 bg-primary text-white rounded-full font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/20"
+                                >
+                                    LISTO
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

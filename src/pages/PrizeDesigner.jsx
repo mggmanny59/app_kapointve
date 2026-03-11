@@ -210,57 +210,9 @@ const PrizeDesigner = () => {
     return (
         <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-32 antialiased">
             {/* Header */}
-            <header className="px-6 pt-10 pb-4 sticky top-0 bg-[#f8fafc]/90 backdrop-blur-md z-50 transition-all">
-                <div className="flex items-center justify-between mb-8">
-                    <button
-                        onClick={() => {
-                            if (view === 'list') {
-                                setView('create');
-                            } else if (editingPrizeId) {
-                                setView('list');
-                                resetForm();
-                            } else {
-                                navigate('/dashboard');
-                            }
-                        }}
-                        className="size-11 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-500 active:scale-90 transition-all shadow-sm"
-                    >
-                        <span className="material-symbols-outlined font-black">arrow_back</span>
-                    </button>
-
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setShowCalculator(true)}
-                            className="h-11 px-6 rounded-full bg-white border-2 border-[#595A5B] flex items-center gap-2 text-slate-600 active:scale-95 transition-all shadow-sm hover:border-primary/20"
-                        >
-                            <span className="material-symbols-outlined font-black !text-xl text-primary">calculate</span>
-                            <span className="text-[10px] font-black uppercase tracking-widest">Motor Puntos</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => {
-                                if (view === 'list') {
-                                    resetForm();
-                                    setView('create');
-                                } else {
-                                    setView('list');
-                                }
-                            }}
-                            className="h-11 px-6 rounded-full bg-primary text-white flex items-center gap-2 active:scale-95 transition-all shadow-lg shadow-primary/20"
-                        >
-                            <span className="material-symbols-outlined font-black !text-xl">
-                                {view === 'create' ? 'list_alt' : 'add_circle'}
-                            </span>
-                            <span className="text-[10px] font-black uppercase tracking-widest">
-                                {view === 'create' ? 'Catálogo' : 'Crear'}
-                            </span>
-                        </button>
-                    </div>
-                </div>
-
+            <header className="px-6 pt-8 pb-6 sticky top-0 bg-[#f8fafc]/95 backdrop-blur-md z-50 transition-all border-b border-slate-100/50">
                 <div className="flex flex-col mb-6">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 mb-4">
                         <div className="size-14 rounded-2xl bg-orange-50 flex items-center justify-center text-primary shadow-inner border-2 border-[#595A5B]">
                             <span className="material-symbols-outlined !text-3xl font-black">inventory_2</span>
                         </div>
@@ -277,34 +229,87 @@ const PrizeDesigner = () => {
                             </p>
                         </div>
                     </div>
+
+                    <div className="flex gap-2 mb-4">
+                        <button
+                            onClick={() => setShowCalculator(true)}
+                            className="flex-1 h-12 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center gap-2 text-slate-600 active:scale-95 transition-all shadow-sm hover:border-primary/20"
+                        >
+                            <span className="material-symbols-outlined font-black !text-xl text-primary">calculate</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-center leading-tight">Motor Puntos</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (view === 'list') {
+                                    resetForm();
+                                    setView('create');
+                                } else {
+                                    setView('list');
+                                }
+                            }}
+                            className="flex-1 h-12 rounded-full bg-primary text-white flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-primary/20"
+                        >
+                            <span className="material-symbols-outlined font-black !text-xl">
+                                {view === 'create' ? 'list_alt' : 'add_circle'}
+                            </span>
+                            <span className="text-[10px] font-black uppercase tracking-widest">
+                                {view === 'create' ? 'Catálogo' : 'Crear'}
+                            </span>
+                        </button>
+                    </div>
                 </div>
 
-                {view === 'create' && (
-                    <div className="flex gap-2 px-1 mb-4">
-                        <div className="h-1.5 flex-1 bg-primary rounded-full shadow-[0_0_10px_rgba(255,101,14,0.3)]"></div>
-                        <div className="h-1.5 flex-1 bg-primary rounded-full shadow-[0_0_10px_rgba(255,101,14,0.3)]"></div>
-                        <div className="h-1.5 flex-1 bg-[#FDE6D7] rounded-full"></div>
-                        <div className="h-1.5 flex-1 bg-slate-100 rounded-full"></div>
+                            {view === 'create' && (
+                    <div className="mt-6 space-y-4">
+                        {/* Progress Stepper with Labels */}
+                        <div className="flex flex-col gap-3">
+                            <div className="flex justify-between items-end px-1">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Paso 02 de 04</span>
+                                    <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest mt-0.5">
+                                        Identidad del Premio
+                                    </h2>
+                                </div>
+                                <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20">
+                                    <span className="text-primary font-black text-xs">2</span>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-1.5 px-0.5">
+                                <div className="h-2 flex-1 bg-primary rounded-full shadow-lg shadow-primary/20 transition-all duration-700"></div>
+                                <div className="h-2 flex-1 bg-primary rounded-full relative overflow-hidden shadow-lg shadow-primary/20">
+                                    <div className="absolute inset-0 bg-white/40 animate-[shimmer_1.5s_infinite] -skew-x-[20deg]"></div>
+                                </div>
+                                <div className="h-2 flex-1 bg-slate-200 rounded-full"></div>
+                                <div className="h-2 flex-1 bg-slate-100 rounded-full"></div>
+                            </div>
+                            
+                            <p className="text-[10px] font-medium text-slate-400 px-1 leading-tight italic">
+                                Sube una imagen atractiva y asigna el valor en puntos para tu recompensa.
+                            </p>
+                        </div>
                     </div>
                 )}
             </header>
 
-            <main className="px-6 py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <main className="px-6 py-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {view === 'create' ? (
-                    <form onSubmit={handleSave} className="space-y-6">
+                    <form onSubmit={handleSave} className="space-y-1">
 
-                        {/* Image Upload Area */}
-                        <div className="flex flex-col items-center">
-                            <div className="bg-white p-6 rounded-[3rem] shadow-xl shadow-slate-200/50 border-2 border-[#595A5B] relative">
+                        {/* Image Upload Area - Directo en pantalla */}
+                        <div className="flex flex-col items-center mb-1">
+                            <div className="relative">
                                 <div
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="size-56 rounded-[2rem] border-2 border-dashed border-[#595A5B] flex flex-col items-center justify-center overflow-hidden relative group cursor-pointer hover:border-primary/40 hover:bg-primary/[0.02] transition-all"
+                                    className="size-44 rounded-[1.5rem] border-2 border-dashed border-[#595A5B] flex flex-col items-center justify-center overflow-hidden relative group cursor-pointer hover:border-primary/40 hover:bg-primary/[0.02] transition-all"
                                 >
                                     {previewUrl ? (
                                         <img src={previewUrl} alt="Preview" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                     ) : (
                                         <div className="text-center p-6 space-y-2">
-                                            <div className="size-14 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-2 border-2 border-[#595A5B]">
+                                            <div className="size-10 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-2 border-2 border-[#595A5B]">
                                                 <span className="material-symbols-outlined text-slate-200 !text-2xl">image</span>
                                             </div>
                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">Carga la foto del premio</p>
@@ -321,40 +326,40 @@ const PrizeDesigner = () => {
                                 <button
                                     type="button"
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="absolute -bottom-2 -right-2 size-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/40 border-4 border-white active:scale-90 transition-all z-10"
+                                    className="absolute -bottom-1 -right-1 size-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/40 border-4 border-white active:scale-90 transition-all z-10"
                                 >
                                     <span className="material-symbols-outlined !text-xl font-black">photo_camera</span>
                                 </button>
                             </div>
                         </div>
 
-                        {/* Inputs */}
-                        <div className="bg-white border-2 border-[#595A5B] rounded-[3rem] p-8 space-y-8 shadow-2xl shadow-slate-200/30 overflow-hidden">
-                            <div className="space-y-3">
+                        {/* Inputs - Colocados directamente en pantalla */}
+                        <div className="space-y-1 px-1">
+                            <div className="space-y-0.5">
                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Identificación del Premio</label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full bg-[#f8fafc] border-2 border-[#595A5B] h-16 rounded-2xl px-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 focus:bg-white outline-none transition-all font-bold placeholder:text-slate-300"
+                                    className="w-full bg-white border-2 border-[#595A5B] h-16 rounded-2xl px-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-bold placeholder:text-slate-300"
                                     placeholder="Nombre del beneficio..."
                                 />
                             </div>
 
-                            <div className="space-y-3">
+                            <div className="space-y-0.5">
                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Descripción de Canje</label>
                                 <textarea
                                     rows="3"
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full bg-[#f8fafc] border-2 border-[#595A5B] rounded-2xl p-6 text-slate-600 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 focus:bg-white outline-none transition-all font-semibold placeholder:text-slate-300 resize-none min-h-[120px]"
+                                    className="w-full bg-white border-2 border-[#595A5B] rounded-2xl p-6 text-slate-600 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-semibold placeholder:text-slate-300 resize-none min-h-[120px]"
                                     placeholder="Válido por una unidad de barra de chocolate rellena de fresa. Sujeto a disponibilidad en tienda."
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-3">
+                                <div className="space-y-0.5">
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Costo Unitario</label>
                                     <div className="relative group">
                                         <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 font-black text-lg">$</span>
@@ -363,13 +368,13 @@ const PrizeDesigner = () => {
                                             step="0.01"
                                             value={formData.unit_cost}
                                             onChange={(e) => setFormData({ ...formData, unit_cost: e.target.value })}
-                                            className="w-full bg-[#f8fafc] border-2 border-[#595A5B] h-16 rounded-2xl pl-12 pr-6 text-slate-600 text-lg font-black focus:ring-4 focus:ring-primary/5 focus:border-primary/20 focus:bg-white outline-none transition-all placeholder:text-slate-200 tabular-nums"
+                                            className="w-full bg-white border-2 border-[#595A5B] h-16 rounded-2xl pl-12 pr-6 text-slate-600 text-lg font-black focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all placeholder:text-slate-200 tabular-nums"
                                             placeholder="0.00"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="space-y-3">
+                                <div className="space-y-0.5">
                                     <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em] ml-1">Valor en Puntos</label>
                                     <div className="relative group">
                                         <div className="absolute inset-0 bg-primary/[0.03] rounded-2xl -z-10 group-focus-within:bg-primary/[0.05] transition-all"></div>
@@ -386,13 +391,13 @@ const PrizeDesigner = () => {
                                 </div>
                             </div>
 
-                            <div className="pt-2 border-t border-[#595A5B]">
+                            <div className="pt-2">
                                 <button
                                     type="button"
                                     onClick={() => setFormData({ ...formData, is_active: !formData.is_active })}
-                                    className={`w-full h-14 rounded-2xl border flex items-center justify-between px-6 transition-all ${formData.is_active
-                                        ? 'bg-primary/[0.03] border-primary/20 text-primary'
-                                        : 'bg-slate-50 border-[#595A5B] text-slate-400'}`}
+                                    className={`w-full h-14 rounded-2xl border-2 flex items-center justify-between px-6 transition-all shadow-sm ${formData.is_active
+                                        ? 'bg-white border-primary text-primary'
+                                        : 'bg-white border-[#595A5B] text-slate-400 opacity-60'}`}
                                 >
                                     <div className="flex items-center gap-3">
                                         <span className="material-symbols-outlined font-black">
@@ -408,7 +413,7 @@ const PrizeDesigner = () => {
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex flex-col gap-3 py-6">
+                        <div className="flex flex-col gap-3 py-4">
                             <button
                                 type="submit"
                                 disabled={isSaving}

@@ -10,6 +10,15 @@
     --color-slate-subtitle: #64748b;
 }
 
+@keyframes shimmer {
+    from {
+        transform: translateX(-100%) skewX(-20deg);
+    }
+    to {
+        transform: translateX(200%) skewX(-20deg);
+    }
+}
+
 body {
     font-family: var(--font-display);
     background-color: var(--color-navy-dark);
