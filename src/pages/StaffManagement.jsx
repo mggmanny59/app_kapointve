@@ -242,20 +242,14 @@ const StaffManagement = () => {
     return (
         <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-32 antialiased">
             {/* Header */}
-            <header className="px-6 pt-10 pb-8 sticky top-0 bg-white border-b border-[#595A5B] z-50">
-                <div className="flex items-center gap-4 mb-8">
-                    <button
-                        onClick={() => navigate('/settings')}
-                        className="size-11 rounded-2xl bg-slate-50 border-2 border-[#595A5B] flex items-center justify-center text-slate-400 active:scale-95 transition-all shadow-sm"
-                    >
-                        <span className="material-symbols-outlined font-black">arrow_back</span>
-                    </button>
+            <header className="px-6 pt-10 pb-6 sticky top-0 bg-[#f8fafc]/80 backdrop-blur-xl z-50 border-b border-[#595A5B]">
+                <div className="flex items-center gap-4 mb-6">
                     <div className="flex flex-col">
-                        <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                            <span className="material-symbols-outlined text-primary !text-4xl">badge</span>
-                            Gestión Equipo
+                        <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary !text-3xl font-black">badge</span>
+                            Gestión de Equipo
                         </h1>
-                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Control de accesos y personal</p>
+                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">Control de accesos y personal</p>
                     </div>
                 </div>
 
@@ -278,25 +272,23 @@ const StaffManagement = () => {
                 </div>
             </header>
 
-            <main className="px-6 py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <main className="px-6 py-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
                 {activeTab === 'form' && (
-                    <div className="bg-white rounded-[2.5rem] p-8 border-2 border-[#595A5B] space-y-8 shadow-xl shadow-slate-200/40">
-                        <div className="flex items-center justify-between pb-4 border-b border-[#595A5B]">
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between pb-2 border-b-2 border-slate-100">
                             <div className="flex items-center gap-3">
-                                <div className="size-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10">
-                                    <span className="material-symbols-outlined font-black">
-                                        {editingStaff ? 'edit_square' : 'person_add'}
-                                    </span>
-                                </div>
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                <span className="material-symbols-outlined text-primary !text-xl font-black">
+                                    {editingStaff ? 'edit_square' : 'person_add'}
+                                </span>
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
                                     {editingStaff ? 'Editar Miembro' : 'Nueva Credencial'}
                                 </span>
                             </div>
                             {editingStaff && (
                                 <button
                                     onClick={resetForm}
-                                    className="text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-50 px-4 py-2 rounded-xl transition-all border border-red-50"
+                                    className="text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-50 px-4 py-2 rounded-xl transition-all"
                                 >
                                     Descartar
                                 </button>
@@ -304,23 +296,23 @@ const StaffManagement = () => {
                         </div>
 
                         <form onSubmit={handleCreateStaff} className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre Completo</label>
+                            <div className="space-y-0.5">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Nombre Completo</label>
                                 <input
                                     type="text"
                                     required
                                     value={newStaff.full_name}
                                     onChange={(e) => setNewStaff({ ...newStaff, full_name: e.target.value })}
-                                    className="w-full bg-[#f8fafc] border-2 border-[#595A5B] h-16 rounded-2xl px-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/40 focus:bg-white outline-none transition-all font-black placeholder:text-slate-300 shadow-inner"
+                                    className="w-full bg-white border-2 border-[#595A5B] h-16 rounded-2xl px-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-bold placeholder:text-slate-300"
                                     placeholder="Nombre del empleado..."
                                 />
                             </div>
 
                             {!editingStaff && (
                                 <>
-                                    <div className="space-y-2">
+                                    <div className="space-y-0.5">
                                         <div className="flex items-center justify-between px-1">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Identificador Usuario</label>
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Identificador Usuario</label>
                                         </div>
                                         <div className="relative group">
                                             <input
@@ -329,24 +321,24 @@ const StaffManagement = () => {
                                                 autoComplete="off"
                                                 value={newStaff.username}
                                                 onChange={(e) => handleUsernameChange(e.target.value)}
-                                                className="w-full bg-[#f8fafc] border-2 border-[#595A5B] h-16 rounded-2xl px-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/40 focus:bg-white outline-none transition-all font-black placeholder:text-slate-300 shadow-inner"
+                                                className="w-full bg-white border-2 border-[#595A5B] h-16 rounded-2xl px-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-bold placeholder:text-slate-300"
                                                 placeholder="usuario_staff"
                                             />
                                             <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                                                <div className="h-8 px-3 rounded-lg bg-slate-100 border-2 border-[#595A5B] flex items-center">
+                                                <div className="h-8 px-3 rounded-lg bg-slate-50 border-2 border-[#595A5B] flex items-center">
                                                     <p className="text-[9px] font-black text-slate-400 uppercase">@{adminDomain}</p>
                                                 </div>
                                             </div>
                                         </div>
                                         {newStaff.username && (
-                                            <p className="text-[10px] text-primary/50 ml-1 font-bold italic">
+                                            <p className="text-[10px] text-primary/70 ml-1 font-bold italic">
                                                 Acceso total: <span className="text-slate-900 font-black">{newStaff.username}@{adminDomain}</span>
                                             </p>
                                         )}
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contraseña de Seguridad</label>
+                                    <div className="space-y-0.5">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Contraseña de Seguridad</label>
                                         <div className="relative group">
                                             <input
                                                 type={showPassword ? "text" : "password"}
@@ -354,7 +346,7 @@ const StaffManagement = () => {
                                                 autoComplete="new-password"
                                                 value={newStaff.password}
                                                 onChange={(e) => setNewStaff({ ...newStaff, password: e.target.value })}
-                                                className="w-full bg-[#f8fafc] border-2 border-[#595A5B] h-16 rounded-2xl px-6 pr-14 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/40 focus:bg-white outline-none transition-all font-black placeholder:text-slate-200 shadow-inner"
+                                                className="w-full bg-white border-2 border-[#595A5B] h-16 rounded-2xl px-6 pr-14 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-bold placeholder:text-slate-300"
                                                 placeholder="••••••••"
                                             />
                                             <button
@@ -413,7 +405,7 @@ const StaffManagement = () => {
                             <button
                                 type="submit"
                                 disabled={isCreating}
-                                className="w-full bg-primary text-white h-16 rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] shadow-xl shadow-primary/20 active:scale-[0.97] transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-6"
+                                className="w-full bg-primary text-white h-16 rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] shadow-xl shadow-primary/20 active:scale-[0.97] transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-6"
                             >
                                 {isCreating ? <span className="material-symbols-outlined animate-spin font-black">sync</span> : <span className="material-symbols-outlined font-black">{editingStaff ? 'save_as' : 'how_to_reg'}</span>}
                                 {editingStaff ? 'GUARDAR ACTUALIZACIÓN' : 'CONFIGURAR NUEVO ACCESO'}
@@ -429,17 +421,17 @@ const StaffManagement = () => {
                             <div key={member.id} className="bg-white p-7 rounded-[2.5rem] border-2 border-[#595A5B] flex flex-col gap-6 relative overflow-hidden group shadow-xl shadow-slate-200/40 hover:border-primary/30 hover:shadow-2xl hover:shadow-slate-200/60 transition-all">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
 
-                                <div className="flex items-center justify-between relative z-10">
-                                    <div className="flex items-center gap-5">
-                                        <div className="size-16 rounded-3xl bg-slate-50 flex items-center justify-center text-primary shadow-inner border-2 border-[#595A5B] group-hover:scale-110 transition-transform">
-                                            <span className="material-symbols-outlined !text-3xl font-black">badge</span>
+                                <div className="flex items-center justify-between gap-4 relative z-10">
+                                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                                        <div className="size-14 rounded-2xl bg-slate-50 flex-shrink-0 flex items-center justify-center text-primary shadow-inner border-2 border-[#595A5B] group-hover:scale-110 transition-transform">
+                                            <span className="material-symbols-outlined !text-2xl font-black">badge</span>
                                         </div>
-                                        <div className="space-y-1">
-                                            <p className="text-[17px] font-black text-slate-900 leading-none tracking-tight">{member.profiles?.full_name}</p>
-                                            <p className="text-sm text-slate-400 font-bold tracking-tight opacity-90">{member.profiles?.email}</p>
+                                        <div className="space-y-0.5 min-w-0">
+                                            <p className="text-base font-black text-slate-900 leading-tight tracking-tight truncate">{member.profiles?.full_name}</p>
+                                            <p className="text-xs text-slate-400 font-bold tracking-tight opacity-90 truncate">{member.profiles?.email}</p>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col items-end gap-1">
+                                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
                                         <span className="text-[9px] text-slate-300 font-black uppercase tracking-[0.2em]">Puesto</span>
                                         <span className="bg-slate-900 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ring-4 ring-slate-50">{member.role}</span>
                                     </div>

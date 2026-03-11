@@ -204,7 +204,7 @@ const Home = () => {
             // 1. Fetch Profile and Business ID with Permissions
             const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
-                .select('*, business_members(business_id, role, permissions, businesses(name, registration_data, business_code))')
+                .select('*, business_members(business_id, role, permissions, businesses(name, registration_data, business_code, logo_url))')
                 .eq('id', user.id)
                 .single();
 
@@ -825,8 +825,12 @@ const Home = () => {
             {/* Header */}
             <header className="pt-8 pb-4 px-6 flex items-center justify-between sticky top-0 bg-[#F0F2F5]/80 backdrop-blur-md z-40">
                 <div className="flex items-center gap-3">
-                    <div className="bg-white p-2 rounded-xl shadow-sm border-2 border-[#595A5B]">
-                        <span className="material-symbols-outlined text-primary">storefront</span>
+                    <div className="bg-white p-2 rounded-xl shadow-sm border-2 border-[#595A5B] flex items-center justify-center">
+                        <img 
+                            src="/Logo KPoint Solo K (sin Fondo).png" 
+                            alt="KPoint Logo" 
+                            className="size-6 object-contain"
+                        />
                     </div>
                     <div>
                         <h1 className="text-lg font-black tracking-tight"><span className="text-primary">K</span>Point</h1>
@@ -895,19 +899,31 @@ const Home = () => {
                     </div>
                 )}
 
-                {/* Botón de prueba Administrador */}
-                <button
-                    onClick={handleTestPush}
-                    className="w-full bg-navy-card border border-white/5 p-4 rounded-3xl flex items-center justify-center gap-3 text-slate-400 hover:text-white transition-colors group"
-                >
-                    <span className="material-symbols-outlined text-primary group-hover:animate-bounce">send_and_archive</span>
-                    <span className="text-[10px] font-black uppercase tracking-widest">Enviar Notificación a Clientes</span>
-                </button>
+                {/* Botón de prueba Administrador - Solo Super Admin */}
+                {user?.is_super_admin && (
+                    <button
+                        onClick={handleTestPush}
+                        className="w-full bg-navy-card border border-white/5 p-4 rounded-3xl flex items-center justify-center gap-3 text-slate-400 hover:text-white transition-colors group"
+                    >
+                        <span className="material-symbols-outlined text-primary group-hover:animate-bounce">send_and_archive</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Enviar Notificación a Clientes</span>
+                    </button>
+                )}
 
                 {/* Business Info Section */}
                 <div className="flex flex-col">
-                    <h2 className="text-2xl font-black text-slate-900 flex items-center gap-2 leading-tight">
-                        <span className="material-symbols-outlined text-primary !text-3xl">store</span>
+                    <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3 leading-tight">
+                        <div className="size-12 rounded-2xl bg-orange-50 border border-primary/10 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                            {business?.logo_url ? (
+                                <img 
+                                    src={business.logo_url} 
+                                    alt={business.name} 
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <span className="material-symbols-outlined text-primary !text-[28px]">store</span>
+                            )}
+                        </div>
                         {business?.name || 'Mi Negocio'}
                     </h2>
 
@@ -1024,147 +1040,156 @@ const Home = () => {
                         </p>
                     </div>
 
-                    <div className="bg-white p-3.5 rounded-3xl border-2 border-[#595A5B] shadow-sm relative overflow-hidden group col-span-2">
-                        <div className="absolute -right-4 -top-4 bg-primary/5 size-20 rounded-full blur-3xl group-hover:bg-primary/10 transition-all"></div>
-                        <div className="flex justify-between items-center">
-                            <div>
-                                <span className="material-symbols-outlined text-primary/80 mb-0.5 block !text-[20px]">group</span>
-                                <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-0.5">Clientes Activos Hoy</p>
-                                <p className="text-lg font-black text-slate-900">{stats.newClients}</p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-[8px] text-primary font-black bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
-                                    + {stats.newClients} hoy
-                                </p>
+                    {(userRole === 'owner' || userPermissions?.can_view_clients) && (
+                        <div className="bg-white p-3.5 rounded-3xl border-2 border-[#595A5B] shadow-sm relative overflow-hidden group col-span-2">
+                            <div className="absolute -right-4 -top-4 bg-primary/5 size-20 rounded-full blur-3xl group-hover:bg-primary/10 transition-all"></div>
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <span className="material-symbols-outlined text-primary/80 mb-0.5 block !text-[20px]">group</span>
+                                    <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-0.5">Clientes Activos Hoy</p>
+                                    <p className="text-lg font-black text-slate-900">{stats.newClients}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[8px] text-primary font-black bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                                        + {stats.newClients} hoy
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* Chart Section */}
                 {/* Chart Section - Rediseño Premium */}
-                <div className="bg-white p-6 rounded-[2.5rem] border-2 border-[#595A5B] shadow-sm relative overflow-hidden">
-                    <div className="flex justify-between items-center mb-8">
-                        <div>
-                            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Análisis Semanal</h2>
-                            <p className="text-sm font-black text-slate-800 uppercase tracking-tight">Rendimiento de Ventas</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                             <div className="size-2 rounded-full bg-primary animate-pulse"></div>
-                             <span className="text-[10px] bg-primary/5 text-primary border border-primary/10 px-3 py-1 rounded-full font-black uppercase tracking-widest">En Vivo</span>
-                        </div>
-                    </div>
-
-                    <div className="relative h-44 w-full flex items-end justify-between px-2">
-                        {/* Líneas de referencia (Grid) */}
-                        <div className="absolute inset-x-0 bottom-0 h-full flex flex-col justify-between opacity-5 pointer-events-none">
-                            <div className="w-full border-t border-slate-900"></div>
-                            <div className="w-full border-t border-slate-900"></div>
-                            <div className="w-full border-t border-slate-900"></div>
-                            <div className="w-full border-t border-slate-900"></div>
-                        </div>
-
-                        {weeklyActivity.map((value, index) => {
-                            const maxVal = Math.max(...weeklyActivity, 1);
-                            const height = (value / (maxVal * 1.1)) * 100;
-                            const days = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
-                            const isToday = (new Date().getDay() === (index === 6 ? 0 : index + 1));
-
-                            return (
-                                <div key={index} className="flex flex-col items-center justify-end h-full flex-1 group relative z-10">
-                                    {/* Tooltip on Hover */}
-                                    <div className="absolute -top-8 px-2 py-1 bg-slate-900 text-white text-[10px] font-black rounded-lg opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100 pointer-events-none shadow-xl border border-white/10">
-                                        ${value}
-                                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45"></div>
-                                    </div>
-
-                                    {/* Bar with gradient */}
-                                    <div
-                                        className={`w-[14px] rounded-full transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] relative active:scale-95 shadow-lg ${
-                                            isToday 
-                                            ? 'bg-gradient-to-t from-orange-600 to-orange-400 shadow-orange-500/30' 
-                                            : 'bg-gradient-to-t from-slate-200 to-slate-100 group-hover:from-primary/40 group-hover:to-primary/20 shadow-slate-200/50'
-                                        }`}
-                                        style={{ height: `${Math.max(height, 8)}%` }}
-                                    >
-                                        {isToday && (
-                                            <div className="absolute -inset-1.5 bg-primary/20 rounded-full blur-md animate-pulse"></div>
-                                        )}
-                                    </div>
-
-                                    {/* Day label */}
-                                    <span className={`mt-4 text-[10px] font-black transition-colors ${isToday ? 'text-primary' : 'text-slate-400'}`}>
-                                        {days[index]}
-                                    </span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-
-                {/* Indicadores de Gestión KPI */}
-                <div className="space-y-4 py-2">
-                    <button
-                        onClick={() => navigate('/kpi')}
-                        className="w-full flex items-center justify-between p-4 bg-white border-2 border-[#595A5B] rounded-[2rem] shadow-sm hover:bg-slate-50 transition-colors active:scale-[0.98]"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="size-10 rounded-full bg-[#1E293B] flex items-center justify-center text-white border border-[#334155] shadow-inner">
-                                <span className="material-symbols-outlined !text-xl">insights</span>
+                {(userRole === 'owner' || userPermissions?.can_view_clients) && (
+                    <div className="bg-white p-6 rounded-[2.5rem] border-2 border-[#595A5B] shadow-sm relative overflow-hidden">
+                        <div className="flex justify-between items-center mb-8">
+                            <div>
+                                <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Análisis Semanal</h2>
+                                <p className="text-sm font-black text-slate-800 uppercase tracking-tight">Rendimiento de Ventas</p>
                             </div>
-                            <span className="font-black text-slate-800 tracking-tight text-lg">Indicadores de Gestión (KPI)</span>
+                            <div className="flex items-center gap-2">
+                                <div className="size-2 rounded-full bg-primary animate-pulse"></div>
+                                <span className="text-[10px] bg-primary/5 text-primary border border-primary/10 px-3 py-1 rounded-full font-black uppercase tracking-widest">En Vivo</span>
+                            </div>
                         </div>
-                        <span className="material-symbols-outlined text-slate-400">
-                            chevron_right
-                        </span>
-                    </button>
-                </div>
 
-                {/* Activity Section */}
-                <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest">Actividad Reciente</h2>
-                        <a className="text-xs font-black text-primary" href="#">Ver todo</a>
-                    </div>
+                        <div className="relative h-44 w-full flex items-end justify-between px-2">
+                            {/* Líneas de referencia (Grid) */}
+                            <div className="absolute inset-x-0 bottom-0 h-full flex flex-col justify-between opacity-5 pointer-events-none">
+                                <div className="w-full border-t border-slate-900"></div>
+                                <div className="w-full border-t border-slate-900"></div>
+                                <div className="w-full border-t border-slate-900"></div>
+                                <div className="w-full border-t border-slate-900"></div>
+                            </div>
 
-                    <div className="space-y-3">
-                        {activities.length > 0 ? activities.map((activity) => (
-                            <div key={activity.id} className="flex items-center justify-between p-4 bg-white rounded-3xl border-2 border-[#595A5B] shadow-sm">
-                                <div className="flex items-center gap-4">
-                                    <div className={`w-10 h-10 rounded-full ${activity.type === 'EARN' ? 'bg-primary/10 text-primary' : 'bg-warning/10 text-warning'} flex items-center justify-center`}>
-                                        <span className={`material-symbols-outlined !text-xl`}>
-                                            {activity.type === 'EARN' ? 'add_task' : 'stars'}
+                            {weeklyActivity.map((value, index) => {
+                                const maxVal = Math.max(...weeklyActivity, 1);
+                                const height = (value / (maxVal * 1.1)) * 100;
+                                const days = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+                                const isToday = (new Date().getDay() === (index === 6 ? 0 : index + 1));
+
+                                return (
+                                    <div key={index} className="flex flex-col items-center justify-end h-full flex-1 group relative z-10">
+                                        {/* Tooltip on Hover */}
+                                        <div className="absolute -top-8 px-2 py-1 bg-slate-900 text-white text-[10px] font-black rounded-lg opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100 pointer-events-none shadow-xl border border-white/10">
+                                            ${value}
+                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45"></div>
+                                        </div>
+
+                                        {/* Bar with gradient */}
+                                        <div
+                                            className={`w-[14px] rounded-full transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] relative active:scale-95 shadow-lg ${isToday
+                                                ? 'bg-gradient-to-t from-orange-600 to-orange-400 shadow-orange-500/30'
+                                                : 'bg-gradient-to-t from-slate-200 to-slate-100 group-hover:from-primary/40 group-hover:to-primary/20 shadow-slate-200/50'
+                                                }`}
+                                            style={{ height: `${Math.max(height, 8)}%` }}
+                                        >
+                                            {isToday && (
+                                                <div className="absolute -inset-1.5 bg-primary/20 rounded-full blur-md animate-pulse"></div>
+                                            )}
+                                        </div>
+
+                                        {/* Day label */}
+                                        <span className={`mt-4 text-[10px] font-black transition-colors ${isToday ? 'text-primary' : 'text-slate-400'}`}>
+                                            {days[index]}
                                         </span>
                                     </div>
-                                    <div className="min-w-0">
-                                        <p className="text-sm font-black text-slate-900 truncate">{activity.profiles?.full_name || 'Cliente'}</p>
-                                        <p className="text-[10px] text-slate-500 font-medium">{formatTime(activity.created_at)}</p>
-                                    </div>
-                                </div>
-                                <p className={`text-sm font-black ${activity.type === 'EARN' ? 'text-primary' : 'text-warning'}`}>
-                                    {activity.points_amount > 0 ? '+' : ''}{activity.points_amount} pts
-                                </p>
-                            </div>
-                        )) : (
-                            <p className="text-center text-slate-500 py-4 text-sm font-medium italic">Sin actividad reciente</p>
-                        )}
-                    </div>
-                </div>
-
-                {/* Secondary Action - Moved to end */}
-                <div className="pt-2">
-                    <button
-                        onClick={() => setIsNotificationModalOpen(true)}
-                        className="w-full bg-[#1E293B] hover:bg-slate-800 hover:scale-[1.01] border-2 border-[#334155] text-white h-16 rounded-2xl flex items-center justify-start px-6 gap-4 shadow-lg active:scale-[0.98] transition-all"
-                    >
-                        <span className="material-symbols-outlined font-black !text-2xl shrink-0">notifications_active</span>
-                        <div className="flex flex-col items-start leading-none text-left">
-                            <span className="text-[9px] font-black opacity-60 uppercase tracking-widest mb-0.5">Marketing</span>
-                            <span className="text-sm font-black uppercase tracking-tight">Enviar Comunicado</span>
+                                );
+                            })}
                         </div>
-                    </button>
-                </div>
+                    </div>
+                )}
+
+
+                {/* Indicadores de Gestión KPI - Solo Dueño */}
+                {userRole === 'owner' && (
+                    <div className="space-y-4 py-2">
+                        <button
+                            onClick={() => navigate('/kpi')}
+                            className="w-full flex items-center justify-between p-4 bg-white border-2 border-[#595A5B] rounded-[2rem] shadow-sm hover:bg-slate-50 transition-colors active:scale-[0.98]"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="size-10 rounded-full bg-[#1E293B] flex items-center justify-center text-white border border-[#334155] shadow-inner">
+                                    <span className="material-symbols-outlined !text-xl">insights</span>
+                                </div>
+                                <span className="font-black text-slate-800 tracking-tight text-lg">Indicadores de Gestión (KPI)</span>
+                            </div>
+                            <span className="material-symbols-outlined text-slate-400">
+                                chevron_right
+                            </span>
+                        </button>
+                    </div>
+                )}
+
+                {/* Activity Section */}
+                {(userRole === 'owner' || userPermissions?.can_view_clients) && (
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest">Actividad Reciente</h2>
+                            <button className="text-xs font-black text-primary" onClick={() => navigate('/clients')}>Ver todo</button>
+                        </div>
+
+                        <div className="space-y-3">
+                            {activities.length > 0 ? activities.map((activity) => (
+                                <div key={activity.id} className="flex items-center justify-between p-4 bg-white rounded-3xl border-2 border-[#595A5B] shadow-sm">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-10 h-10 rounded-full ${activity.type === 'EARN' ? 'bg-primary/10 text-primary' : 'bg-warning/10 text-warning'} flex items-center justify-center`}>
+                                            <span className={`material-symbols-outlined !text-xl`}>
+                                                {activity.type === 'EARN' ? 'add_task' : 'stars'}
+                                            </span>
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-black text-slate-900 truncate">{activity.profiles?.full_name || 'Cliente'}</p>
+                                            <p className="text-[10px] text-slate-500 font-medium">{formatTime(activity.created_at)}</p>
+                                        </div>
+                                    </div>
+                                    <p className={`text-sm font-black ${activity.type === 'EARN' ? 'text-primary' : 'text-warning'}`}>
+                                        {activity.points_amount > 0 ? '+' : ''}{activity.points_amount} pts
+                                    </p>
+                                </div>
+                            )) : (
+                                <p className="text-center text-slate-500 py-4 text-sm font-medium italic">Sin actividad reciente</p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Secondary Action - Solo Dueño */}
+                {userRole === 'owner' && (
+                    <div className="pt-2">
+                        <button
+                            onClick={() => setIsNotificationModalOpen(true)}
+                            className="w-full bg-[#1E293B] hover:bg-slate-800 hover:scale-[1.01] border-2 border-[#334155] text-white h-16 rounded-2xl flex items-center justify-start px-6 gap-4 shadow-lg active:scale-[0.98] transition-all"
+                        >
+                            <span className="material-symbols-outlined font-black !text-2xl shrink-0">notifications_active</span>
+                            <div className="flex flex-col items-start leading-none text-left">
+                                <span className="text-[9px] font-black opacity-60 uppercase tracking-widest mb-0.5">Marketing</span>
+                                <span className="text-sm font-black uppercase tracking-tight">Enviar Comunicado</span>
+                            </div>
+                        </button>
+                    </div>
+                )}
             </main>
 
             <Navigation />

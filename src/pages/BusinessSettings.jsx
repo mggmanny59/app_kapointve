@@ -117,26 +117,23 @@ const BusinessSettings = () => {
             {/* Header */}
             <header className="px-6 pt-10 pb-6 sticky top-0 bg-[#f8fafc]/80 backdrop-blur-xl z-50 border-b border-[#595A5B]">
                 <div className="flex items-center gap-4">
-                    <button
-                        onClick={() => navigate('/dashboard')}
-                        className="size-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-400 active:scale-95 transition-transform shadow-sm"
-                    >
-                        <span className="material-symbols-outlined">arrow_back</span>
-                    </button>
-                    <div className="flex flex-col">
+
+                    <div className="flex flex-col w-full">
                         <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary !text-3xl font-black">storefront</span>
                             Ajustes del Negocio
                         </h1>
                         <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">Identidad y Reglas</p>
+
+
                     </div>
                 </div>
             </header>
 
             <main className="px-6 space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500 pt-6">
-                <form onSubmit={handleSave} className="space-y-4">
+                <form onSubmit={handleSave} className="space-y-3">
 
-                    <div className="space-y-4 px-1">
+                    <div className="space-y-2 px-1">
                         {/* Section Header */}
                         <div className="flex items-center gap-3 pb-2 border-b-2 border-slate-100">
                             <span className="material-symbols-outlined text-primary !text-xl font-black">info</span>
@@ -144,7 +141,7 @@ const BusinessSettings = () => {
                         </div>
 
                         {/* Logo Upload */}
-                        <div className="flex flex-col items-center mb-4">
+                        <div className="flex flex-col items-center mb-1">
                             <div className="relative group w-full flex justify-center">
                                 <div className="size-56 rounded-[1.5rem] bg-white border-2 border-dashed border-[#595A5B] overflow-hidden flex items-center justify-center group-hover:border-primary transition-all relative">
                                     {business?.logo_url ? (
@@ -168,7 +165,7 @@ const BusinessSettings = () => {
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Logo comercial</p>
                         </div>
 
-                        <div className="space-y-1">
+                        <div className="space-y-0.5">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Nombre Comercial</label>
                             <div className="relative group">
                                 <input
@@ -182,7 +179,7 @@ const BusinessSettings = () => {
                             </div>
                         </div>
 
-                        <div className="space-y-1">
+                        <div className="space-y-0.5">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Representante Legal</label>
                             <div className="relative group">
                                 <input
@@ -196,8 +193,8 @@ const BusinessSettings = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-0.5">
                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">RIF / Registro</label>
                                 <div className="relative group">
                                     <input
@@ -211,7 +208,7 @@ const BusinessSettings = () => {
                                 </div>
                             </div>
 
-                            <div className="space-y-1">
+                            <div className="space-y-0.5">
                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Ciudad</label>
                                 <div className="relative group">
                                     <input
@@ -226,7 +223,7 @@ const BusinessSettings = () => {
                             </div>
                         </div>
 
-                        <div className="space-y-1">
+                        <div className="space-y-0.5">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Número de Teléfono</label>
                             <div className="relative group">
                                 <input
@@ -240,7 +237,7 @@ const BusinessSettings = () => {
                             </div>
                         </div>
 
-                        <div className="space-y-1">
+                        <div className="space-y-0.5">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Dirección Física</label>
                             <div className="relative group">
                                 <textarea
@@ -254,7 +251,7 @@ const BusinessSettings = () => {
                         </div>
                     </div>
 
-                    <div className="space-y-4 px-1">
+                    <div className="space-y-2 px-1">
                         {/* Section Header */}
                         <div className="flex items-center gap-3 pb-2 border-b-2 border-slate-100">
                             <span className="material-symbols-outlined text-primary !text-xl font-black">group</span>
@@ -276,7 +273,7 @@ const BusinessSettings = () => {
                         </div>
                     </div>
 
-                    <div className="space-y-4 px-1">
+                    <div id="reglas-section" className="space-y-2 px-1">
                         {/* Section Header */}
                         <div className="flex items-center gap-3 pb-2 border-b-2 border-slate-100">
                             <span className="material-symbols-outlined text-primary !text-xl font-black">settings_account_box</span>
@@ -284,7 +281,7 @@ const BusinessSettings = () => {
                         </div>
 
                         {/* Points Config */}
-                        <div className="space-y-1">
+                        <div className="space-y-0.5">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Puntos por Dólar ($1.00 = pts)</label>
                             <div className="relative group">
                                 <input

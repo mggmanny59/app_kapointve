@@ -45,9 +45,17 @@ const Navigation = () => {
     const isClient = userRole === 'client';
     const currentItems = isClient ? clientItems : businessItems;
 
-    // Filtrar por permisos especiales
+    // Filtrar por permisos especiales y roles
     const visibleItems = currentItems.filter(item => {
+        // 1. Verificar Super Admin
         if (item.superAdminOnly && !user?.is_super_admin) return false;
+
+        // 2. Verificar Miembros de Negocio (Staff vs Owner)
+        if (!isClient && userRole !== 'owner') {
+            // Si es un miembro del equipo (manager, cashier, etc), solo ve el Panel
+            if (item.path !== '/dashboard') return false;
+        }
+
         return true;
     });
 
