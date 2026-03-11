@@ -133,20 +133,20 @@ const BusinessSettings = () => {
                 </div>
             </header>
 
-            <main className="px-6 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pt-6">
-                <form onSubmit={handleSave} className="space-y-6">
+            <main className="px-6 space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500 pt-6">
+                <form onSubmit={handleSave} className="space-y-4">
 
-                    <div className="bg-white rounded-[2.5rem] p-6 border-2 border-[#595A5B] shadow-sm space-y-6">
+                    <div className="space-y-4 px-1">
                         {/* Section Header */}
-                        <div className="flex items-center gap-3 pb-2 border-b border-[#595A5B]">
-                            <span className="material-symbols-outlined text-warning !text-xl font-black">info</span>
+                        <div className="flex items-center gap-3 pb-2 border-b-2 border-slate-100">
+                            <span className="material-symbols-outlined text-primary !text-xl font-black">info</span>
                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Identidad del Negocio</span>
                         </div>
 
                         {/* Logo Upload */}
-                        <div className="flex flex-col items-center py-6">
+                        <div className="flex flex-col items-center mb-4">
                             <div className="relative group w-full flex justify-center">
-                                <div className="w-full max-w-[320px] h-56 rounded-[2.5rem] bg-slate-50 border-2 border-dashed border-[#595A5B] overflow-hidden flex items-center justify-center group-hover:border-primary transition-all shadow-inner relative">
+                                <div className="size-56 rounded-[1.5rem] bg-white border-2 border-dashed border-[#595A5B] overflow-hidden flex items-center justify-center group-hover:border-primary transition-all relative">
                                     {business?.logo_url ? (
                                         <img src={business.logo_url} alt="Logo" className="w-full h-full object-cover" />
                                     ) : (
@@ -165,154 +165,141 @@ const BusinessSettings = () => {
                                     <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} disabled={uploading} />
                                 </label>
                             </div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-6">Foto / Logo del Comercio</p>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Logo comercial</p>
                         </div>
 
-                        {/* Name Input */}
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre Comercial</label>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Nombre Comercial</label>
                             <div className="relative group">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-300 group-focus-within:text-primary transition-colors">branding_watermark</span>
                                 <input
                                     type="text"
                                     required
                                     value={business?.name || ''}
                                     onChange={(e) => setBusiness({ ...business, name: e.target.value })}
-                                    className="w-full bg-[#f8fafc] border-2 border-[#595A5B] h-14 rounded-2xl pl-12 pr-4 text-slate-900 focus:ring-4 focus:ring-primary/10 focus:border-primary/40 outline-none transition-all font-bold placeholder:text-slate-300"
+                                    className="w-full bg-white border-2 border-[#595A5B] h-16 rounded-2xl px-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-bold placeholder:text-slate-300"
                                     placeholder="Nombre de tu negocio"
                                 />
                             </div>
                         </div>
 
-                        {/* Legal Rep Input */}
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Representante Legal</label>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Representante Legal</label>
                             <div className="relative group">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-300 group-focus-within:text-primary transition-colors">person</span>
                                 <input
                                     type="text"
                                     required
                                     value={business?.legal_representative || ''}
                                     onChange={(e) => setBusiness({ ...business, legal_representative: e.target.value })}
-                                    className="w-full bg-[#f8fafc] border-2 border-[#595A5B] h-14 rounded-2xl pl-12 pr-4 text-slate-900 focus:ring-4 focus:ring-primary/10 focus:border-primary/40 outline-none transition-all font-bold placeholder:text-slate-300"
-                                    placeholder="Nombre del dueño o representante"
+                                    className="w-full bg-white border-2 border-[#595A5B] h-16 rounded-2xl px-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-bold placeholder:text-slate-300"
+                                    placeholder="Nombre del representante"
                                 />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            {/* RIF Input */}
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">RIF / Registro</label>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">RIF / Registro</label>
                                 <div className="relative group">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-300 group-focus-within:text-primary transition-colors">badge</span>
                                     <input
                                         type="text"
                                         required
                                         value={business?.rif || ''}
                                         onChange={(e) => setBusiness({ ...business, rif: e.target.value })}
-                                        className="w-full bg-[#f8fafc] border-2 border-[#595A5B] h-14 rounded-2xl pl-12 pr-4 text-slate-900 focus:ring-4 focus:ring-primary/10 focus:border-primary/40 outline-none transition-all font-bold placeholder:text-slate-300 uppercase"
+                                        className="w-full bg-white border-2 border-[#595A5B] h-16 rounded-2xl px-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-bold placeholder:text-slate-300 uppercase"
                                         placeholder="J-12345678-9"
                                     />
                                 </div>
                             </div>
 
-                            {/* City Input */}
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ciudad</label>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Ciudad</label>
                                 <div className="relative group">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-300 group-focus-within:text-primary transition-colors">location_city</span>
                                     <input
                                         type="text"
                                         required
                                         value={business?.city || ''}
                                         onChange={(e) => setBusiness({ ...business, city: e.target.value })}
-                                        className="w-full bg-[#f8fafc] border-2 border-[#595A5B] h-14 rounded-2xl pl-12 pr-4 text-slate-900 focus:ring-4 focus:ring-primary/10 focus:border-primary/40 outline-none transition-all font-bold placeholder:text-slate-300"
-                                        placeholder="Ej. Caracas"
+                                        className="w-full bg-white border-2 border-[#595A5B] h-16 rounded-2xl px-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-bold placeholder:text-slate-300"
+                                        placeholder="Caracas"
                                     />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Phone Input */}
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Número de Teléfono</label>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Número de Teléfono</label>
                             <div className="relative group">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-300 group-focus-within:text-primary transition-colors">call</span>
                                 <input
                                     type="tel"
                                     required
                                     value={business?.phone || ''}
                                     onChange={(e) => setBusiness({ ...business, phone: e.target.value })}
-                                    className="w-full bg-[#f8fafc] border-2 border-[#595A5B] h-14 rounded-2xl pl-12 pr-4 text-slate-900 focus:ring-4 focus:ring-primary/10 focus:border-primary/40 outline-none transition-all font-bold placeholder:text-slate-300"
+                                    className="w-full bg-white border-2 border-[#595A5B] h-16 rounded-2xl px-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-bold placeholder:text-slate-300"
                                     placeholder="+58 412 0000000"
                                 />
                             </div>
                         </div>
 
-                        {/* Address Input */}
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dirección Física</label>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Dirección Física</label>
                             <div className="relative group">
-                                <span className="absolute left-4 top-6 material-symbols-outlined text-slate-300 group-focus-within:text-primary transition-colors">location_on</span>
                                 <textarea
                                     required
                                     value={business?.address || ''}
                                     onChange={(e) => setBusiness({ ...business, address: e.target.value })}
-                                    className="w-full bg-[#f8fafc] border-2 border-[#595A5B] min-h-[80px] rounded-2xl pl-12 pr-4 py-4 text-slate-900 focus:ring-4 focus:ring-primary/10 focus:border-primary/40 outline-none transition-all font-medium placeholder:text-slate-300 resize-none"
+                                    className="w-full bg-white border-2 border-[#595A5B] min-h-[100px] rounded-2xl p-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-medium placeholder:text-slate-300 resize-none"
                                     placeholder="Ubicación detallada"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-[2.5rem] p-6 border-2 border-[#595A5B] shadow-sm space-y-6">
+                    <div className="space-y-4 px-1">
                         {/* Section Header */}
-                        <div className="flex items-center gap-3 pb-2 border-b border-[#595A5B]">
-                            <span className="material-symbols-outlined text-warning !text-xl font-black">group</span>
+                        <div className="flex items-center gap-3 pb-2 border-b-2 border-slate-100">
+                            <span className="material-symbols-outlined text-primary !text-xl font-black">group</span>
                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Equipo de Trabajo</span>
                         </div>
 
-                        <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center justify-between gap-4 bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm border-dashed">
                             <div className="flex-1">
-                                <p className="text-sm font-black text-slate-900">Gestionar Empleados</p>
+                                <p className="text-sm font-black text-slate-900 leading-tight">Gestionar Empleados</p>
                                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Configura permisos y turnos</p>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => navigate('/settings/staff')}
-                                className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 active:scale-95 transition-transform"
+                                className="size-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 active:scale-95 transition-transform"
                             >
                                 <span className="material-symbols-outlined font-black">badge</span>
                             </button>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-[2.5rem] p-6 border-2 border-[#595A5B] shadow-sm space-y-6">
+                    <div className="space-y-4 px-1">
                         {/* Section Header */}
-                        <div className="flex items-center gap-3 pb-2 border-b border-[#595A5B]">
-                            <span className="material-symbols-outlined text-warning !text-xl font-black">settings_account_box</span>
+                        <div className="flex items-center gap-3 pb-2 border-b-2 border-slate-100">
+                            <span className="material-symbols-outlined text-primary !text-xl font-black">settings_account_box</span>
                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Reglas del Juego</span>
                         </div>
 
                         {/* Points Config */}
-                        <div className="space-y-4">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Puntos por Dólar ($1.00 = pts)</label>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Puntos por Dólar ($1.00 = pts)</label>
                             <div className="relative group">
-                                <span className="absolute left-6 top-1/2 -translate-y-1/2 material-symbols-outlined text-warning group-focus-within:scale-110 transition-all font-black text-2xl">stars</span>
                                 <input
                                     type="number"
                                     required
                                     value={business?.points_per_dollar || 10}
                                     onChange={(e) => setBusiness({ ...business, points_per_dollar: parseInt(e.target.value) })}
-                                    className="w-full bg-[#f8fafc] border-2 border-[#595A5B] h-24 rounded-[2rem] pl-16 pr-6 text-5xl font-black text-slate-900 focus:ring-4 focus:ring-primary/10 outline-none transition-all placeholder:text-slate-200"
+                                    className="w-full bg-white border-2 border-[#595A5B] h-24 rounded-[2rem] pl-8 pr-28 text-5xl font-black text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/40 outline-none transition-all placeholder:text-slate-200"
                                 />
                                 <div className="absolute right-6 top-1/2 -translate-y-1/2 text-right">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Ptos por</p>
                                     <p className="text-lg font-black text-primary leading-none">$1 USD</p>
                                 </div>
                             </div>
-                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest ml-1 italic">* Afecta automáticamente a todos los cálculos del sistema</p>
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-1 italic opacity-60">* Afecta automáticamente a todos los cálculos del sistema</p>
                         </div>
                     </div>
 
