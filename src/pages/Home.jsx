@@ -23,6 +23,10 @@ const Home = () => {
     const [business, setBusiness] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const weeklyTotal = React.useMemo(() => {
+        return weeklyActivity.reduce((acc, curr) => acc + curr, 0);
+    }, [weeklyActivity]);
+
     // Sale Registration State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [saleStep, setSaleStep] = useState(1); // 1: Amount, 2: Scanner
@@ -1059,64 +1063,153 @@ const Home = () => {
                     )}
                 </div>
 
-                {/* Chart Section */}
-                {/* Chart Section - Rediseño Premium */}
+                {/* Chart Section - Estilo Análisis Financiero Premium */}
                 {(userRole === 'owner' || userPermissions?.can_view_clients) && (
-                    <div className="bg-white p-6 rounded-[2.5rem] border-2 border-[#595A5B] shadow-sm relative overflow-hidden">
-                        <div className="flex justify-between items-center mb-8">
+                    <div className="bg-[#0F172A] p-6 rounded-[2.5rem] border-2 border-[#1E293B] shadow-2xl relative overflow-hidden">
+                        {/* Fondo decorativo de malla técnica */}
+                        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+                             style={{ backgroundImage: 'radial-gradient(#94a3b8 0.5px, transparent 0.5px)', backgroundSize: '12px 12px' }}></div>
+                        
+                        <div className="flex justify-between items-start mb-8 relative z-10">
                             <div>
-                                <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Análisis Semanal</h2>
-                                <p className="text-sm font-black text-slate-800 uppercase tracking-tight">Rendimiento de Ventas</p>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.25em]">Volumen Semanal</h2>
+                                    <span className="text-[9px] font-black text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">
+                                        +{(weeklyActivity[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1] > 0 ? (weeklyActivity[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1] / (weeklyTotal || 1) * 100).toFixed(1) : 0)}% Vol
+                                    </span>
+                                </div>
+                                <div className="flex items-baseline gap-2">
+                                    <p className="text-3xl font-black text-white tracking-tighter">${weeklyTotal.toLocaleString()}</p>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">USD Operados</span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <div className="size-2 rounded-full bg-primary animate-pulse"></div>
-                                <span className="text-[10px] bg-primary/5 text-primary border border-primary/10 px-3 py-1 rounded-full font-black uppercase tracking-widest">En Vivo</span>
+                            <div className="flex flex-col items-end">
+                                <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-lg font-black uppercase tracking-widest flex items-center gap-2">
+                                    <span className="size-1.5 rounded-full bg-primary animate-pulse"></span>
+                                    LIVE ANALYTICS
+                                </span>
                             </div>
                         </div>
 
-                        <div className="relative h-44 w-full flex items-end justify-between px-2">
-                            {/* Líneas de referencia (Grid) */}
-                            <div className="absolute inset-x-0 bottom-0 h-full flex flex-col justify-between opacity-5 pointer-events-none">
-                                <div className="w-full border-t border-slate-900"></div>
-                                <div className="w-full border-t border-slate-900"></div>
-                                <div className="w-full border-t border-slate-900"></div>
-                                <div className="w-full border-t border-slate-900"></div>
+                        <div className="relative h-48 w-full mt-4">
+                            {/* Grid Técnica */}
+                            <div className="absolute inset-0 flex flex-col justify-between opacity-10 pointer-events-none z-0">
+                                {[...Array(5)].map((_, i) => (
+                                    <div key={i} className="w-full border-t border-slate-400 border-dashed"></div>
+                                ))}
                             </div>
 
-                            {weeklyActivity.map((value, index) => {
-                                const maxVal = Math.max(...weeklyActivity, 1);
-                                const height = (value / (maxVal * 1.1)) * 100;
-                                const days = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
-                                const isToday = (new Date().getDay() === (index === 6 ? 0 : index + 1));
+                            {/* Contenedor del Gráfico */}
+                            <div className="absolute inset-0 flex items-end justify-between px-2 z-10">
+                                <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
+                                    <defs>
+                                        <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#ff650e" stopOpacity="0.4" />
+                                            <stop offset="100%" stopColor="#ff650e" stopOpacity="0" />
+                                        </linearGradient>
+                                    </defs>
+                                    
+                                    {/* Línea de Tendencia (Bezier Curve) */}
+                                    <path
+                                        d={(() => {
+                                            const maxVal = Math.max(...weeklyActivity, 1);
+                                            const points = weeklyActivity.map((v, i) => ({
+                                                x: (i / 6) * 100, // Porcentaje
+                                                y: 100 - (v / (maxVal * 1.1)) * 100
+                                            }));
+                                            
+                                            // Generar Path con curvas de Bezier suaves
+                                            return points.reduce((path, p, i, pts) => {
+                                                if (i === 0) return `M ${p.x}% ${p.y}%`;
+                                                const prev = pts[i - 1];
+                                                const cp1x = prev.x + (p.x - prev.x) / 2;
+                                                return `${path} C ${cp1x}% ${prev.y}%, ${cp1x}% ${p.y}%, ${p.x}% ${p.y}%`;
+                                            }, "");
+                                        })()}
+                                        fill="none"
+                                        stroke="url(#trendGradient)"
+                                        strokeWidth="0"
+                                        className="opacity-20"
+                                    />
+                                    <path
+                                        d={(() => {
+                                            const maxVal = Math.max(...weeklyActivity, 1);
+                                            const points = weeklyActivity.map((v, i) => ({
+                                                x: (i / 6) * 100,
+                                                y: 100 - (v / (maxVal * 1.1)) * 100
+                                            }));
+                                            return points.reduce((path, p, i, pts) => {
+                                                if (i === 0) return `M ${p.x}% ${p.y}%`;
+                                                const prev = pts[i - 1];
+                                                const cp1x = prev.x + (p.x - prev.x) / 2;
+                                                return `${path} C ${cp1x}% ${prev.y}%, ${cp1x}% ${p.y}%, ${p.x}% ${p.y}%`;
+                                            }, "");
+                                        })()}
+                                        fill="none"
+                                        stroke="#ff650e"
+                                        strokeWidth="2.5"
+                                        strokeLinecap="round"
+                                        className="drop-shadow-[0_0_8px_rgba(255,101,14,0.3)]"
+                                    />
+                                </svg>
 
-                                return (
-                                    <div key={index} className="flex flex-col items-center justify-end h-full flex-1 group relative z-10">
-                                        {/* Tooltip on Hover */}
-                                        <div className="absolute -top-8 px-2 py-1 bg-slate-900 text-white text-[10px] font-black rounded-lg opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100 pointer-events-none shadow-xl border border-white/10">
-                                            ${value}
-                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45"></div>
+                                {weeklyActivity.map((value, index) => {
+                                    const maxVal = Math.max(...weeklyActivity, 1);
+                                    const height = (value / (maxVal * 1.1)) * 100;
+                                    const days = ['LUNE', 'MART', 'MIÉR', 'JUEV', 'VIER', 'SÁBA', 'DOMI'];
+                                    const isToday = (new Date().getDay() === (index === 6 ? 0 : index + 1));
+
+                                    return (
+                                        <div key={index} className="flex flex-col items-center justify-end h-full flex-1 group relative">
+                                            {/* Indicador de Punto en Tendencia */}
+                                            <div 
+                                                className={`absolute size-2 rounded-full border-2 border-[#0F172A] z-20 transition-all duration-500 ${isToday ? 'bg-primary scale-125 shadow-[0_0_10px_#ff650e]' : 'bg-slate-600 group-hover:bg-primary/50'}`}
+                                                style={{ bottom: `${height}%`, transform: 'translateY(50%)' }}
+                                            ></div>
+
+                                            {/* Barra Desvanecida (Fondo) */}
+                                            <div
+                                                className={`w-[6px] rounded-t-full transition-all duration-700 opacity-10 ${isToday ? 'bg-primary' : 'bg-slate-400 group-hover:opacity-30'}`}
+                                                style={{ height: `${height}%` }}
+                                            ></div>
+
+                                            {/* Label Inferior Técnica */}
+                                            <div className="mt-4 flex flex-col items-center gap-1">
+                                                <span className={`text-[8px] font-black tracking-tighter transition-colors ${isToday ? 'text-primary' : 'text-slate-500'}`}>
+                                                    {days[index]}
+                                                </span>
+                                            </div>
+
+                                            {/* Tooltip Pro al Hover */}
+                                            <div className="absolute -top-10 px-3 py-1.5 bg-white text-slate-900 text-[10px] font-black rounded-lg opacity-0 group-hover:opacity-100 transition-all transform -translate-y-2 group-hover:translate-y-0 pointer-events-none shadow-2xl border-2 border-primary/20 z-30">
+                                                <div className="flex flex-col items-center">
+                                                    <span className="text-[8px] text-slate-400 uppercase mb-0.5">Ventas</span>
+                                                    ${value.toLocaleString()}
+                                                </div>
+                                                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b-2 border-r-2 border-primary/20 rotate-45"></div>
+                                            </div>
                                         </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
 
-                                        {/* Bar with gradient */}
-                                        <div
-                                            className={`w-[14px] rounded-full transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] relative active:scale-95 shadow-lg ${isToday
-                                                ? 'bg-gradient-to-t from-orange-600 to-orange-400 shadow-orange-500/30'
-                                                : 'bg-gradient-to-t from-slate-200 to-slate-100 group-hover:from-primary/40 group-hover:to-primary/20 shadow-slate-200/50'
-                                                }`}
-                                            style={{ height: `${Math.max(height, 8)}%` }}
-                                        >
-                                            {isToday && (
-                                                <div className="absolute -inset-1.5 bg-primary/20 rounded-full blur-md animate-pulse"></div>
-                                            )}
-                                        </div>
-
-                                        {/* Day label */}
-                                        <span className={`mt-4 text-[10px] font-black transition-colors ${isToday ? 'text-primary' : 'text-slate-400'}`}>
-                                            {days[index]}
-                                        </span>
-                                    </div>
-                                );
-                            })}
+                        {/* Footer del Gráfico - Insights */}
+                        <div className="mt-8 pt-4 border-t border-[#1E293B] flex justify-between items-center relative z-10">
+                            <div className="flex gap-6">
+                                <div>
+                                    <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest mb-1">Pico Máximo</p>
+                                    <p className="text-xs font-black text-white">${Math.max(...weeklyActivity).toLocaleString()}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest mb-1">Promedio Diario</p>
+                                    <p className="text-xs font-black text-white">${(weeklyTotal / 7).toFixed(0).toLocaleString()}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => navigate('/kpi')} className="text-[9px] font-black text-primary hover:text-primary/80 uppercase tracking-[0.2em] flex items-center gap-2 transition-all group">
+                                ANALYZE DATA
+                                <span className="material-symbols-outlined !text-xs group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            </button>
                         </div>
                     </div>
                 )}
