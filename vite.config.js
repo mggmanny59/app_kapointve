@@ -13,8 +13,8 @@ export default defineConfig({
       srcDir: 'src',
       filename: 'service-worker.js',
       registerType: 'autoUpdate',
-      injectRegister: 'script',
-      includeAssets: ['favicon.ico', 'vite.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
+      injectRegister: null,
+      includeAssets: ['vite.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         name: 'KPoint',
         short_name: 'KPoint',
