@@ -14,14 +14,14 @@ export default defineConfig({
       filename: 'service-worker.js',
       registerType: 'prompt',
       injectRegister: 'auto',
-      includeAssets: ['vite.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
+      includeAssets: ['vite.svg', 'icon-pwa.png', 'Splash_Screen.png'],
       manifest: {
         name: 'KPoint Fidelización',
         short_name: 'KPoint',
         description: 'Tu monedero digital de fidelización',
         theme_color: '#F0F2F5',
         background_color: '#F0F2F5',
-        display: 'fullscreen',
+        display: 'standalone',
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
@@ -30,19 +30,19 @@ export default defineConfig({
 
         icons: [
           {
-            src: 'Logo KPoint Solo K (sin Fondo).png',
+            src: 'icon-pwa.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: 'Logo KPoint Solo K (sin Fondo).png',
+            src: 'icon-pwa.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: 'Logo KPoint Solo K (sin Fondo).png',
+            src: 'icon-pwa.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
