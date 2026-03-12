@@ -15,6 +15,7 @@ import ActivityHistory from './pages/ActivityHistory';
 import { useAuth } from './context/AuthContext';
 import BackNavigationHandler from './components/BackNavigationHandler';
 import PWAReloadPrompt from './components/PWAReloadPrompt';
+import SplashScreen from './components/SplashScreen';
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
@@ -43,8 +44,11 @@ const SuperAdminRoute = ({ children }) => {
 };
 
 function App() {
+  const [showSplash, setShowSplash] = React.useState(true);
+
   return (
     <Router>
+      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
       <PWAReloadPrompt />
       <BackNavigationHandler />
       <Routes>

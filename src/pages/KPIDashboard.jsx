@@ -174,13 +174,38 @@ const KPIDashboard = () => {
     const CustomTooltip = ({ active, payload }) => {
         if (active && payload && payload.length) {
             return (
-                <div className="bg-navy-dark text-white p-3 rounded-xl border border-[#334155] shadow-lg text-xs font-black tracking-wide">
+                <div className="bg-[#0F172A] text-white p-3 rounded-xl border border-[#334155] shadow-lg text-xs font-black tracking-wide">
                     <p className="opacity-70 mb-1">{payload[0].name}</p>
-                    <p className="text-base text-primary">${Number(payload[0].value).toFixed(2)}</p>
+                    <p className="text-base text-primary">
+                        {typeof payload[0].value === 'number' && payload[0].name.includes('Ticket') 
+                            ? `$${payload[0].value.toFixed(2)}` 
+                            : payload[0].value}
+                    </p>
                 </div>
             );
         }
         return null;
+    };
+
+    // Custom Label for Pie Chart
+    const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, value }) => {
+        const RADIAN = Math.PI / 180;
+        const radius = outerRadius + 20;
+        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+        const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+        return (
+            <text 
+                x={x} 
+                y={y} 
+                fill="#94A3B8" 
+                textAnchor={x > cx ? 'start' : 'end'} 
+                dominantBaseline="central"
+                className="text-[9px] font-black tracking-tighter"
+            >
+                {`${value} (${(percent * 100).toFixed(0)}%)`}
+            </text>
+        );
     };
 
     return (
@@ -398,16 +423,18 @@ const KPIDashboard = () => {
                                     <div className="h-56 w-full mt-4 relative flex items-center justify-center">
                                         {kpiData.retentionData.reduce((sum, i) => sum + i.value, 0) > 0 ? (
                                             <ResponsiveContainer width="100%" height="100%">
-                                                <PieChart>
+                                                <PieChart margin={{ top: 0, right: 30, left: 30, bottom: 0 }}>
                                                     <Pie
                                                         data={kpiData.retentionData}
                                                         cx="50%"
                                                         cy="50%"
-                                                        innerRadius={65}
-                                                        outerRadius={85}
+                                                        innerRadius={55}
+                                                        outerRadius={75}
                                                         paddingAngle={8}
                                                         dataKey="value"
                                                         stroke="none"
+                                                        label={renderCustomizedLabel}
+                                                        labelLine={{ stroke: '#334155', strokeWidth: 1 }}
                                                     >
                                                         {kpiData.retentionData.map((entry, index) => (
                                                             <Cell 

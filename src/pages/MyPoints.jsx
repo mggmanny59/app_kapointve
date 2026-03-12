@@ -287,9 +287,6 @@ const MyPoints = () => {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <button onClick={() => { if (confirm('¿Buscar actualizaciones?')) forceAppUpdate(); }} className="w-10 h-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center shadow-sm">
-                        <span className="material-symbols-outlined !text-[20px]">sync</span>
-                    </button>
                     <button onClick={signOut} className="w-10 h-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-300 shadow-sm">
                         <span className="material-symbols-outlined text-xl">logout</span>
                     </button>

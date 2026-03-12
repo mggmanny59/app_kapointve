@@ -876,17 +876,6 @@ const Home = () => {
                         )}
                     </button>
                     <button
-                        onClick={() => {
-                            if (confirm('Se reiniciará la aplicación para buscar actualizaciones. ¿Continuar?')) {
-                                forceAppUpdate();
-                            }
-                        }}
-                        className="w-10 h-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center hover:text-primary transition-colors shadow-sm"
-                        title="Forzar actualización"
-                    >
-                        <span className="material-symbols-outlined !text-[20px]">sync</span>
-                    </button>
-                    <button
                         onClick={signOut}
                         className="w-10 h-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center hover:text-red-500 transition-colors shadow-sm"
                     >
