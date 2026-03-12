@@ -12,9 +12,9 @@ export default defineConfig({
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'service-worker.js',
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       injectRegister: 'auto',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-icon.png', 'Splash_Screen.png'],
+      includeAssets: ['vite.svg', 'pwa-icon.png', 'Splash_Screen.png'],
       manifest: {
         name: 'KPoint Fidelización',
         short_name: 'KPoint',
