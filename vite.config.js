@@ -14,9 +14,9 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['vite.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'KPoint Fidelización',
-        short_name: 'KPoint',
-        description: 'Tu monedero digital de fidelización',
+        name: 'KPoint Fidelidad',
+        short_name: 'KPoint App',
+        description: 'Tu monedero digital de fidelización KPoint',
         theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
