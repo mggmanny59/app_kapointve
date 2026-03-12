@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -26,10 +26,12 @@ const KPIDashboard = () => {
     const PIE_COLORS = ['#F59E0B', '#22C55E']; // Warning (Nuevos) and Primary (Fieles)
 
     useEffect(() => {
+        let bizId = null;
+
         const fetchKPIData = async () => {
             if (!user) return;
             try {
-                setLoading(true);
+                if (loading) setLoading(true); // Solo mostrar loading inicial
 
                 // 1. Encontrar a qué negocio está atado el usuario logueado
                 const { data: profile } = await supabase
@@ -38,7 +40,7 @@ const KPIDashboard = () => {
                     .eq('id', user.id)
                     .single();
 
-                const bizId = profile?.business_members[0]?.business_id;
+                bizId = profile?.business_members[0]?.business_id;
                 if (!bizId) return;
 
                 // 2. Traer transacciones de acumulación (Ventas)
@@ -47,7 +49,13 @@ const KPIDashboard = () => {
                     .select('amount_fiat, profile_id, created_at')
                     .eq('business_id', bizId)
                     .eq('type', 'EARN')
-                    .order('created_at', { ascending: true }); // Important for recency
+                    .order('created_at', { ascending: true });
+
+                // 3. Traer Conteo REAL de Afiliados (loyalty_cards)
+                const { count: realClientsCount } = await supabase
+                    .from('loyalty_cards')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('business_id', bizId);
 
                 let aov = 0;
                 let totalVolume = 0;
@@ -57,7 +65,7 @@ const KPIDashboard = () => {
                 let top10Share = 0;
                 let top10Chart = [];
                 let retentionChart = [];
-                let totalUsersCount = 0;
+                let totalUsersWithTx = 0;
 
                 if (allEarnTx && allEarnTx.length > 0) {
                     txCount = allEarnTx.length;
@@ -76,7 +84,7 @@ const KPIDashboard = () => {
                     });
 
                     const users = Object.values(clientMap);
-                    totalUsersCount = users.length;
+                    totalUsersWithTx = users.length;
 
                     // CALC: Recencia Promedio (Días)
                     let totalDiffDays = 0;
@@ -97,7 +105,7 @@ const KPIDashboard = () => {
 
                     // CALC: Top 10% Clientes
                     users.sort((a, b) => b.totalSpent - a.totalSpent);
-                    const top10Count = Math.max(1, Math.ceil(totalUsersCount * 0.1));
+                    const top10Count = Math.max(1, Math.ceil(totalUsersWithTx * 0.1));
 
                     const top10Users = users.slice(0, top10Count);
                     const otherUsers = users.slice(top10Count);
@@ -112,13 +120,22 @@ const KPIDashboard = () => {
                         { name: 'Resto 90%', revenue: otherSpend, fill: '#94A3B8' }
                     ];
 
-                    // CALC: Tasa Nuevos vs Recurrentes
-                    const recurrentes = users.filter(u => u.txDates.length > 1).length;
-                    const nuevos = users.filter(u => u.txDates.length === 1).length;
+                    // CALC: Segmentación de Clientes (Nuevos, Casuales, Fieles)
+                    const countNuevos = Math.max(0, realClientsCount - totalUsersWithTx); 
+                    const countCasuales = users.filter(u => u.txDates.length >= 1 && u.txDates.length <= 2).length;
+                    const countFieles = users.filter(u => u.txDates.length >= 3).length;
 
                     retentionChart = [
-                        { name: 'Casuales (1 compra)', value: nuevos },
-                        { name: 'Fieles (>1 compras)', value: recurrentes }
+                        { name: 'Nuevos (0 Compras)', value: countNuevos, fill: '#94A3B8' },
+                        { name: 'Casuales (1-2 Comp.)', value: countCasuales, fill: '#F59E0B' },
+                        { name: 'Fieles (3+ Comp.)', value: countFieles, fill: '#22C55E' }
+                    ];
+                } else {
+                    // Si no hay transacciones, todos son nuevos (0 compras)
+                    retentionChart = [
+                        { name: 'Nuevos (0 Compras)', value: realClientsCount || 0, fill: '#94A3B8' },
+                        { name: 'Casuales (1-2 Comp.)', value: 0, fill: '#F59E0B' },
+                        { name: 'Fieles (3+ Comp.)', value: 0, fill: '#22C55E' }
                     ];
                 }
 
@@ -130,7 +147,7 @@ const KPIDashboard = () => {
                     top10SharePercentage: top10Share,
                     top10Data: top10Chart,
                     retentionData: retentionChart,
-                    totalClients: totalUsersCount
+                    totalClients: realClientsCount || 0
                 });
 
             } catch (err) {
@@ -141,6 +158,16 @@ const KPIDashboard = () => {
         };
 
         fetchKPIData();
+
+        // SUSCRIPCIÓN REALTIME: Escuchar cambios en transacciones y afiliaciones
+        const channel = supabase.channel('kpi-updates')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => fetchKPIData())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'loyalty_cards' }, () => fetchKPIData())
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [user]);
 
     // Custom Tooltip for Recharts
@@ -161,12 +188,18 @@ const KPIDashboard = () => {
             {/* Header */}
             <header className="pt-8 pb-4 px-6 flex items-center justify-between sticky top-0 bg-[#F0F2F5]/80 backdrop-blur-md z-40">
                 <div className="flex items-center gap-4">
+                    <button 
+                        onClick={() => navigate('/home')}
+                        className="size-10 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center text-slate-600 active:scale-95 transition-all shadow-sm"
+                    >
+                        <span className="material-symbols-outlined !text-xl">arrow_back</span>
+                    </button>
                     <div>
                         <div className="flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary text-2xl font-black">insights</span>
                             <h1 className="text-2xl font-black tracking-tight leading-none text-slate-900">Panel KPI</h1>
                         </div>
-                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">Indicadores e Inteligencia</p>
+                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">Inteligencia de Negocio</p>
                     </div>
                 </div>
             </header>
@@ -174,17 +207,27 @@ const KPIDashboard = () => {
             <main className="px-6 space-y-4 animate-in slide-in-from-bottom-4 duration-500">
 
                 {/* Resumen Global Info Card */}
-                <div className="bg-primary text-white p-6 rounded-[2.5rem] shadow-lg border-2 border-[#595A5B] relative overflow-hidden group">
-                    <div className="absolute -right-10 -top-10 bg-white/20 size-40 rounded-full blur-3xl"></div>
-                    <p className="text-[11px] font-black uppercase tracking-[0.2em] mb-4 text-white/80">Resumen Anal├¡tico</p>
+                <div className="bg-[#0F172A] text-white p-7 rounded-[2.5rem] shadow-2xl border-2 border-[#1E293B] relative overflow-hidden group">
+                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+                         style={{ backgroundImage: 'radial-gradient(#94a3b8 0.5px, transparent 0.5px)', backgroundSize: '12px 12px' }}></div>
+                    <div className="absolute -right-10 -top-10 bg-primary/20 size-40 rounded-full blur-3xl group-hover:bg-primary/30 transition-all duration-700"></div>
+                    
+                    <div className="flex justify-between items-start mb-6 relative z-10">
+                        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">Volumen Consolidado</p>
+                        <span className="text-[9px] font-black text-primary bg-primary/10 border border-primary/20 px-3 py-1 rounded-lg uppercase tracking-widest flex items-center gap-2">
+                            <span className="size-1.5 rounded-full bg-primary animate-pulse"></span>
+                            Análisis en Vivo
+                        </span>
+                    </div>
+
                     <div className="flex justify-between items-end relative z-10">
                         <div>
-                            <p className="text-4xl font-black drop-shadow-sm">${kpiData.totalSalesVolume.toFixed(2)}</p>
-                            <p className="text-xs text-white font-bold tracking-wide mt-1 drop-shadow-sm">Volumen Acumulado</p>
+                            <p className="text-4xl font-black tracking-tighter">${kpiData.totalSalesVolume.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                            <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase mt-1">Total USD Operados</p>
                         </div>
                         <div className="text-right">
-                            <p className="text-3xl font-black tracking-tight text-white/95">{kpiData.totalTxCount}</p>
-                            <p className="text-[9px] text-white/80 font-black uppercase tracking-widest mt-1">Transacciones</p>
+                            <p className="text-2xl font-black tracking-tighter text-white/95">{kpiData.totalTxCount.toLocaleString()}</p>
+                            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mt-1">Operaciones</p>
                         </div>
                     </div>
                 </div>
@@ -198,51 +241,73 @@ const KPIDashboard = () => {
                     ) : (
                         <>
                             {/* KPI 1: Ticket Promedio AOV */}
-                            <div className="bg-white p-6 rounded-[2.5rem] border-2 border-[#595A5B] shadow-sm relative overflow-hidden group">
-                                <div className="absolute -right-2 -top-2 bg-primary/5 size-20 rounded-full blur-2xl group-hover:bg-primary/10 transition-all"></div>
-                                <div className="flex items-center justify-between mb-2 z-10 relative">
-                                    <div className="size-12 rounded-[1rem] bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                                        <span className="material-symbols-outlined !text-2xl font-black">receipt_long</span>
+                            <div className="bg-[#0F172A] p-6 rounded-[2.5rem] border-2 border-[#1E293B] shadow-2xl relative overflow-hidden group">
+                                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+                                     style={{ backgroundImage: 'radial-gradient(#94a3b8 0.5px, transparent 0.5px)', backgroundSize: '12px 12px' }}></div>
+                                <div className="flex items-center justify-between mb-4 z-10 relative">
+                                    <div className="size-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-inner">
+                                        <span className="material-symbols-outlined !text-xl font-black">receipt_long</span>
                                     </div>
-                                    <span className="text-[10px] border-2 border-primary/20 bg-primary/10 text-primary px-3 py-1 rounded-full font-black tracking-widest uppercase">AOV</span>
+                                    <span className="text-[9px] border border-primary/20 bg-primary/10 text-primary px-3 py-1 rounded-lg font-black tracking-widest uppercase">AOV</span>
                                 </div>
                                 <div className="relative z-10 mt-4">
-                                    <p className="text-[11px] text-slate-500 font-black uppercase tracking-[0.15em] mb-1">Ticket Promedio</p>
-                                    <p className="text-4xl font-black text-slate-900 tracking-tight">${kpiData.aov.toFixed(2)}</p>
+                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-1">Ticket Promedio</p>
+                                    <p className="text-4xl font-black text-white tracking-tighter">${kpiData.aov.toFixed(2)}</p>
+                                    <div className="mt-6 pt-4 border-t border-[#1E293B]">
+                                        <p className="text-[10px] text-slate-400 font-bold leading-relaxed flex items-start gap-3">
+                                            <span className="material-symbols-outlined !text-[18px] text-primary">info</span>
+                                            <span>
+                                                "Monto promedio por visita".
+                                                <br /><span className="text-slate-500 uppercase text-[8px] tracking-widest mt-1 block font-black">Tip: Incentiva el Up-selling para subir este valor</span>
+                                            </span>
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
                             {/* KPI: Total Clientes (NUEVO) */}
-                            <div className="bg-white p-6 rounded-[2.5rem] border-2 border-[#595A5B] shadow-sm relative overflow-hidden group">
-                                <div className="absolute -right-2 -top-2 bg-amber-500/5 size-20 rounded-full blur-2xl group-hover:bg-amber-500/10 transition-all"></div>
-                                <div className="flex items-center justify-between mb-2 z-10 relative">
-                                    <div className="size-12 rounded-[1rem] bg-amber-500/10 flex items-center justify-center text-amber-500 shadow-inner">
-                                        <span className="material-symbols-outlined !text-2xl font-black">groups</span>
+                            <div className="bg-[#0F172A] p-6 rounded-[2.5rem] border-2 border-[#1E293B] shadow-2xl relative overflow-hidden group">
+                                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+                                     style={{ backgroundImage: 'radial-gradient(#94a3b8 0.5px, transparent 0.5px)', backgroundSize: '12px 12px' }}></div>
+                                <div className="flex items-center justify-between mb-4 z-10 relative">
+                                    <div className="size-11 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shadow-inner">
+                                        <span className="material-symbols-outlined !text-xl font-black">groups</span>
                                     </div>
-                                    <span className="text-[10px] border-2 border-amber-500/20 bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full font-black tracking-widest uppercase">Base</span>
+                                    <span className="text-[9px] border border-amber-500/20 bg-amber-500/10 text-amber-500 px-3 py-1 rounded-lg font-black tracking-widest uppercase">Base</span>
                                 </div>
                                 <div className="relative z-10 mt-4">
-                                    <p className="text-[11px] text-slate-500 font-black uppercase tracking-[0.15em] mb-1">Clientes Totales</p>
-                                    <p className="text-4xl font-black text-slate-900 tracking-tight">{kpiData.totalClients}</p>
+                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-1">Clientes Totales</p>
+                                    <p className="text-4xl font-black text-white tracking-tighter">{kpiData.totalClients}</p>
+                                    <div className="mt-6 pt-4 border-t border-[#1E293B]">
+                                        <p className="text-[10px] text-slate-400 font-bold leading-relaxed flex items-start gap-3">
+                                            <span className="material-symbols-outlined !text-[18px] text-amber-500">info</span>
+                                            <span>
+                                                "Personas en tu programa de lealtad".
+                                                <br /><span className="text-slate-500 uppercase text-[8px] tracking-widest mt-1 block font-black">Potencial: Base total para marketing directo</span>
+                                            </span>
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
                             {/* KPI 2: Recencia Promedio */}
-                            <div className="bg-white p-6 rounded-[2.5rem] border-2 border-[#595A5B] shadow-sm relative overflow-hidden">
-                                <div className="flex items-center justify-between mb-2 z-10 relative">
-                                    <div className="size-12 rounded-[1rem] bg-blue-500/10 flex items-center justify-center text-blue-500 shadow-inner">
-                                        <span className="material-symbols-outlined !text-2xl font-black">history_toggle_off</span>
+                            <div className="bg-[#0F172A] p-6 rounded-[2.5rem] border-2 border-[#1E293B] shadow-2xl relative overflow-hidden group">
+                                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+                                     style={{ backgroundImage: 'radial-gradient(#94a3b8 0.5px, transparent 0.5px)', backgroundSize: '12px 12px' }}></div>
+                                <div className="flex items-center justify-between mb-4 z-10 relative">
+                                    <div className="size-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 shadow-inner">
+                                        <span className="material-symbols-outlined !text-xl font-black">history_toggle_off</span>
                                     </div>
                                 </div>
                                 <div className="relative z-10 mt-4">
-                                    <p className="text-[11px] text-slate-500 font-black uppercase tracking-[0.15em] mb-1">Recencia Promedio</p>
-                                    <p className="text-4xl font-black text-slate-900 tracking-tight">{kpiData.averageRecencyDays.toFixed(1)} <span className="text-lg text-slate-400">días</span></p>
-                                    <div className="mt-4 pt-4 border-t-2 border-slate-100">
-                                        <p className="text-[11px] text-slate-600 font-bold leading-relaxed flex items-start gap-2">
-                                            <span className="material-symbols-outlined !text-[16px] text-blue-500">info</span>
+                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-1">Recencia Promedio</p>
+                                    <p className="text-4xl font-black text-white tracking-tighter">{kpiData.averageRecencyDays.toFixed(1)} <span className="text-lg text-slate-500">días</span></p>
+                                    <div className="mt-6 pt-4 border-t border-[#1E293B]">
+                                        <p className="text-[10px] text-slate-400 font-bold leading-relaxed flex items-start gap-3">
+                                            <span className="material-symbols-outlined !text-[18px] text-blue-500">info</span>
                                             <span>
                                                 "Tus clientes suelen volver cada {kpiData.averageRecencyDays.toFixed(0)} días".
-                                                <br /><span className="text-slate-400">Alerta de <span className="font-extrabold text-[#F59E0B]">KPoint</span>: Si vemos que este número sube a {(kpiData.averageRecencyDays + 5).toFixed(0)} días, lanzaremos una promoción para reactivarlos.</span>
+                                                <br /><span className="text-slate-500 uppercase text-[8px] tracking-widest mt-1 block font-black">Alerta: Campaña de reactivación a los {(kpiData.averageRecencyDays + 5).toFixed(0)} días</span>
                                             </span>
                                         </p>
                                     </div>
@@ -250,35 +315,64 @@ const KPIDashboard = () => {
                             </div>
 
                             {/* KPI 3: Top 10% Clientes (Chart) */}
-                            <div className="bg-white p-6 rounded-[2.5rem] border-2 border-[#595A5B] shadow-sm relative overflow-hidden">
+                            <div className="bg-[#0F172A] p-6 rounded-[2.5rem] border-2 border-[#1E293B] shadow-2xl relative overflow-hidden group">
+                                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+                                     style={{ backgroundImage: 'radial-gradient(#94a3b8 0.5px, transparent 0.5px)', backgroundSize: '12px 12px' }}></div>
+                                
                                 <div className="relative z-10">
-                                    <div className="flex justify-between items-start mb-4">
+                                    <div className="flex justify-between items-start mb-6">
                                         <div>
-                                            <p className="text-[11px] text-slate-500 font-black uppercase tracking-[0.15em] mb-1">Ley de Pareto</p>
-                                            <p className="text-xl font-black text-slate-900 tracking-tight">Top 10% Clientes</p>
+                                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.25em] mb-1">Análisis de Pareto</p>
+                                            <p className="text-xl font-black text-white tracking-tight">Top 10% Clientes</p>
                                         </div>
-                                        <div className="size-10 rounded-full bg-[#1E293B] text-white flex items-center justify-center">
-                                            <span className="material-symbols-outlined !text-xl">diamond</span>
+                                        <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center">
+                                            <span className="material-symbols-outlined !text-xl font-black">diamond</span>
                                         </div>
                                     </div>
 
-                                    <div className="h-48 w-full mt-6">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart data={kpiData.top10Data} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#94A3B8' }} />
-                                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94A3B8' }} domain={[0, 'auto']} />
-                                                <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: '#F1F5F9' }} />
-                                                <Bar dataKey="revenue" radius={[6, 6, 0, 0]} barSize={40} />
-                                            </BarChart>
-                                        </ResponsiveContainer>
+                                    <div className="relative h-48 w-full mt-8">
+                                        {/* Grid Técnica */}
+                                        <div className="absolute inset-0 flex flex-col justify-between opacity-5 pointer-events-none z-0">
+                                            {[...Array(5)].map((_, i) => (
+                                                <div key={i} className="w-full border-t border-slate-400 border-dashed"></div>
+                                            ))}
+                                        </div>
+
+                                        <div className="absolute inset-0 z-10">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={kpiData.top10Data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                                    <XAxis 
+                                                        dataKey="name" 
+                                                        axisLine={false} 
+                                                        tickLine={false} 
+                                                        tick={{ fontSize: 9, fontWeight: 900, fill: '#64748B', letterSpacing: '0.05em' }} 
+                                                    />
+                                                    <YAxis 
+                                                        axisLine={false} 
+                                                        tickLine={false} 
+                                                        tick={{ fontSize: 9, fontWeight: 900, fill: '#64748B' }} 
+                                                    />
+                                                    <RechartsTooltip 
+                                                        content={<CustomTooltip />} 
+                                                        cursor={{ fill: 'rgba(148, 163, 184, 0.05)' }} 
+                                                    />
+                                                    <Bar 
+                                                        dataKey="revenue" 
+                                                        radius={[10, 10, 0, 0]} 
+                                                        barSize={45}
+                                                        className="drop-shadow-[0_0_8px_rgba(34,197,94,0.1)]"
+                                                    />
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
                                     </div>
 
-                                    <div className="mt-4 pt-4 border-t-2 border-slate-100">
-                                        <p className="text-[11px] text-slate-600 font-bold leading-relaxed flex items-start gap-2">
-                                            <span className="material-symbols-outlined !text-[16px] text-primary">campaign</span>
+                                    <div className="mt-8 pt-4 border-t border-[#1E293B]">
+                                        <p className="text-[10px] text-slate-400 font-bold leading-relaxed flex items-start gap-3">
+                                            <span className="material-symbols-outlined !text-[18px] text-primary">campaign</span>
                                             <span>
-                                                "Tus 10% mejores clientes generan el <span className="font-black text-primary">{kpiData.top10SharePercentage.toFixed(1)}%</span> de tus ingresos".
-                                                <br /><span className="text-slate-400">Pronto habilitaremos el nodo 'Agradecimiento VIP'.</span>
+                                                "Tus 10% mejores clientes generan el <span className="font-black text-primary text-xs">{kpiData.top10SharePercentage.toFixed(1)}%</span> de tus ingresos totales".
+                                                <br /><span className="text-slate-500 uppercase text-[8px] tracking-widest mt-1 block font-black">Pronto: Nodo de Agradecimiento VIP Automático</span>
                                             </span>
                                         </p>
                                     </div>
@@ -286,16 +380,22 @@ const KPIDashboard = () => {
                             </div>
 
                             {/* KPI 4: Tasa de Nuevos vs Fieles (Pie) */}
-                            <div className="bg-white p-6 rounded-[2.5rem] border-2 border-[#595A5B] shadow-sm relative overflow-hidden">
+                            <div className="bg-[#0F172A] p-6 rounded-[2.5rem] border-2 border-[#1E293B] shadow-2xl relative overflow-hidden group">
+                                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+                                     style={{ backgroundImage: 'radial-gradient(#94a3b8 0.5px, transparent 0.5px)', backgroundSize: '12px 12px' }}></div>
+
                                 <div className="relative z-10">
-                                    <div className="flex justify-between items-start mb-2">
+                                    <div className="flex justify-between items-start mb-4">
                                         <div>
-                                            <p className="text-[11px] text-slate-500 font-black uppercase tracking-[0.15em] mb-1">Adquisición vs Lealtad</p>
-                                            <p className="text-xl font-black text-slate-900 tracking-tight">Composición de Clientes</p>
+                                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.25em] mb-1">Infraestructura de Lealtad</p>
+                                            <p className="text-xl font-black text-white tracking-tight">Composición de Cartera</p>
+                                        </div>
+                                        <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center">
+                                            <span className="material-symbols-outlined !text-xl font-black">pie_chart</span>
                                         </div>
                                     </div>
 
-                                    <div className="h-56 w-full mt-2 relative flex items-center justify-center">
+                                    <div className="h-56 w-full mt-4 relative flex items-center justify-center">
                                         {kpiData.retentionData.reduce((sum, i) => sum + i.value, 0) > 0 ? (
                                             <ResponsiveContainer width="100%" height="100%">
                                                 <PieChart>
@@ -303,42 +403,61 @@ const KPIDashboard = () => {
                                                         data={kpiData.retentionData}
                                                         cx="50%"
                                                         cy="50%"
-                                                        innerRadius={60}
-                                                        outerRadius={80}
-                                                        paddingAngle={5}
+                                                        innerRadius={65}
+                                                        outerRadius={85}
+                                                        paddingAngle={8}
                                                         dataKey="value"
                                                         stroke="none"
                                                     >
                                                         {kpiData.retentionData.map((entry, index) => (
-                                                            <Cell key={`cell - ${index} `} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                                                            <Cell 
+                                                                key={`cell-${index}`} 
+                                                                fill={entry.fill} 
+                                                                className="drop-shadow-[0_0_12px_rgba(0,0,0,0.2)]"
+                                                            />
                                                         ))}
                                                     </Pie>
                                                     <RechartsTooltip
-                                                        contentStyle={{ borderRadius: '12px', border: '1px solid #334155', backgroundColor: '#0F172A', color: 'white', fontWeight: '900', fontSize: '11px' }}
-                                                        itemStyle={{ color: 'white' }}
+                                                        content={<CustomTooltip />}
                                                     />
-                                                    <Legend wrapperStyle={{ fontSize: '10px', fontWeight: '900', color: '#64748B', marginTop: '10px' }} iconType="circle" />
+                                                    <Legend 
+                                                        verticalAlign="bottom" 
+                                                        align="center"
+                                                        content={({ payload }) => (
+                                                            <div className="flex justify-center gap-4 mt-4">
+                                                                {payload.map((entry, index) => (
+                                                                    <div key={index} className="flex items-center gap-1.5">
+                                                                        <div className="size-1.5 rounded-full" style={{ backgroundColor: entry.color }}></div>
+                                                                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">{entry.value.split(' ')[0]}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    />
                                                 </PieChart>
                                             </ResponsiveContainer>
                                         ) : (
-                                            <p className="text-sm font-bold text-slate-400">No hay suficientes datos.</p>
+                                            <div className="flex flex-col items-center gap-2">
+                                                <span className="material-symbols-outlined text-slate-700 text-4xl">analytics</span>
+                                                <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Sin Datos de Cartera</p>
+                                            </div>
                                         )}
                                         {/* Texto Central */}
-                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none mt-[-20px]">
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none mb-4">
                                             <div className="text-center">
-                                                <span className="text-2xl font-black text-slate-800">{kpiData.retentionData.reduce((sum, item) => sum + item.value, 0)}</span>
+                                                <span className="text-3xl font-black text-white tracking-tighter">{kpiData.retentionData.reduce((sum, item) => sum + item.value, 0)}</span>
                                                 <br />
-                                                <span className="text-[9px] uppercase tracking-widest font-black text-slate-400">Total</span>
+                                                <span className="text-[8px] uppercase tracking-[0.2em] font-black text-slate-500">Cartera</span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="mt-2 pt-4 border-t-2 border-slate-100">
-                                        <p className="text-[11px] text-slate-600 font-bold leading-relaxed flex items-start gap-2">
-                                            <span className="material-symbols-outlined !text-[16px] text-[#F59E0B]">psychology_alt</span>
+                                    <div className="mt-6 pt-4 border-t border-[#1E293B]">
+                                        <p className="text-[10px] text-slate-400 font-bold leading-relaxed flex items-start gap-3">
+                                            <span className="material-symbols-outlined !text-[18px] text-amber-500">psychology_alt</span>
                                             <span>
-                                                "¿Vives de gente nueva o de gente fiel?"
-                                                <br /><span className="text-slate-400">Esto te ayudará a evaluar tus campañas de captación.</span>
+                                                "Convierte a tus <span className="text-slate-200">Nuevos</span> en <span className="text-amber-500">Casuales</span>, e impúlsalos a ser <span className="text-primary">Fieles</span>."
+                                                <br /><span className="text-slate-500 uppercase text-[8px] tracking-widest mt-1 block font-black">Estrategia: Crea promociones de retención dirigidas</span>
                                             </span>
                                         </p>
                                     </div>

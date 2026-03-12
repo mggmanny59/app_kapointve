@@ -162,7 +162,7 @@ const MyPoints = () => {
             })
             .on('broadcast', { event: 'reward_redeemed' }, (payload) => {
                 console.log('¡Broadcast de CANJE recibido!', payload);
-                showNotification('success', '¡Canje Realizado!', `Has canjeado "${payload.payload.prizeName}" en ${payload.payload.businessName}. ✨`);
+                showNotification('success', '¡BRUTAL! ¡YA ES TUYO! 🎁✨', `¡Woooow! Acabas de canjear "${payload.payload.prizeName}" en ${payload.payload.businessName}. ¡Te lo mereces! Disfrútalo al máximo. 🥳🔥`);
                 fetchUserData();
                 
                 // Cerrar modales de canje

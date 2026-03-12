@@ -1108,7 +1108,7 @@ const Home = () => {
                             <div className="flex flex-col items-end">
                                 <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-lg font-black uppercase tracking-widest flex items-center gap-2">
                                     <span className="size-1.5 rounded-full bg-primary animate-pulse"></span>
-                                    LIVE ANALYTICS
+                                    ANÁLISIS EN VIVO
                                 </span>
                             </div>
                         </div>
@@ -1191,7 +1191,7 @@ const Home = () => {
 
                                             {/* Barra Desvanecida (Fondo) */}
                                             <div
-                                                className={`w-[6px] rounded-t-full transition-all duration-700 opacity-10 ${isToday ? 'bg-primary' : 'bg-slate-400 group-hover:opacity-30'}`}
+                                                className={`w-[18px] rounded-t-full transition-all duration-700 opacity-10 ${isToday ? 'bg-primary' : 'bg-slate-400 group-hover:opacity-30'}`}
                                                 style={{ height: `${height}%` }}
                                             ></div>
 
@@ -1229,7 +1229,7 @@ const Home = () => {
                                 </div>
                             </div>
                             <button onClick={() => navigate('/kpi')} className="text-[9px] font-black text-primary hover:text-primary/80 uppercase tracking-[0.2em] flex items-center gap-2 transition-all group">
-                                ANALYZE DATA
+                                ANALIZAR DATOS
                                 <span className="material-symbols-outlined !text-xs group-hover:translate-x-1 transition-transform">arrow_forward</span>
                             </button>
                         </div>

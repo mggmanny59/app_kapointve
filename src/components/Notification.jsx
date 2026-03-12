@@ -13,8 +13,9 @@ const Notification = ({ type = 'success', title, message, onClose, duration = 50
         success: {
             border: 'border-green-100',
             bg: 'bg-green-50',
-            icon: 'check_circle',
+            icon: 'celebration',
             iconColor: 'text-green-500',
+            iconAnimation: 'animate-bounce',
             button: 'bg-green-500 text-white shadow-green-200'
         },
         error: {
@@ -39,7 +40,7 @@ const Notification = ({ type = 'success', title, message, onClose, duration = 50
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
             <div className="max-w-[340px] w-full bg-white border border-white rounded-[2.5rem] p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] flex flex-col items-center text-center animate-in zoom-in-95 duration-400">
                 {/* Icon Circle */}
-                <div className={`size-20 rounded-[2rem] ${currentStyle.bg} flex items-center justify-center border-4 border-white shadow-inner mb-6`}>
+                <div className={`size-20 rounded-[2rem] ${currentStyle.bg} flex items-center justify-center border-4 border-white shadow-inner mb-6 ${currentStyle.iconAnimation || ''}`}>
                     <span className={`material-symbols-outlined !text-4xl ${currentStyle.iconColor} font-black`}>
                         {currentStyle.icon}
                     </span>
