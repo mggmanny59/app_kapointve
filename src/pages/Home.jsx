@@ -462,7 +462,13 @@ const Home = () => {
             }
             setIsProcessing(true);
 
-            const clientId = decodedText; // UUID of the client
+            let clientId = decodedText;
+            try {
+                const qrData = JSON.parse(decodedText);
+                if (qrData.clientId) clientId = qrData.clientId;
+            } catch (e) {
+                // Si no es JSON, asumimos que es el UUID directo del cliente
+            }
 
             // Create Transaction
             const { error: txError } = await supabase

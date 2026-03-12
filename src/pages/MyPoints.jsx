@@ -585,7 +585,7 @@ const MyPoints = () => {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm">
                     <div className="bg-white w-full max-w-sm rounded-[2.5rem] p-8 flex flex-col items-center gap-6 border-2 border-[#595A5B]">
                         <h3 className="text-xl font-black uppercase">Canje</h3>
-                        <QRCodeSVG value={`REDEEM:${user?.id}:${showRedemptionQR.id}`} size={200} level="H" />
+                        <QRCodeSVG value={JSON.stringify({ type: 'REDEEM_REQUEST', clientId: user?.id, prizeId: showRedemptionQR.id })} size={200} level="H" />
                         <button onClick={() => setShowRedemptionQR(null)} className="w-full h-14 bg-slate-100 rounded-full font-black">CERRAR</button>
                     </div>
                 </div>
