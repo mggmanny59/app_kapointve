@@ -14,7 +14,7 @@ export default defineConfig({
       filename: 'service-worker.js',
       registerType: 'prompt',
       injectRegister: 'auto',
-      includeAssets: ['vite.svg', 'icon-pwa.png', 'Splash_Screen.png'],
+      includeAssets: ['vite.svg', 'pwa-192x192.png', 'pwa-512x512.png', 'Splash_Screen.png'],
       manifest: {
         name: 'KPoint Fidelización',
         short_name: 'KPoint',
@@ -30,19 +30,19 @@ export default defineConfig({
 
         icons: [
           {
-            src: 'icon-pwa.png',
+            src: 'pwa-192x192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: 'icon-pwa.png',
+            src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: 'icon-pwa.png',
+            src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
