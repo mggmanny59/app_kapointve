@@ -19,8 +19,8 @@ export default defineConfig({
         name: 'KPoint Fidelización',
         short_name: 'KPoint',
         description: 'Tu monedero digital de fidelización',
-        theme_color: '#0f172a',
-        background_color: '#ffffff',
+        theme_color: '#F0F2F5',
+        background_color: '#F0F2F5',
         display: 'fullscreen',
         orientation: 'portrait',
         scope: '/',
@@ -30,19 +30,19 @@ export default defineConfig({
 
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: 'Logo KPoint Solo K (sin Fondo).png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'Logo KPoint Solo K (sin Fondo).png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'Logo KPoint Solo K (sin Fondo).png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
