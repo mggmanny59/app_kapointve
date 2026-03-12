@@ -14,6 +14,7 @@ import ResetPassword from './pages/ResetPassword';
 import ActivityHistory from './pages/ActivityHistory';
 import { useAuth } from './context/AuthContext';
 import BackNavigationHandler from './components/BackNavigationHandler';
+import PWAReloadPrompt from './components/PWAReloadPrompt';
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
@@ -44,6 +45,7 @@ const SuperAdminRoute = ({ children }) => {
 function App() {
   return (
     <Router>
+      <PWAReloadPrompt />
       <BackNavigationHandler />
       <Routes>
         <Route path="/" element={<Login />} />
