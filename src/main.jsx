@@ -5,7 +5,10 @@ import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext'
 import { NotificationProvider } from './context/NotificationContext'
 import { MessageProvider } from './context/MessageContext'
-// El Service Worker se registra ahora en el componente PWAReloadPrompt dentro de App.jsx para mejor control
+import { registerSW } from 'virtual:pwa-register'
+
+// Registro automático del Service Worker (Estrategia original)
+registerSW({ immediate: true })
 
 
 

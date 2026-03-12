@@ -15,7 +15,7 @@ import ResetPassword from './pages/ResetPassword';
 import ActivityHistory from './pages/ActivityHistory';
 import { useAuth } from './context/AuthContext';
 import BackNavigationHandler from './components/BackNavigationHandler';
-import PWAReloadPrompt from './components/PWAReloadPrompt';
+// Registro de PWA movido a main.jsx para máxima compatibilidad
 // Splash Screen desactivada para restaurar PWA original
 
 const ProtectedRoute = ({ children }) => {
@@ -50,7 +50,7 @@ function App() {
   return (
     <Router>
       {/* showSplash && <SplashScreen onComplete={() => setShowSplash(false)} /> */}
-      <PWAReloadPrompt />
+      {/* Notificación PWA desactivada para forzar el banner nativo del navegador */}
       <BackNavigationHandler />
       <Routes>
         <Route path="/" element={<Login />} />
