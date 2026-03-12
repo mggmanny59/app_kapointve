@@ -9,10 +9,8 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'service-worker.js',
-      registerType: 'prompt',
+      strategies: 'generateSW',
+      registerType: 'autoUpdate',
       injectRegister: 'auto',
       includeAssets: ['vite.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
