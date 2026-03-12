@@ -5,10 +5,7 @@ import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext'
 import { NotificationProvider } from './context/NotificationContext'
 import { MessageProvider } from './context/MessageContext'
-import { registerSW } from 'virtual:pwa-register'
-
-// Registro automático del Service Worker (Estrategia original)
-registerSW({ immediate: true })
+// Registro del Service Worker manejado automáticamente por VitePWA (vite.config.js)
 
 
 

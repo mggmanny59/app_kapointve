@@ -11,9 +11,9 @@ export default defineConfig({
     VitePWA({
       strategies: 'injectManifest',
       srcDir: 'src',
-      filename: 'service-worker.js',
+      filename: 'sw.js',
       registerType: 'autoUpdate',
-      injectRegister: null,
+      injectRegister: 'auto',
       includeAssets: ['vite.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         name: 'KPoint',
