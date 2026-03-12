@@ -16,7 +16,7 @@ import ActivityHistory from './pages/ActivityHistory';
 import { useAuth } from './context/AuthContext';
 import BackNavigationHandler from './components/BackNavigationHandler';
 import PWAReloadPrompt from './components/PWAReloadPrompt';
-import SplashScreen from './components/SplashScreen';
+// Splash Screen desactivada para restaurar PWA original
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
@@ -45,11 +45,11 @@ const SuperAdminRoute = ({ children }) => {
 };
 
 function App() {
-  const [showSplash, setShowSplash] = useState(true);
+  // const [showSplash, setShowSplash] = useState(true);
 
   return (
     <Router>
-      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+      {/* showSplash && <SplashScreen onComplete={() => setShowSplash(false)} /> */}
       <PWAReloadPrompt />
       <BackNavigationHandler />
       <Routes>
