@@ -14,7 +14,7 @@ export default defineConfig({
       filename: 'service-worker.js',
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['vite.svg', 'pwa-192x192.png', 'pwa-512x512.png', 'Splash_Screen.png'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-icon.png', 'Splash_Screen.png'],
       manifest: {
         name: 'KPoint Fidelización',
         short_name: 'KPoint',
@@ -30,19 +30,17 @@ export default defineConfig({
 
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: 'pwa-icon.png',
             sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any'
+            type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'pwa-icon.png',
             sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any'
+            type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'pwa-icon.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
