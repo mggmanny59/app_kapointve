@@ -12,7 +12,7 @@ export default defineConfig({
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'service-worker.js',
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       injectRegister: 'auto',
       includeAssets: ['vite.svg', 'pwa-192x192.png', 'pwa-512x512.png', 'Splash_Screen.png'],
       manifest: {
