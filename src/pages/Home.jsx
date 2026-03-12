@@ -699,6 +699,22 @@ const Home = () => {
                 message: `¡Genial ${clientName}! 🎁 Disfruta tu premio: ${reward.name}. ✨ ¡Gracias por preferirnos! 🎉`,
                 url: '/my-points'
             });
+
+            // 5. BROADCAST REALTIME: Envío directo al cliente para actualización INSTANTÁNEA (Canje)
+            const broadcastChannel = supabase.channel(`client-points-realtime-${client.profile_id}`);
+            broadcastChannel.subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') {
+                    await broadcastChannel.send({
+                        type: 'broadcast',
+                        event: 'reward_redeemed',
+                        payload: {
+                            businessName: business?.name || 'Comercio',
+                            prizeName: reward.name,
+                            pointsSpent: reward.cost_points
+                        }
+                    });
+                }
+            });
         } catch (err) {
             console.error('Redeem process error:', err);
             showNotification('error', 'Error en Canje', 'No se pudo completar el canje. Verifique la conexión.');

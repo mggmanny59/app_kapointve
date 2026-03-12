@@ -160,6 +160,15 @@ const MyPoints = () => {
                 // Opción: Cerrar cualquier modal abierto (como el del código QR) para que vean el saldo
                 setShowMainQRModal(false);
             })
+            .on('broadcast', { event: 'reward_redeemed' }, (payload) => {
+                console.log('¡Broadcast de CANJE recibido!', payload);
+                showNotification('success', '¡Canje Realizado!', `Has canjeado "${payload.payload.prizeName}" en ${payload.payload.businessName}. ✨`);
+                fetchUserData();
+                
+                // Cerrar modales de canje
+                setShowRedemptionQR(null);
+                setSelectedBusiness(null);
+            })
             .on('postgres_changes', {
                 event: 'INSERT',
                 schema: 'public',
