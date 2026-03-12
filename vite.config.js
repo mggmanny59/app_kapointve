@@ -14,13 +14,13 @@ export default defineConfig({
       filename: 'service-worker.js',
       registerType: 'prompt',
       injectRegister: 'auto',
-      includeAssets: ['vite.svg', 'pwa-icon.png', 'Splash_Screen.png'],
+      includeAssets: ['vite.svg', 'pwa-192x192.png', 'pwa-512x512.png', 'Splash_Screen.png'],
       manifest: {
         name: 'KPoint Fidelización',
         short_name: 'KPoint',
         description: 'Tu monedero digital de fidelización',
-        theme_color: '#F0F2F5',
-        background_color: '#F0F2F5',
+        theme_color: '#ffffff',
+        background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',
@@ -30,17 +30,19 @@ export default defineConfig({
 
         icons: [
           {
-            src: 'pwa-icon.png',
+            src: 'pwa-192x192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
-            src: 'pwa-icon.png',
+            src: 'pwa-512x512.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
-            src: 'pwa-icon.png',
+            src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
