@@ -254,6 +254,28 @@ const BusinessSettings = () => {
                     <div className="space-y-2 px-1">
                         {/* Section Header */}
                         <div className="flex items-center gap-3 pb-2 border-b-2 border-slate-100">
+                            <span className="material-symbols-outlined text-primary !text-xl font-black">payments</span>
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Suscripción KPoint</span>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-4 bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm border-dashed">
+                            <div className="flex-1">
+                                <p className="text-sm font-black text-slate-900 leading-tight">Mi Plan y Pagos</p>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Ver vencimiento y reportar pagos</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => navigate('/subscription')}
+                                className="size-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 active:scale-95 transition-transform"
+                            >
+                                <span className="material-symbols-outlined font-black">credit_card</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2 px-1">
+                        {/* Section Header */}
+                        <div className="flex items-center gap-3 pb-2 border-b-2 border-slate-100">
                             <span className="material-symbols-outlined text-primary !text-xl font-black">group</span>
                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Equipo de Trabajo</span>
                         </div>

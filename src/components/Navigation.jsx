@@ -30,6 +30,7 @@ const Navigation = () => {
         { path: '/dashboard', label: 'Panel', icon: 'grid_view' },
         { path: '/clients', label: 'Clientes', icon: 'face' },
         { path: '/prizes', label: 'Premios', icon: 'cards' },
+        { path: '/subscription', label: 'Plan', icon: 'payments' },
         { path: '/settings', label: 'Ajustes', icon: 'settings' },
         { path: '/platform-admin', label: 'Admin', icon: 'admin_panel_settings', superAdminOnly: true }
     ];

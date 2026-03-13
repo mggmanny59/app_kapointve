@@ -13,6 +13,7 @@ import KPIDashboard from './pages/KPIDashboard';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import ActivityHistory from './pages/ActivityHistory';
+import Subscription from './pages/Subscription';
 import { useAuth } from './context/AuthContext';
 import BackNavigationHandler from './components/BackNavigationHandler';
 // Registro de PWA movido a main.jsx para máxima compatibilidad
@@ -119,6 +120,14 @@ function App() {
           element={
             <AdminRoute>
               <KPIDashboard />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/subscription"
+          element={
+            <AdminRoute>
+              <Subscription />
             </AdminRoute>
           }
         />
