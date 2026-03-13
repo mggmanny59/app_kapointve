@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 import { useMessages } from '../context/MessageContext';
 import { useNotification } from '../context/NotificationContext';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
+import { sendPushToProfile } from '../lib/pushNotifications';
 
 const SendNotificationModal = ({ isOpen, onClose, businessId, targetClient = null }) => {
     const { sendMessage } = useMessages();
     const { showNotification } = useNotification();
+    const { user } = useAuth();
     const [title, setTitle] = useState('');
     const [message, setMessage] = useState('');
     const [type, setType] = useState('GENERAL');
+    const [sendPush, setSendPush] = useState(false);
     const [sending, setSending] = useState(false);
 
     if (!isOpen) return null;
@@ -20,24 +25,73 @@ const SendNotificationModal = ({ isOpen, onClose, businessId, targetClient = nul
         }
 
         setSending(true);
-        const result = await sendMessage(
-            businessId,
-            targetClient ? targetClient.profile_id : null,
-            title,
-            message,
-            type
-        );
+        try {
+            // 1. Send Internal Notification (In-App)
+            const result = await sendMessage(
+                businessId,
+                targetClient ? targetClient.profile_id : null,
+                title,
+                message,
+                type
+            );
 
-        if (result.success) {
-            showNotification('success', '¡Enviado!', targetClient ? 'La notificación ha sido enviada al cliente.' : 'La notificación masiva ha sido enviada con éxito.');
+            if (!result.success) throw new Error(result.error);
+
+            // 2. Send Real Push Notification (Edge Function) if enabled
+            let pushCount = 0;
+            if (sendPush && user?.is_super_admin) {
+                let recipients = [];
+
+                if (targetClient) {
+                    recipients = [targetClient.profile_id];
+                } else if (businessId) {
+                    // Fetch all clients for this business
+                    const { data } = await supabase
+                        .from('loyalty_cards')
+                        .select('profile_id')
+                        .eq('business_id', businessId);
+                    recipients = data?.map(d => d.profile_id) || [];
+                } else {
+                    // Global Push: Fetch everyone with a subscription
+                    const { data } = await supabase
+                        .from('push_subscriptions')
+                        .select('profile_id');
+                    recipients = [...new Set(data?.map(d => d.profile_id) || [])];
+                }
+
+                if (recipients.length > 0) {
+                    // Execute Push batches
+                    const pushPromises = recipients.map(pid => 
+                        sendPushToProfile({
+                            profileId: pid,
+                            title: title,
+                            message: message,
+                            url: '/my-points'
+                        })
+                    );
+                    const pushResults = await Promise.all(pushPromises);
+                    pushCount = pushResults.filter(r => r.success).length;
+                }
+            }
+
+            showNotification(
+                'success', 
+                '¡Comunicado Enviado!', 
+                pushCount > 0 
+                    ? `Notificación interna enviada y ${pushCount} alertas Push móviles procesadas.`
+                    : 'La notificación interna ha sido enviada con éxito.'
+            );
+            
             onClose();
             setTitle('');
             setMessage('');
             setType('GENERAL');
-        } else {
-            showNotification('error', 'Error de Envío', result.error);
+            setSendPush(false);
+        } catch (err) {
+            showNotification('error', 'Error de Envío', err.message);
+        } finally {
+            setSending(false);
         }
-        setSending(false);
     };
 
     return (
@@ -92,6 +146,30 @@ const SendNotificationModal = ({ isOpen, onClose, businessId, targetClient = nul
                                 <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none !text-xl font-black">expand_more</span>
                             </div>
                         </div>
+
+                        {/* Push Toggle - ONLY FOR SUPER ADMIN */}
+                        {user?.is_super_admin && (
+                            <div className="flex items-center justify-between p-5 bg-primary/5 rounded-[1.5rem] border-2 border-primary/20 transition-all">
+                                <div className="flex items-center gap-4">
+                                    <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                                        <span className="material-symbols-outlined !text-xl font-black">notifications_active</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] font-black text-slate-900 uppercase tracking-tighter">Enviar Push Mobile</p>
+                                        <p className="text-[9px] font-bold text-primary uppercase">Edge Function Active</p>
+                                    </div>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={sendPush}
+                                        onChange={(e) => setSendPush(e.target.checked)}
+                                        className="sr-only peer" 
+                                    />
+                                    <div className="w-12 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                        )}
 
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Cuerpo del Mensaje</label>

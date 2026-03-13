@@ -4,6 +4,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import NavigationAdmin from '../components/NavigationAdmin';
+import SendNotificationModal from '../components/SendNotificationModal';
 
 const PlatformControl = () => {
     const { signOut } = useAuth();
@@ -16,6 +17,8 @@ const PlatformControl = () => {
     const [showLogs, setShowLogs] = useState(false);
     const [auditLogs, setAuditLogs] = useState([]);
     const [loadingLogs, setLoadingLogs] = useState(false);
+    const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+    const [pushTarget, setPushTarget] = useState({ businessId: null, name: 'Global' });
     const { showNotification } = useNotification();
     const navigate = useNavigate();
 
@@ -122,13 +125,25 @@ const PlatformControl = () => {
                         </h1>
                         <p className="text-[10px] text-slate-400 font-black tracking-[0.3em] uppercase mt-1">Plataforma de Control Maestro</p>
                     </div>
-                    <button
-                        onClick={handleLogout}
-                        className="size-12 rounded-2xl bg-slate-50 border-2 border-[#595A5B] flex items-center justify-center active:scale-90 transition-all text-slate-400 hover:text-red-500 hover:border-red-100 hover:bg-red-50 shadow-sm"
-                        title="Cerrar Panel"
-                    >
-                        <span className="material-symbols-outlined font-black">logout</span>
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => {
+                                setPushTarget({ businessId: null, name: 'Global' });
+                                setIsNotificationModalOpen(true);
+                            }}
+                            className="size-12 rounded-2xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center active:scale-90 transition-all text-primary hover:bg-primary hover:text-white shadow-sm"
+                            title="Comunicado Global"
+                        >
+                            <span className="material-symbols-outlined font-black">campaign</span>
+                        </button>
+                        <button
+                            onClick={handleLogout}
+                            className="size-12 rounded-2xl bg-slate-50 border-2 border-[#595A5B] flex items-center justify-center active:scale-90 transition-all text-slate-400 hover:text-red-500 hover:border-red-100 hover:bg-red-50 shadow-sm"
+                            title="Cerrar Panel"
+                        >
+                            <span className="material-symbols-outlined font-black">logout</span>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Stats */}
@@ -242,6 +257,18 @@ const PlatformControl = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setPushTarget({ businessId: biz.id, name: biz.name });
+                                    setIsNotificationModalOpen(true);
+                                }}
+                                className="size-11 rounded-full bg-primary/5 text-primary hover:bg-primary hover:text-white border border-primary/20 flex items-center justify-center transition-all active:scale-90 shadow-sm"
+                                title="Enviar Aviso"
+                            >
+                                <span className="material-symbols-outlined !text-lg font-black">campaign</span>
+                            </button>
 
                             <button
                                 onClick={(e) => {
@@ -696,6 +723,13 @@ const PlatformControl = () => {
                     className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[300] transition-opacity"
                 />
             )}
+
+            {/* Notification Modal */}
+            <SendNotificationModal
+                isOpen={isNotificationModalOpen}
+                onClose={() => setIsNotificationModalOpen(false)}
+                businessId={pushTarget.businessId}
+            />
         </div>
     );
 };
