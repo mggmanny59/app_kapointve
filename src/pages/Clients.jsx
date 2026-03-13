@@ -188,30 +188,79 @@ const Clients = () => {
                 </div>
             </div>
 
-            <main className="px-6 space-y-3">
+            <main className="px-6 space-y-4">
                 {filteredClients.length > 0 ? filteredClients.map((client, index) => {
                     const color = colors[index % colors.length];
+                    const isToday = getLastSeenText(client.last_activity) === 'Hoy';
+                    
                     return (
                         <div
                             key={client.id}
                             onClick={() => fetchClientSummary(client)}
-                            className="bg-white p-4 rounded-2xl border-2 border-[#595A5B] shadow-sm flex items-center gap-4 active:scale-[0.98] transition-all cursor-pointer group hover:border-primary/40 hover:shadow-md"
+                            className="bg-white p-5 rounded-[2.25rem] border-2 border-[#595A5B] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.08)] flex items-center gap-5 active:scale-[0.98] transition-all cursor-pointer group hover:border-primary/40 hover:shadow-xl hover:-translate-y-0.5"
                         >
-                            <div className={`w-14 h-14 rounded-2xl ${color.bg} flex items-center justify-center border ${color.border} shrink-0 shadow-sm transition-transform group-hover:scale-105`}>
-                                <span className={`${color.text} font-black text-xl`}>{getInitials(client.profiles?.full_name)}</span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-start">
-                                    <h3 className="font-extrabold text-slate-900 truncate tracking-tight text-base">{client.profiles?.full_name || 'Sin nombre'}</h3>
-                                    <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded-full border-2 border-[#595A5B]">{getLastSeenText(client.last_activity)}</span>
+                            {/* Avatar Section with dynamic glow */}
+                            <div className="relative shrink-0">
+                                <div className={`absolute inset-0 ${color.bg} blur-2xl opacity-40 rounded-full scale-75 group-hover:scale-110 transition-transform duration-500`}></div>
+                                <div className={`relative w-16 h-16 rounded-[1.5rem] ${color.bg} flex items-center justify-center border-2 ${color.border} shadow-inner transition-transform duration-500 group-hover:rotate-3`}>
+                                    <span className={`${color.text} font-black text-2xl tracking-tighter`}>
+                                        {getInitials(client.profiles?.full_name)}
+                                    </span>
                                 </div>
-                                <p className="text-[11px] text-slate-500 font-bold tracking-tight mb-1">{client.profiles?.phone || 'Sin teléfono'}</p>
-                                <div className="flex items-center gap-1.5">
-                                    <span className="material-symbols-outlined text-warning text-xs font-black">stars</span>
-                                    <span className="text-[13px] font-black text-warning tracking-tight">{client.current_points?.toLocaleString() || 0} PTS</span>
+                                <div className="absolute -bottom-1 -right-1 size-6 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center shadow-sm">
+                                    <span className={`size-2.5 rounded-full ${isToday ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></span>
                                 </div>
                             </div>
-                            <span className="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">chevron_right</span>
+
+                            {/* Client Info */}
+                            <div className="flex-1 min-w-0 py-1">
+                                <div className="flex justify-between items-start mb-0.5">
+                                    <h3 className="font-black text-slate-900 truncate tracking-tight text-lg group-hover:text-primary transition-colors duration-300">
+                                        {client.profiles?.full_name || 'Nuevo Cliente'}
+                                    </h3>
+                                    <span className={`text-[9px] font-black uppercase tracking-[0.15em] px-2.5 py-1 rounded-lg border-2 shadow-sm transition-colors ${
+                                        isToday 
+                                        ? 'bg-green-50 border-green-500/30 text-green-600' 
+                                        : 'bg-slate-50 border-[#595A5B] text-slate-500'
+                                    }`}>
+                                        {getLastSeenText(client.last_activity)}
+                                    </span>
+                                </div>
+                                
+                                <div className="flex items-center gap-2 text-slate-500 mb-3">
+                                    <span className="material-symbols-outlined !text-[14px] opacity-40">phone_iphone</span>
+                                    <p className="text-[12px] font-bold tracking-tight">
+                                        {client.profiles?.phone || 'Sin número'}
+                                    </p>
+                                </div>
+                                
+                                {/* Points Badge - KPIDashboard style */}
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-[#0F172A] px-3.5 py-1.5 rounded-[1rem] flex items-center gap-2.5 shadow-lg border border-[#1E293B]">
+                                        <div className="flex -space-x-1">
+                                            <span className="material-symbols-outlined text-warning !text-[14px] font-black drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]">stars</span>
+                                        </div>
+                                        <span className="text-[13px] font-black text-white tracking-tighter flex items-baseline gap-1">
+                                            {client.current_points?.toLocaleString() || 0}
+                                            <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">pts</span>
+                                        </span>
+                                    </div>
+                                    
+                                    {/* Visual level progress */}
+                                    <div className="flex-1 flex flex-col gap-1.5">
+                                        <div className="flex justify-between items-center px-0.5">
+                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Nivel 1</span>
+                                            <span className="text-[8px] font-black text-primary uppercase">VIP</span>
+                                        </div>
+                                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
+                                            <div 
+                                                className="h-full bg-gradient-to-r from-primary to-orange-400 rounded-full transition-all duration-1000"
+                                                style={{ width: `${Math.min(((client.current_points || 0) / 1000) * 100, 100)}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     );
                 }) : (
