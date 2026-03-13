@@ -282,8 +282,8 @@ const MyPoints = () => {
                         <img src="/Logo KPoint Solo K (sin Fondo).png" alt="Logo" className="w-full h-full object-contain" />
                     </div>
                     <div>
-                        <h1 className="text-lg font-extrabold tracking-tight text-slate-900 leading-tight">Mis <span className="text-[rgb(255,101,14)]">Puntos</span></h1>
-                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.1em]">MONEDERO DIGITAL</p>
+                        <h1 className="text-lg font-black tracking-tight text-slate-900 leading-tight">Dashboard</h1>
+                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Tablero de Mando</p>
                     </div>
                 </div>
                 <div className="flex gap-2">
@@ -324,40 +324,42 @@ const MyPoints = () => {
 
             <main className="px-6 py-4 space-y-6">
                 {/* Welcome Card */}
-                <div className="relative overflow-hidden bg-gradient-to-br from-[rgb(255,101,14)] to-[#e65a0c] p-8 rounded-[2.5rem] shadow-xl text-white">
-                    <p className="text-2xl font-bold opacity-90">¡Hola!</p>
-                    <h2 className="text-4xl font-black mt-1 tracking-tight">{profile?.full_name?.split(' ')[0] || 'Cliente'}</h2>
-                    <div className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-white/20 rounded-2xl border border-white/30">
-                        <span className="material-symbols-outlined text-white text-base font-black">stars</span>
-                        <p className="text-white text-[10px] font-black uppercase tracking-[0.15em]">¡TODO LISTO PARA GANAR!</p>
+                <div className="relative overflow-hidden bg-gradient-to-br from-[rgb(255,101,14)] to-[#e65a0c] p-6 rounded-[2.5rem] shadow-xl text-white animate-zoom-in-custom">
+                    <p className="text-lg font-bold opacity-90 animate-slide-left-custom delay-200-custom fill-mode-both">¡Hola!</p>
+                    <h2 className="text-3xl font-black mt-1 tracking-tight animate-slide-left-custom delay-300-custom fill-mode-both">{profile?.full_name?.split(' ')[0] || 'Cliente'}</h2>
+                    
+                    <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-2xl border border-white/30 animate-slide-bottom-custom delay-500-custom fill-mode-both shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                        <span className="material-symbols-outlined text-white text-base font-black animate-pulse">stars</span>
+                        <p className="text-white text-[9px] font-black uppercase tracking-[0.15em]">¡TODO LISTO PARA GANAR!</p>
                     </div>
 
                     {/* Indicador de Alertas Push */}
-                    <div className="relative z-10 mt-4 flex items-center justify-between">
+                    <div className="relative z-10 mt-3 flex items-center justify-between animate-fade-in-custom delay-700-custom fill-mode-both">
                         <div className="flex items-center gap-2">
-                            <div className={`size-2.5 rounded-full ${isSubscribed ? 'bg-green-300 shadow-[0_0_8px_rgba(134,239,172,0.8)]' : 'bg-white/50'}`}></div>
-                            <span className="text-[10px] font-black text-white/80 uppercase tracking-widest">
+                            <div className={`size-2.5 rounded-full ${isSubscribed ? 'bg-green-300 shadow-[0_0_12px_rgba(134,239,172,0.8)]' : 'bg-white/50'}`}></div>
+                            <span className="text-[10px] font-black text-white/80 uppercase tracking-widest leading-none">
                                 {isSubscribed ? 'Alertas Activas' : 'Alertas Desactivadas'}
                             </span>
                         </div>
                         {isSubscribed ? (
                             <button
                                 onClick={handleDisablePush}
-                                className="text-[10px] font-black bg-white/10 text-white/70 border border-white/20 px-3 py-1.5 rounded-xl hover:bg-white/20 active:scale-95 transition-all uppercase tracking-widest"
+                                className="text-[10px] font-black bg-white/10 text-white/70 border border-white/20 px-3 py-1.5 rounded-xl hover:bg-white/20 active:scale-95 transition-all uppercase tracking-widest leading-none"
                             >
                                 Desactivar
                             </button>
                         ) : (
                             <button
                                 onClick={handleEnablePush}
-                                className="text-[10px] font-black bg-white/25 text-white border border-white/40 px-3 py-1.5 rounded-xl hover:bg-white/40 active:scale-95 transition-all uppercase tracking-widest"
+                                className="text-[10px] font-black bg-white/25 text-white border border-white/40 px-3 py-1.5 rounded-xl hover:bg-white/40 active:scale-95 transition-all uppercase tracking-widest leading-none"
                             >
                                 Activar
                             </button>
                         )}
                     </div>
 
-                    <span className="material-symbols-outlined absolute -right-8 -bottom-8 text-white/[0.07] !text-[180px] font-black rotate-12 pointer-events-none select-none">account_balance_wallet</span>
+                    {/* Icono decorativo con animación flotante */}
+                    <span className="material-symbols-outlined absolute -right-6 -bottom-6 text-white/[0.07] !text-[140px] font-black rotate-12 pointer-events-none select-none animate-bounce [animation-duration:3s]">account_balance_wallet</span>
                 </div>
 
                 {/* QR Section */}

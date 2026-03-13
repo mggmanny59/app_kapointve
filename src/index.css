@@ -118,3 +118,44 @@ body {
     --color-border-subtle: rgba(0, 0, 0, 0.05);
     --color-slate-subtitle: #64748b;
 }
+
+@keyframes fadeInCustom {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes zoomInCustom {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInLeftCustom {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInBottomCustom {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-custom {
+    animation: fadeInCustom 0.7s ease-out forwards;
+}
+
+.animate-zoom-in-custom {
+    animation: zoomInCustom 0.7s ease-out forwards;
+}
+
+.animate-slide-left-custom {
+    animation: slideInLeftCustom 0.7s ease-out forwards;
+}
+
+.animate-slide-bottom-custom {
+    animation: slideInBottomCustom 0.7s ease-out forwards;
+}
+
+.delay-200-custom { animation-delay: 200ms; }
+.delay-300-custom { animation-delay: 300ms; }
+.delay-500-custom { animation-delay: 500ms; }
+.delay-700-custom { animation-delay: 700ms; }
