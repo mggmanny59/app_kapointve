@@ -149,6 +149,8 @@ const Home = () => {
      */
     const notifyConversion = async (profileId, pointsEarned) => {
         try {
+            console.log(`[Push] Iniciando notifyConversion para cliente ${profileId}, puntos ganados: ${pointsEarned}`);
+            
             // 1. Obtener nombre del cliente
             const { data: profileData } = await supabase
                 .from('profiles')
@@ -157,13 +159,16 @@ const Home = () => {
                 .single();
 
             const clientFirstName = profileData?.full_name?.split(' ')[0] || 'Cliente';
+            console.log(`[Push] Nombre del cliente identificado: ${clientFirstName}`);
 
             // 2. Obtener saldo actualizado (esperamos un momento para que el trigger procese)
-            // Aumentamos un poco el tiempo para asegurar que el trigger de DB terminó
-            await new Promise(resolve => setTimeout(resolve, 1200));
+            // Aumentamos a 2 segundos para asegurar que el trigger de DB terminó en casos de latencia
+            console.log('[Push] Esperando 2 segundos para sincronización de balance en DB...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
             // Obtenemos el ID del negocio de forma segura
-            const currentBizId = profile?.business_members?.[0]?.business_id || businessId;
+            const currentBizId = business?.id || profile?.business_members?.[0]?.business_id || businessId;
+            console.log(`[Push] Usando Business ID para premios/balance: ${currentBizId}`);
 
             const { data: cardData } = await supabase
                 .from('loyalty_cards')
@@ -173,6 +178,7 @@ const Home = () => {
                 .single();
 
             const currentPoints = cardData?.current_points || 0;
+            console.log(`[Push] Balance actual del cliente en DB: ${currentPoints}`);
 
             // 3. Obtener premios activos del comercio
             const { data: rewards } = await supabase
@@ -181,6 +187,8 @@ const Home = () => {
                 .eq('business_id', currentBizId)
                 .eq('is_active', true)
                 .order('cost_points', { ascending: false });
+
+            console.log(`[Push] Premios activos encontrados: ${rewards?.length || 0}`);
 
             // 4. Buscar el mejor premio alcanzable
             const reachableRewards = rewards?.filter(r => currentPoints >= r.cost_points) || [];
@@ -191,21 +199,23 @@ const Home = () => {
             if (reachableRewards.length > 0) {
                 const topReward = reachableRewards[0];
                 pushMessage += ` ✨ ¡Y ya puedes canjear: ${topReward.name}! 🎁`;
+                console.log(`[Push] Meta alcanzada: ${topReward.name}`);
             } else {
                 pushMessage += ` ✨ Te faltan pocos para tu próximo premio. 🎁`;
             }
 
             // 6. Enviar Push real vía Edge Function
-            console.log('Enviando Push de conversión:', pushMessage);
-            await sendPushToProfile({
+            console.log('[Push] Llamando a sendPushToProfile con mensaje:', pushMessage);
+            const result = await sendPushToProfile({
                 profileId,
                 title: business?.name || 'KPoint',
                 message: pushMessage,
                 url: '/my-points'
             });
+            console.log('[Push] Resultado de sendPushToProfile:', result);
 
         } catch (error) {
-            console.error('Error en notifyConversion:', error);
+            console.error('[Push] Error CRÍTICO en notifyConversion:', error);
         }
     };
 
@@ -495,11 +505,18 @@ const Home = () => {
             setIsModalOpen(false);
             setAmount('');
             setSaleStep(1);
+            
+            // Aseguramos que la notificación se dispare
+            console.log('Mostrando notificación de éxito en pantalla...');
             showNotification('success', '¡Puntos Asignados!', 'La venta se ha procesado y los puntos han sido cargados al cliente.');
+            
+            // Refrescar datos
             fetchDashboardData();
 
             // 1. BROADCAST REALTIME: Envío directo al cliente para actualización INSTANTÁNEA
             const pointsToGain = (parseFloat(amount) * (business?.points_per_dollar || 10)).toFixed(0);
+            console.log(`Puntos a ganar calculados: ${pointsToGain} para cliente: ${clientId}`);
+            
             const broadcastChannel = supabase.channel(`client-points-realtime-${clientId}`);
             broadcastChannel.send({
                 type: 'broadcast',
@@ -509,10 +526,14 @@ const Home = () => {
                     points: pointsToGain,
                     amountUSD: amount
                 }
-            });
+            }).then(() => console.log('Broadcast enviado con éxito'))
+              .catch(err => console.error('Error en broadcast:', err));
 
-            // 2. NOTIFICACIÓN PUSH PERSONALIZADA (Opción C: Meta Alcanzada)
-            notifyConversion(clientId, pointsToGain);
+            // 2. NOTIFICACIÓN PUSH PERSONALIZADA
+            // Esperamos un poco para que los triggers de DB procesen el saldo antes de buscar premios
+            console.log('Iniciando notifyConversion...');
+            await notifyConversion(clientId, pointsToGain);
+
         } catch (err) {
             console.error('Error processing sale:', err);
             showNotification('error', 'Error de Escaneo', 'No se pudo procesar la venta. Verifique el código QR.');
@@ -781,12 +802,20 @@ const Home = () => {
             setAmount('');
             setSearchEmail('');
             setSaleStep(1);
+            
+            console.log('[Manual] Mostrando notificación de éxito en pantalla...');
             showNotification('success', '¡Venta Registrada!', 'Los puntos han sido asignados correctamente al cliente.');
+            
             fetchDashboardData();
 
-            // 6. Notificación Push Personalizada (Meta Alcanzada)
-            notifyConversion(profileData.id, (parseFloat(amount) * (business?.points_per_dollar || 10)).toFixed(0));
+            // 6. Notificación Push Personalizada
+            const pointsToGain = (parseFloat(amount) * (business?.points_per_dollar || 10)).toFixed(0);
+            console.log(`[Manual] Puntos ganados: ${pointsToGain}. Avisando a notifyConversion para perfil: ${profileData.id}`);
+            
+            await notifyConversion(profileData.id, pointsToGain);
+
         } catch (err) {
+            console.error('[Manual] Error en registro:', err);
             showNotification('error', 'Error en Registro', err.message);
         } finally {
             setIsProcessing(false);
