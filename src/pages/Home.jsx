@@ -144,7 +144,8 @@ const Home = () => {
     };
 
     /**
-     * Envía una notificación Push inteligente "Meta Alcanzada" o personalizada al cliente
+     * Envía una notificación Push inteligente que informa los puntos ganados
+     * y, si aplica, los premios que ya puede canjear.
      */
     const notifyConversion = async (profileId, pointsEarned) => {
         try {
@@ -158,13 +159,17 @@ const Home = () => {
             const clientFirstName = profileData?.full_name?.split(' ')[0] || 'Cliente';
 
             // 2. Obtener saldo actualizado (esperamos un momento para que el trigger procese)
-            await new Promise(resolve => setTimeout(resolve, 800));
+            // Aumentamos un poco el tiempo para asegurar que el trigger de DB terminó
+            await new Promise(resolve => setTimeout(resolve, 1200));
+
+            // Obtenemos el ID del negocio de forma segura
+            const currentBizId = profile?.business_members?.[0]?.business_id || businessId;
 
             const { data: cardData } = await supabase
                 .from('loyalty_cards')
                 .select('current_points')
                 .eq('profile_id', profileId)
-                .eq('business_id', businessId)
+                .eq('business_id', currentBizId)
                 .single();
 
             const currentPoints = cardData?.current_points || 0;
@@ -173,22 +178,25 @@ const Home = () => {
             const { data: rewards } = await supabase
                 .from('rewards')
                 .select('name, cost_points')
-                .eq('business_id', businessId)
+                .eq('business_id', currentBizId)
                 .eq('is_active', true)
                 .order('cost_points', { ascending: false });
 
-            // 4. Buscar si alcanzó una meta (el premio más caro que puede pagar)
+            // 4. Buscar el mejor premio alcanzable
             const reachableRewards = rewards?.filter(r => currentPoints >= r.cost_points) || [];
-
-            let pushMessage = '';
+            
+            // 5. Construir mensaje combinado
+            let pushMessage = `¡Hola ${clientFirstName}! 🎉 Sumaste ${pointsEarned} puntos en ${business?.name || 'KPoint'}.`;
+            
             if (reachableRewards.length > 0) {
                 const topReward = reachableRewards[0];
-                pushMessage = `¡Felicidades ${clientFirstName}! 🎉 Ya tienes suficientes puntos para: ${topReward.name} 🎁✨`;
+                pushMessage += ` ✨ ¡Y ya puedes canjear: ${topReward.name}! 🎁`;
             } else {
-                pushMessage = `¡Hola ${clientFirstName}! Sumaste ${pointsEarned} puntos en ${business?.name || 'KPoint'} 🎉 ✨`;
+                pushMessage += ` ✨ Te faltan pocos para tu próximo premio. 🎁`;
             }
 
-            // 5. Enviar Push
+            // 6. Enviar Push real vía Edge Function
+            console.log('Enviando Push de conversión:', pushMessage);
             await sendPushToProfile({
                 profileId,
                 title: business?.name || 'KPoint',
