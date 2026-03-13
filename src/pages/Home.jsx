@@ -903,7 +903,7 @@ const Home = () => {
                     </div>
                     <div>
                         <h1 className="text-lg font-black tracking-tight"><span className="text-primary">K</span>Point</h1>
-                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Panel de Control</p>
+                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Panel de Control • v1.1.0</p>
                     </div>
                 </div>
                 <div className="flex gap-2">
