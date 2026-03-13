@@ -288,7 +288,7 @@ const Home = () => {
             // 3. Recent Activity
             const { data: activityData } = await supabase
                 .from('transactions')
-                .select('*, profiles(full_name)')
+                .select('*, customer:profiles!profile_id(full_name), staff:profiles!staff_id(full_name)')
                 .eq('business_id', currentBizId)
                 .order('created_at', { ascending: false })
                 .limit(5);
@@ -494,6 +494,7 @@ const Home = () => {
                 .insert({
                     business_id: businessId,
                     profile_id: clientId,
+                    staff_id: user.id,
                     amount_fiat: parseFloat(amount),
                     type: 'EARN',
                     description: `Compra por $${amount}`
@@ -504,6 +505,8 @@ const Home = () => {
             // Success! Close everything and refresh
             setIsModalOpen(false);
             setAmount('');
+            setAmountBs('');
+            setSearchEmail('');
             setSaleStep(1);
             
             // Aseguramos que la notificación se dispare
@@ -690,6 +693,7 @@ const Home = () => {
                 .insert({
                     business_id: businessId,
                     profile_id: client.profile_id,
+                    staff_id: user.id,
                     reward_id: reward.id,
                     points_amount: -Math.abs(reward.cost_points),
                     type: 'REDEEM',
@@ -790,6 +794,7 @@ const Home = () => {
                 .insert({
                     business_id: businessId,
                     profile_id: profileData.id,
+                    staff_id: user.id,
                     amount_fiat: parseFloat(amount),
                     type: 'EARN',
                     description: `Compra manual por $${amount}`
@@ -800,6 +805,7 @@ const Home = () => {
             // Success!
             setIsModalOpen(false);
             setAmount('');
+            setAmountBs('');
             setSearchEmail('');
             setSaleStep(1);
             
@@ -1037,8 +1043,8 @@ const Home = () => {
                                     showNotification('warning', 'Datos Incompletos', 'Debe completar los datos del formulario "Ajustes del Negocio" para realizar esta acción.');
                                     return;
                                 }
-                                setAmount('0.00');
-                                setAmountBs('0.00');
+                                setAmount('');
+                                setAmountBs('');
                                 setIsModalOpen(true);
                             }}
                             className="w-full bg-primary hover:opacity-95 hover:scale-[1.02] text-white h-16 rounded-2xl flex items-center justify-start px-6 gap-4 border-2 border-[#1E293B] shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
@@ -1283,38 +1289,6 @@ const Home = () => {
                     </div>
                 )}
 
-                {/* Activity Section */}
-                {(userRole === 'owner' || userPermissions?.can_view_clients) && (
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest">Actividad Reciente</h2>
-                            <button className="text-xs font-black text-primary" onClick={() => navigate('/clients')}>Ver todo</button>
-                        </div>
-
-                        <div className="space-y-3">
-                            {activities.length > 0 ? activities.map((activity) => (
-                                <div key={activity.id} className="flex items-center justify-between p-4 bg-white rounded-3xl border-2 border-[#595A5B] shadow-sm">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-10 h-10 rounded-full ${activity.type === 'EARN' ? 'bg-primary/10 text-primary' : 'bg-warning/10 text-warning'} flex items-center justify-center`}>
-                                            <span className={`material-symbols-outlined !text-xl`}>
-                                                {activity.type === 'EARN' ? 'add_task' : 'stars'}
-                                            </span>
-                                        </div>
-                                        <div className="min-w-0">
-                                            <p className="text-sm font-black text-slate-900 truncate">{activity.profiles?.full_name || 'Cliente'}</p>
-                                            <p className="text-[10px] text-slate-500 font-medium">{formatTime(activity.created_at)}</p>
-                                        </div>
-                                    </div>
-                                    <p className={`text-sm font-black ${activity.type === 'EARN' ? 'text-primary' : 'text-warning'}`}>
-                                        {activity.points_amount > 0 ? '+' : ''}{activity.points_amount} pts
-                                    </p>
-                                </div>
-                            )) : (
-                                <p className="text-center text-slate-500 py-4 text-sm font-medium italic">Sin actividad reciente</p>
-                            )}
-                        </div>
-                    </div>
-                )}
 
                 {/* Secondary Action - Solo Dueño */}
                 {userRole === 'owner' && (
@@ -1329,6 +1303,53 @@ const Home = () => {
                                 <span className="text-sm font-black uppercase tracking-tight">Enviar Comunicado</span>
                             </div>
                         </button>
+                    </div>
+                )}
+
+                {/* Activity Section */}
+                {(userRole === 'owner' || userPermissions?.can_view_clients) && (
+                    <div className="space-y-4 mt-6">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest">Últimos Movimientos</h2>
+                            <button className="text-xs font-black text-primary" onClick={() => navigate('/activity-history')}>Ver todo</button>
+                        </div>
+
+                        <div className="bg-white rounded-[2rem] border-2 border-[#595A5B] overflow-hidden shadow-sm">
+                            {activities.length > 0 ? activities.map((activity, index) => (
+                                <div 
+                                    key={activity.id} 
+                                    className={`flex items-center justify-between p-4 ${index !== activities.length - 1 ? 'border-b border-slate-100' : ''}`}
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-9 h-9 rounded-full ${activity.type === 'EARN' ? 'bg-primary/10 text-primary' : 'bg-warning/10 text-warning'} flex items-center justify-center shrink-0`}>
+                                            <span className={`material-symbols-outlined !text-lg`}>
+                                                {activity.type === 'EARN' ? 'add_task' : 'stars'}
+                                            </span>
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-black text-slate-800 truncate leading-tight">
+                                                {activity.customer?.full_name || 'Cliente'}
+                                            </p>
+                                            <div className="flex flex-col">
+                                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">
+                                                    {activity.staff?.full_name 
+                                                        ? `Atendido por: ${activity.staff.full_name}` 
+                                                        : 'Atendido por: Operador'}
+                                                </p>
+                                                <p className="text-[9px] text-slate-400 font-bold">{formatTime(activity.created_at)}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className={`text-sm font-black ${activity.type === 'EARN' ? 'text-primary' : 'text-warning'}`}>
+                                            {activity.points_amount > 0 ? '+' : ''}{activity.points_amount} pts
+                                        </p>
+                                    </div>
+                                </div>
+                            )) : (
+                                <p className="text-center text-slate-500 py-6 text-sm font-medium italic">Sin actividad reciente</p>
+                            )}
+                        </div>
                     </div>
                 )}
             </main>
@@ -1419,7 +1440,7 @@ const Home = () => {
                                                         }
                                                     }}
                                                     className="bg-transparent border-none text-3xl font-black text-slate-900 w-full focus:ring-0 p-0 placeholder:text-slate-200"
-                                                    placeholder="0,00"
+                                                    placeholder=""
                                                 />
                                             </div>
                                         </div>
@@ -1442,7 +1463,7 @@ const Home = () => {
                                                         }
                                                     }}
                                                     className="bg-transparent border-none text-4xl font-black text-slate-900 w-full text-center focus:ring-0 p-0 placeholder:text-slate-100 selection:bg-primary/10"
-                                                    placeholder="0.00"
+                                                    placeholder=""
                                                 />
                                             </div>
                                         </div>

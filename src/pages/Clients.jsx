@@ -227,31 +227,29 @@ const Clients = () => {
                 <div className="fixed inset-0 z-[60] flex flex-col bg-white overflow-y-auto animate-in slide-in-from-right duration-300">
                     {/* Top Action Bar */}
                     <div className="sticky top-0 left-0 right-0 p-6 flex justify-between items-center z-50 bg-white/80 backdrop-blur-md border-b border-[#595A5B]">
-                        <button
-                            onClick={() => setSelectedClient(null)}
-                            className="size-11 rounded-full bg-slate-50 border-2 border-[#595A5B] flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all active:scale-90"
-                        >
-                            <span className="material-symbols-outlined !text-xl font-black">arrow_back</span>
-                        </button>
-                        <h1 className="text-lg font-black text-slate-800 tracking-tight">Detalle del Cliente</h1>
-                        <button className="size-11 rounded-full bg-slate-50 border-2 border-[#595A5B] flex items-center justify-center text-primary active:scale-90">
-                            <span className="material-symbols-outlined !text-xl font-black text-[#2563EB]">edit</span>
-                        </button>
+                        <div className="size-11" />
+                        <div className="flex items-center gap-3">
+                            <div className="bg-white p-2 shadow-sm border-2 border-[#595A5B]" style={{ borderRadius: '12px' }}>
+                                <span className="material-symbols-outlined text-primary !text-xl">person_search</span>
+                            </div>
+                            <h1 className="text-lg font-black text-slate-800 tracking-tight">Detalle del Cliente</h1>
+                        </div>
+                        <div className="size-11" />
                     </div>
 
                     <div className="p-6 space-y-8 pb-32">
                         {/* Orange Profile Card */}
-                        <div className="relative overflow-hidden bg-[rgb(255,101,14)] p-8 rounded-[2rem] shadow-xl shadow-orange-500/20 text-white flex flex-col items-center">
-                            <div className="relative z-10 text-center space-y-2">
-                                <h2 className="text-3xl font-black tracking-tight">{selectedClient.profiles?.full_name}</h2>
-                                <p className="text-sm font-bold opacity-80">{selectedClient.profiles?.email || selectedClient.profiles?.phone || 'sin-contacto@email.com'}</p>
-                                <div className="mt-4 inline-flex items-center gap-2 px-6 py-2 bg-white/20 backdrop-blur-md rounded-full border border-white/30">
-                                    <span className="text-[11px] font-black uppercase tracking-widest">Miembro Gold</span>
+                        {/* Compact Orange Profile Card */}
+                        <div className="relative overflow-hidden bg-[rgb(255,101,14)] p-5 rounded-[1.5rem] shadow-xl shadow-orange-500/10 text-white">
+                            <div className="relative z-10 flex items-center justify-between">
+                                <div className="min-w-0">
+                                    <h2 className="text-xl font-black tracking-tight truncate">{selectedClient.profiles?.full_name}</h2>
+                                    <p className="text-[11px] font-bold opacity-80 truncate">{selectedClient.profiles?.email || selectedClient.profiles?.phone || 'sin-contacto@email.com'}</p>
+                                </div>
+                                <div className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full border border-white/30 shrink-0 ml-2">
+                                    <span className="text-[9px] font-black uppercase tracking-widest leading-none">Miembro Gold</span>
                                 </div>
                             </div>
-                            <span className="material-symbols-outlined absolute -right-8 -bottom-8 text-white/[0.1] !text-[160px] font-black pointer-events-none rotate-12">
-                                person
-                            </span>
                         </div>
 
                         {isLoadingSummary ? (
@@ -358,24 +356,26 @@ const Clients = () => {
                             </div>
                         )}
 
-                        <div className="flex gap-4 pt-4">
-                            <button
-                                onClick={() => {
-                                    setNotificationTarget(selectedClient);
-                                    setIsNotificationModalOpen(true);
-                                }}
-                                className="flex-1 bg-primary text-white h-14 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-orange-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
-                            >
-                                <span className="material-symbols-outlined !text-lg">send</span>
-                                Mensaje
-                            </button>
-                            <button
-                                onClick={() => setSelectedClient(null)}
-                                className="flex-1 bg-slate-100 text-slate-600 h-14 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] active:scale-95 transition-all"
-                            >
-                                Volver
-                            </button>
-                        </div>
+                    </div>
+
+                    {/* Fixed Action Footer */}
+                    <div className="sticky bottom-0 left-0 right-0 p-6 bg-white/90 backdrop-blur-md border-t border-slate-100 flex gap-4 z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
+                        <button
+                            onClick={() => {
+                                setNotificationTarget(selectedClient);
+                                setIsNotificationModalOpen(true);
+                            }}
+                            className="flex-1 bg-primary text-white h-14 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-orange-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                        >
+                            <span className="material-symbols-outlined !text-lg">send</span>
+                            Mensaje
+                        </button>
+                        <button
+                            onClick={() => setSelectedClient(null)}
+                            className="flex-1 bg-slate-100 text-slate-600 h-14 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] active:scale-95 transition-all"
+                        >
+                            Volver
+                        </button>
                     </div>
                 </div>
             )}

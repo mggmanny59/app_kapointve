@@ -232,12 +232,12 @@ const KPIDashboard = () => {
             <main className="px-6 space-y-4 animate-in slide-in-from-bottom-4 duration-500">
 
                 {/* Resumen Global Info Card */}
-                <div className="bg-[#0F172A] text-white p-7 rounded-[2.5rem] shadow-2xl border-2 border-[#1E293B] relative overflow-hidden group">
+                <div className="bg-[#0F172A] text-white p-5 rounded-[2rem] shadow-2xl border-2 border-[#1E293B] relative overflow-hidden group">
                     <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
                          style={{ backgroundImage: 'radial-gradient(#94a3b8 0.5px, transparent 0.5px)', backgroundSize: '12px 12px' }}></div>
                     <div className="absolute -right-10 -top-10 bg-primary/20 size-40 rounded-full blur-3xl group-hover:bg-primary/30 transition-all duration-700"></div>
                     
-                    <div className="flex justify-between items-start mb-6 relative z-10">
+                    <div className="flex justify-between items-start mb-3 relative z-10">
                         <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">Volumen Consolidado</p>
                         <span className="text-[9px] font-black text-primary bg-primary/10 border border-primary/20 px-3 py-1 rounded-lg uppercase tracking-widest flex items-center gap-2">
                             <span className="size-1.5 rounded-full bg-primary animate-pulse"></span>
@@ -247,7 +247,7 @@ const KPIDashboard = () => {
 
                     <div className="flex justify-between items-end relative z-10">
                         <div>
-                            <p className="text-4xl font-black tracking-tighter">${kpiData.totalSalesVolume.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                            <p className="text-[25px] font-black tracking-tighter">${kpiData.totalSalesVolume.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                             <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase mt-1">Total USD Operados</p>
                         </div>
                         <div className="text-right">
@@ -266,19 +266,19 @@ const KPIDashboard = () => {
                     ) : (
                         <>
                             {/* KPI 1: Ticket Promedio AOV */}
-                            <div className="bg-[#0F172A] p-6 rounded-[2.5rem] border-2 border-[#1E293B] shadow-2xl relative overflow-hidden group">
+                            <div className="bg-[#0F172A] p-4 rounded-[2rem] border-2 border-[#1E293B] shadow-2xl relative overflow-hidden group">
                                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
                                      style={{ backgroundImage: 'radial-gradient(#94a3b8 0.5px, transparent 0.5px)', backgroundSize: '12px 12px' }}></div>
-                                <div className="flex items-center justify-between mb-4 z-10 relative">
-                                    <div className="size-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-inner">
+                                <div className="flex items-center justify-between mb-2 z-10 relative">
+                                    <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-inner">
                                         <span className="material-symbols-outlined !text-xl font-black">receipt_long</span>
                                     </div>
                                     <span className="text-[9px] border border-primary/20 bg-primary/10 text-primary px-3 py-1 rounded-lg font-black tracking-widest uppercase">AOV</span>
                                 </div>
-                                <div className="relative z-10 mt-4">
-                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-1">Ticket Promedio</p>
-                                    <p className="text-4xl font-black text-white tracking-tighter">${kpiData.aov.toFixed(2)}</p>
-                                    <div className="mt-6 pt-4 border-t border-[#1E293B]">
+                                <div className="relative z-10 mt-1">
+                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-0.5">Ticket Promedio</p>
+                                    <p className="text-[25px] font-black text-white tracking-tighter">${kpiData.aov.toFixed(2)}</p>
+                                    <div className="mt-3 pt-3 border-t border-[#1E293B]">
                                         <p className="text-[10px] text-slate-400 font-bold leading-relaxed flex items-start gap-3">
                                             <span className="material-symbols-outlined !text-[18px] text-primary">info</span>
                                             <span>
@@ -291,19 +291,19 @@ const KPIDashboard = () => {
                             </div>
 
                             {/* KPI: Total Clientes (NUEVO) */}
-                            <div className="bg-[#0F172A] p-6 rounded-[2.5rem] border-2 border-[#1E293B] shadow-2xl relative overflow-hidden group">
+                            <div className="bg-[#0F172A] p-4 rounded-[2rem] border-2 border-[#1E293B] shadow-2xl relative overflow-hidden group">
                                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
                                      style={{ backgroundImage: 'radial-gradient(#94a3b8 0.5px, transparent 0.5px)', backgroundSize: '12px 12px' }}></div>
-                                <div className="flex items-center justify-between mb-4 z-10 relative">
-                                    <div className="size-11 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shadow-inner">
+                                <div className="flex items-center justify-between mb-2 z-10 relative">
+                                    <div className="size-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shadow-inner">
                                         <span className="material-symbols-outlined !text-xl font-black">groups</span>
                                     </div>
                                     <span className="text-[9px] border border-amber-500/20 bg-amber-500/10 text-amber-500 px-3 py-1 rounded-lg font-black tracking-widest uppercase">Base</span>
                                 </div>
-                                <div className="relative z-10 mt-4">
-                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-1">Clientes Totales</p>
-                                    <p className="text-4xl font-black text-white tracking-tighter">{kpiData.totalClients}</p>
-                                    <div className="mt-6 pt-4 border-t border-[#1E293B]">
+                                <div className="relative z-10 mt-1">
+                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-0.5">Clientes Totales</p>
+                                    <p className="text-[25px] font-black text-white tracking-tighter">{kpiData.totalClients}</p>
+                                    <div className="mt-3 pt-3 border-t border-[#1E293B]">
                                         <p className="text-[10px] text-slate-400 font-bold leading-relaxed flex items-start gap-3">
                                             <span className="material-symbols-outlined !text-[18px] text-amber-500">info</span>
                                             <span>
@@ -316,18 +316,18 @@ const KPIDashboard = () => {
                             </div>
 
                             {/* KPI 2: Recencia Promedio */}
-                            <div className="bg-[#0F172A] p-6 rounded-[2.5rem] border-2 border-[#1E293B] shadow-2xl relative overflow-hidden group">
+                            <div className="bg-[#0F172A] p-4 rounded-[2rem] border-2 border-[#1E293B] shadow-2xl relative overflow-hidden group">
                                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
                                      style={{ backgroundImage: 'radial-gradient(#94a3b8 0.5px, transparent 0.5px)', backgroundSize: '12px 12px' }}></div>
-                                <div className="flex items-center justify-between mb-4 z-10 relative">
-                                    <div className="size-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 shadow-inner">
+                                <div className="flex items-center justify-between mb-2 z-10 relative">
+                                    <div className="size-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 shadow-inner">
                                         <span className="material-symbols-outlined !text-xl font-black">history_toggle_off</span>
                                     </div>
                                 </div>
-                                <div className="relative z-10 mt-4">
-                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-1">Recencia Promedio</p>
-                                    <p className="text-4xl font-black text-white tracking-tighter">{kpiData.averageRecencyDays.toFixed(1)} <span className="text-lg text-slate-500">días</span></p>
-                                    <div className="mt-6 pt-4 border-t border-[#1E293B]">
+                                <div className="relative z-10 mt-1">
+                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-0.5">Recencia Promedio</p>
+                                    <p className="text-[25px] font-black text-white tracking-tighter">{kpiData.averageRecencyDays.toFixed(1)} <span className="text-sm text-slate-500">días</span></p>
+                                    <div className="mt-3 pt-3 border-t border-[#1E293B]">
                                         <p className="text-[10px] text-slate-400 font-bold leading-relaxed flex items-start gap-3">
                                             <span className="material-symbols-outlined !text-[18px] text-blue-500">info</span>
                                             <span>
@@ -340,22 +340,22 @@ const KPIDashboard = () => {
                             </div>
 
                             {/* KPI 3: Top 10% Clientes (Chart) */}
-                            <div className="bg-[#0F172A] p-6 rounded-[2.5rem] border-2 border-[#1E293B] shadow-2xl relative overflow-hidden group">
+                            <div className="bg-[#0F172A] p-4 rounded-[2rem] border-2 border-[#1E293B] shadow-2xl relative overflow-hidden group">
                                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
                                      style={{ backgroundImage: 'radial-gradient(#94a3b8 0.5px, transparent 0.5px)', backgroundSize: '12px 12px' }}></div>
                                 
                                 <div className="relative z-10">
-                                    <div className="flex justify-between items-start mb-6">
+                                    <div className="flex justify-between items-start mb-3">
                                         <div>
-                                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.25em] mb-1">Análisis de Pareto</p>
-                                            <p className="text-xl font-black text-white tracking-tight">Top 10% Clientes</p>
+                                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.25em] mb-0.5">Análisis de Pareto</p>
+                                            <p className="text-lg font-black text-white tracking-tight">Top 10% Clientes</p>
                                         </div>
                                         <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center">
                                             <span className="material-symbols-outlined !text-xl font-black">diamond</span>
                                         </div>
                                     </div>
 
-                                    <div className="relative h-48 w-full mt-8">
+                                    <div className="relative h-40 w-full mt-4">
                                         {/* Grid Técnica */}
                                         <div className="absolute inset-0 flex flex-col justify-between opacity-5 pointer-events-none z-0">
                                             {[...Array(5)].map((_, i) => (
@@ -392,7 +392,7 @@ const KPIDashboard = () => {
                                         </div>
                                     </div>
 
-                                    <div className="mt-8 pt-4 border-t border-[#1E293B]">
+                                    <div className="mt-4 pt-3 border-t border-[#1E293B]">
                                         <p className="text-[10px] text-slate-400 font-bold leading-relaxed flex items-start gap-3">
                                             <span className="material-symbols-outlined !text-[18px] text-primary">campaign</span>
                                             <span>
@@ -405,22 +405,22 @@ const KPIDashboard = () => {
                             </div>
 
                             {/* KPI 4: Tasa de Nuevos vs Fieles (Pie) */}
-                            <div className="bg-[#0F172A] p-6 rounded-[2.5rem] border-2 border-[#1E293B] shadow-2xl relative overflow-hidden group">
+                            <div className="bg-[#0F172A] p-4 rounded-[2rem] border-2 border-[#1E293B] shadow-2xl relative overflow-hidden group">
                                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
                                      style={{ backgroundImage: 'radial-gradient(#94a3b8 0.5px, transparent 0.5px)', backgroundSize: '12px 12px' }}></div>
 
                                 <div className="relative z-10">
-                                    <div className="flex justify-between items-start mb-4">
+                                    <div className="flex justify-between items-start mb-2">
                                         <div>
-                                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.25em] mb-1">Infraestructura de Lealtad</p>
-                                            <p className="text-xl font-black text-white tracking-tight">Composición de Cartera</p>
+                                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.25em] mb-0.5">Infraestructura de Lealtad</p>
+                                            <p className="text-lg font-black text-white tracking-tight">Composición de Cartera</p>
                                         </div>
                                         <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center">
                                             <span className="material-symbols-outlined !text-xl font-black">pie_chart</span>
                                         </div>
                                     </div>
 
-                                    <div className="h-56 w-full mt-4 relative flex items-center justify-center">
+                                    <div className="h-52 w-full mt-2 relative flex items-center justify-center">
                                         {kpiData.retentionData.reduce((sum, i) => sum + i.value, 0) > 0 ? (
                                             <ResponsiveContainer width="100%" height="100%">
                                                 <PieChart margin={{ top: 0, right: 30, left: 30, bottom: 0 }}>
@@ -472,7 +472,7 @@ const KPIDashboard = () => {
                                         {/* Texto Central */}
                                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none mb-4">
                                             <div className="text-center">
-                                                <span className="text-3xl font-black text-white tracking-tighter">{kpiData.retentionData.reduce((sum, item) => sum + item.value, 0)}</span>
+                                                <span className="text-[25px] font-black text-white tracking-tighter">{kpiData.retentionData.reduce((sum, item) => sum + item.value, 0)}</span>
                                                 <br />
                                                 <span className="text-[8px] uppercase tracking-[0.2em] font-black text-slate-500">Cartera</span>
                                             </div>
