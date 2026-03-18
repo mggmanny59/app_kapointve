@@ -95,111 +95,123 @@ const SendNotificationModal = ({ isOpen, onClose, businessId, targetClient = nul
     };
 
     return (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 antialiased">
-            {/* Backdrop */}
-            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-500" onClick={onClose}></div>
-
-            {/* Modal Body */}
-            <div className="relative w-full max-w-md bg-white border-2 border-[#595A5B] rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-400">
-                <form onSubmit={handleSubmit} className="p-10">
-                    <header className="flex items-center gap-5 mb-10">
-                        <div className="size-14 rounded-[1.25rem] bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-xl shadow-primary/5">
-                            <span className="material-symbols-outlined !text-3xl font-black">campaign</span>
+        <div className="fixed inset-0 z-[150] bg-slate-50 animate-in slide-in-from-right duration-300 flex flex-col font-display text-slate-900 overflow-hidden">
+            {/* Header Area (Similar to KPannel) */}
+            <div className="bg-[#1e2836] rounded-b-[2.5rem] px-6 pt-12 pb-10 relative z-20 shadow-xl">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-4">
+                        <div className="size-16 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-[#ff8228]">
+                            <span className="material-symbols-outlined !text-4xl font-black">campaign</span>
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">
+                            <h2 className="text-2xl font-black text-white tracking-tight leading-tight">
                                 {targetClient ? 'Mensaje Directo' : 'Aviso Masivo'}
                             </h2>
-                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1.5 flex items-center gap-2">
-                                <span className="size-1.5 rounded-full bg-primary animate-pulse"></span>
-                                {targetClient ? `DESTINO: ${targetClient.full_name || 'CLIENTE'}` : 'ESTRATEGIA FIDELIZACIÓN'}
+                            <p className="text-[10px] text-[#ff8228] font-black uppercase tracking-[0.3em] mt-1.5 flex items-center gap-2">
+                                <span className="size-2 rounded-full bg-[#ff8228] animate-pulse"></span>
+                                {targetClient ? `DEST_ID: ${targetClient.full_name || 'CLIENT'}` : 'ESTRATEGIA FIDELIZACIÓN'}
                             </p>
                         </div>
-                    </header>
+                    </div>
+                </div>
+            </div>
 
-                    <div className="space-y-6">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Título del Mensaje</label>
+            {/* Scrollable Form Content */}
+            <div className="flex-1 px-5 md:px-8 py-4 -mt-6 relative z-30 custom-scrollbar overflow-y-auto">
+                <form onSubmit={handleSubmit} className="max-w-3xl mx-auto space-y-4">
+                    
+                    {/* Main Content Card */}
+                    <div className="bg-white rounded-[2rem] p-6 md:p-8 shadow-2xl shadow-slate-200/60 border border-slate-100/50 space-y-4">
+                        
+                        {/* Title Field */}
+                        <div className="space-y-1.5">
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">TÍTULO DEL MENSAJE</label>
                             <input
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                                className="w-full bg-[#f8fafc] border-2 border-[#595A5B] rounded-[1.25rem] h-16 px-6 text-[15px] outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/40 transition-all font-bold text-slate-900 placeholder:text-slate-300 shadow-inner"
+                                className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl h-14 px-6 text-[15px] outline-none focus:border-primary/40 transition-all font-bold text-slate-900 placeholder:text-slate-300"
                                 placeholder="Ej: ¡Hoy tenemos café 2x1!"
                                 required
-                                autoComplete="off"
                             />
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Categoría</label>
-                            <div className="relative">
-                                <select
-                                    value={type}
-                                    onChange={(e) => setType(e.target.value)}
-                                    className="w-full bg-[#f8fafc] border-2 border-[#595A5B] rounded-[1.25rem] h-16 px-6 text-[15px] outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/40 transition-all appearance-none font-bold text-slate-900 cursor-pointer shadow-inner pr-12"
-                                >
-                                    <option value="GENERAL">General / Informativa</option>
-                                    <option value="PROMO">Promoción Especial</option>
-                                    <option value="POINTS">Bono de Puntos</option>
-                                    <option value="REWARD">Premio Disponible</option>
-                                </select>
-                                <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none !text-xl font-black">expand_more</span>
+                        {/* Category and Push Settings Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">CATEGORÍA</label>
+                                <div className="relative">
+                                    <select
+                                        value={type}
+                                        onChange={(e) => setType(e.target.value)}
+                                        className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl h-14 px-6 text-[14px] outline-none focus:border-primary/40 transition-all appearance-none font-bold text-slate-900 cursor-pointer pr-12"
+                                    >
+                                        <option value="GENERAL">General / Informativa</option>
+                                        <option value="PROMO">Promoción Especial</option>
+                                        <option value="POINTS">Bono de Puntos</option>
+                                        <option value="REWARD">Premio Disponible</option>
+                                    </select>
+                                    <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none !text-xl font-black">expand_more</span>
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Push Toggle - ONLY FOR SUPER ADMIN */}
-                        {user?.is_super_admin && (
-                            <div className="flex items-center justify-between p-5 bg-primary/5 rounded-[1.5rem] border-2 border-primary/20 transition-all">
-                                <div className="flex items-center gap-4">
-                                    <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                                        <span className="material-symbols-outlined !text-xl font-black">notifications_active</span>
-                                    </div>
-                                    <div>
-                                        <p className="text-[11px] font-black text-slate-900 uppercase tracking-tighter">Enviar Push Mobile</p>
-                                        <p className="text-[9px] font-bold text-primary uppercase">Edge Function Active</p>
+                            {user?.is_super_admin && (
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">TRANSMISIÓN_PUSH</label>
+                                    <div className="flex items-center justify-between h-14 px-6 bg-[#ff8228]/5 rounded-2xl border-2 border-[#ff8228]/10 transition-all">
+                                        <div className="flex items-center gap-3">
+                                            <div className="size-8 rounded-lg bg-[#ff8228]/10 flex items-center justify-center text-[#ff8228]">
+                                                <span className="material-symbols-outlined !text-lg font-normal">notifications_active</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black text-slate-900 uppercase tracking-tighter">Enviar Push Mobile</p>
+                                                <p className="text-[8px] font-bold text-[#ff8228] uppercase opacity-70">Edge Function Active</p>
+                                            </div>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={sendPush}
+                                                onChange={(e) => setSendPush(e.target.checked)}
+                                                className="sr-only peer" 
+                                            />
+                                            <div className="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#ff8228]"></div>
+                                        </label>
                                     </div>
                                 </div>
-                                <label className="relative inline-flex items-center cursor-pointer">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={sendPush}
-                                        onChange={(e) => setSendPush(e.target.checked)}
-                                        className="sr-only peer" 
-                                    />
-                                    <div className="w-12 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                                </label>
-                            </div>
-                        )}
+                            )}
+                        </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Cuerpo del Mensaje</label>
+                        {/* Message Body */}
+                        <div className="space-y-1.5 pt-1">
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">CUERPO DEL MENSAJE</label>
                             <textarea
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
-                                className="w-full bg-[#f8fafc] border-2 border-[#595A5B] rounded-[1.5rem] h-40 p-6 text-[15px] outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/40 transition-all resize-none font-bold text-slate-600 placeholder:text-slate-300 shadow-inner leading-relaxed"
+                                className="w-full bg-slate-50 border-2 border-slate-200 rounded-[1.5rem] h-40 p-6 text-[14px] outline-none focus:border-primary/40 transition-all resize-none font-medium text-slate-600 placeholder:text-slate-300 leading-relaxed custom-scrollbar"
                                 placeholder="Detalla aquí la información importante para tus clientes..."
                                 required
                             />
                         </div>
                     </div>
 
-                    <div className="mt-10 flex gap-4">
+                    {/* Actions Row */}
+                    <div className="flex gap-4 pt-4">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 h-16 rounded-[1.25rem] bg-slate-50 border-2 border-[#595A5B] font-black text-[10px] uppercase tracking-widest text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all active:scale-95"
+                            className="flex-1 h-16 rounded-3xl bg-white border-2 border-slate-900 text-slate-900 font-black text-[11px] uppercase tracking-widest active:scale-95 transition-all shadow-sm"
                         >
                             Cerrar
                         </button>
                         <button
                             type="submit"
                             disabled={sending}
-                            className="flex-[1.8] bg-slate-900 text-white h-16 rounded-[1.25rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl shadow-slate-200 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3 hover:bg-slate-800"
+                            className="flex-[2] bg-[#1e2836] text-white h-16 rounded-3xl font-black text-[11px] uppercase tracking-[0.4em] shadow-xl shadow-[#1e2836]/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
                         >
                             {sending ? (
-                                <span className="animate-spin material-symbols-outlined !text-xl">refresh</span>
+                                <div className="animate-spin size-5 border-2 border-white/30 border-t-white rounded-full"></div>
                             ) : (
-                                <span className="material-symbols-outlined !text-xl font-black">send</span>
+                                <span className="material-symbols-outlined !text-xl">send</span>
                             )}
                             {sending ? 'ENVIANDO...' : 'ENVIAR AHORA'}
                         </button>

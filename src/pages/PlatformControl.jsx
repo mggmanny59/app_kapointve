@@ -14,11 +14,15 @@ const PlatformControl = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [confirmModal, setConfirmModal] = useState({ show: false, biz: null, type: null });
     const [selectedBiz, setSelectedBiz] = useState(null); // New state for detailed view
+    const [editData, setEditData] = useState({}); // State for editing values
+    const [isSaving, setIsSaving] = useState(false);
     const [showLogs, setShowLogs] = useState(false);
     const [auditLogs, setAuditLogs] = useState([]);
     const [loadingLogs, setLoadingLogs] = useState(false);
     const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
     const [pushTarget, setPushTarget] = useState({ businessId: null, name: 'Global' });
+    const [pendingPayments, setPendingPayments] = useState([]);
+    const [paymentModal, setPaymentModal] = useState({ show: false, payment: null, daysToAdd: 30, plan: 'KPOINT PLUS' });
     const { showNotification } = useNotification();
     const navigate = useNavigate();
 
@@ -76,9 +80,59 @@ const PlatformControl = () => {
         }
     };
 
+    const fetchPendingPayments = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('subscription_payments')
+                .select('*, businesses(name, rif, subscription_expiry)')
+                .eq('status', 'PENDING')
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            setPendingPayments(data || []);
+        } catch (err) {
+            console.error('Error fetching payments:', err);
+        }
+    };
+
     useEffect(() => {
         fetchBusinesses();
+        fetchPendingPayments();
     }, []);
+
+    const handleEditChange = (e) => {
+        const { name, value } = e.target;
+        setEditData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const updateBusinessDetails = async () => {
+        try {
+            setIsSaving(true);
+            const { error } = await supabase
+                .from('businesses')
+                .update({
+                    name: editData.name,
+                    rif: editData.rif,
+                    business_code: editData.business_code,
+                    address: editData.address,
+                    points_per_dollar: parseInt(editData.points_per_dollar),
+                    currency_symbol: editData.currency_symbol,
+                    subscription_expiry: editData.subscription_expiry ? new Date(editData.subscription_expiry).toISOString() : null,
+                    subscription_plan: editData.subscription_plan
+                })
+                .eq('id', selectedBiz.id);
+
+            if (error) throw error;
+            showNotification('success', 'Éxito', 'Configuración del nodo actualizada.');
+            fetchBusinesses();
+            // Refresh local selectedBiz to reflect changes if staying in detail view
+            setSelectedBiz({ ...selectedBiz, ...editData });
+        } catch (err) {
+            console.error('Error updating business:', err);
+            showNotification('error', 'Error', 'No se pudieron guardar los cambios.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     const updateStatus = async (id, updates) => {
         try {
@@ -94,6 +148,46 @@ const PlatformControl = () => {
             fetchBusinesses();
         } catch (err) {
             showNotification('error', 'Error', 'No se pudo actualizar el estado.');
+        }
+    };
+
+    const handleProcessPayment = async (status) => {
+        try {
+            const paymentId = paymentModal.payment.id;
+            const businessId = paymentModal.payment.business_id;
+
+            // Actualizar estado del pago
+            const { error: paymentError } = await supabase
+                .from('subscription_payments')
+                .update({ status })
+                .eq('id', paymentId);
+            if (paymentError) throw paymentError;
+
+            // Si es aprobado, extender la suscripción del negocio
+            if (status === 'APPROVED') {
+                const b = paymentModal.payment.businesses;
+                const currentDate = b?.subscription_expiry ? new Date(b.subscription_expiry) : new Date();
+                const newExpiry = new Date(Math.max(currentDate.getTime(), new Date().getTime()));
+                newExpiry.setDate(newExpiry.getDate() + parseInt(paymentModal.daysToAdd));
+
+                const { error: bizError } = await supabase
+                    .from('businesses')
+                    .update({
+                        subscription_expiry: newExpiry.toISOString(),
+                        subscription_plan: paymentModal.plan,
+                        is_active: true
+                    })
+                    .eq('id', businessId);
+                if (bizError) throw bizError;
+            }
+
+            showNotification('success', 'Pago Procesado', `El pago fue ${status === 'APPROVED' ? 'Aprobado' : 'Rechazado'}.`);
+            setPaymentModal({ show: false, payment: null, daysToAdd: 30, plan: 'KPOINT PLUS' });
+            fetchPendingPayments();
+            fetchBusinesses();
+        } catch (error) {
+            console.error('Error processing payment:', error);
+            showNotification('error', 'Error', 'Ocurrió un error al procesar el pago.');
         }
     };
 
@@ -113,195 +207,238 @@ const PlatformControl = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-display pb-32 antialiased">
-            {/* Header */}
-            <div className="p-8 bg-white border-b border-[#595A5B] shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
-                <div className="flex justify-between items-center mb-10 relative z-10">
-                    <div>
-                        <h1 className="text-3xl font-black tracking-tighter">
-                            <span className="text-primary italic">K</span>
-                            <span className="text-slate-900">Pannel</span>
+        <div className="min-h-screen bg-[#f3f4f6] text-slate-900 font-display pb-32 antialiased">
+            {/* Dark Header Area */}
+            <div className="bg-[#1e2836] rounded-b-[2rem] px-6 pt-10 pb-8 relative z-10 shadow-lg">
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2">
+                        <h1 className="flex items-center text-xl font-bold text-white tracking-tight leading-none gap-1">
+                            <span className="text-primary italic font-black">KP</span>
+                            KPannel
                         </h1>
-                        <p className="text-[10px] text-slate-400 font-black tracking-[0.3em] uppercase mt-1">Plataforma de Control Maestro</p>
-                    </div>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => {
-                                setPushTarget({ businessId: null, name: 'Global' });
-                                setIsNotificationModalOpen(true);
-                            }}
-                            className="size-12 rounded-2xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center active:scale-90 transition-all text-primary hover:bg-primary hover:text-white shadow-sm"
-                            title="Comunicado Global"
-                        >
-                            <span className="material-symbols-outlined font-black">campaign</span>
-                        </button>
-                        <button
-                            onClick={handleLogout}
-                            className="size-12 rounded-2xl bg-slate-50 border-2 border-[#595A5B] flex items-center justify-center active:scale-90 transition-all text-slate-400 hover:text-red-500 hover:border-red-100 hover:bg-red-50 shadow-sm"
-                            title="Cerrar Panel"
-                        >
-                            <span className="material-symbols-outlined font-black">logout</span>
-                        </button>
                     </div>
                 </div>
+                
+                <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">Super Admin Panel</h2>
 
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-4 relative z-10">
-                    <div className="bg-white border-2 border-[#595A5B] rounded-[2rem] p-6 text-center shadow-sm hover:shadow-md transition-all">
-                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] mb-2">Activos</p>
-                        <p className="text-4xl font-black text-primary tabular-nums">{stats.active}</p>
+                <div className="flex items-center gap-3">
+                    <div className="relative flex-1">
+                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 !text-[20px] font-black">search</span>
+                        <input
+                            type="text"
+                            placeholder="Search businesses..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full bg-white h-12 pl-12 pr-4 rounded-xl text-[15px] font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm placeholder:text-slate-400"
+                        />
                     </div>
-                    <div className="bg-white border-2 border-[#595A5B] rounded-[2rem] p-6 text-center shadow-sm hover:shadow-md border-b-4 border-b-warning transition-all">
-                        <p className="text-[9px] text-warning font-black uppercase tracking-[0.2em] mb-2">Pendientes</p>
-                        <p className="text-4xl font-black text-warning tabular-nums">{stats.pending}</p>
+                    <button
+                        onClick={handleLogout}
+                        className="size-12 rounded-xl bg-[#2e3b4e] border border-white/5 flex items-center justify-center text-white relative active:scale-95 transition-all"
+                    >
+                        <span className="material-symbols-outlined !text-xl">notifications</span>
+                        {(pendingRequests.length > 0 || pendingPayments.length > 0) && (
+                            <span className="absolute -top-1.5 -right-1.5 size-5 bg-[#64748b] text-[10px] font-bold text-white flex items-center justify-center rounded-full border-2 border-[#1e2836]">
+                                {pendingRequests.length + pendingPayments.length}
+                            </span>
+                        )}
+                    </button>
+                </div>
+            </div>
+
+            {/* Stats Cards Row */}
+            <div className="px-6 -mt-4 relative z-20 overflow-x-auto pb-4 custom-scrollbar-mini">
+                <div className="flex gap-4 min-w-[max-content]">
+                    {/* Active Card */}
+                    <div className="bg-white rounded-[1.2rem] p-4 w-36 shadow-sm border border-slate-100 flex flex-col">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="size-10 rounded-xl bg-[#ff8228] flex items-center justify-center text-white shadow-sm shrink-0">
+                                <span className="material-symbols-outlined !text-[20px]">groups</span>
+                            </div>
+                            <svg className="w-12 h-6 text-[#ff8228] opacity-50" viewBox="0 0 40 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2 18 L12 8 L20 14 L38 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                        </div>
+                        <div className="flex items-end gap-2 mt-4 mb-1">
+                            <h3 className="text-[28px] font-bold text-slate-900 leading-none">{stats.active}</h3>
+                            <span className="bg-green-100 text-green-700 text-[9px] font-bold px-1.5 py-0.5 rounded-md mb-1">+5%</span>
+                        </div>
+                        <p className="text-[10px] text-slate-500 font-medium whitespace-nowrap">Active Businesses</p>
                     </div>
-                    <div className="bg-white border-2 border-[#595A5B] rounded-[2rem] p-6 text-center shadow-sm hover:shadow-md transition-all">
-                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] mb-2">Bloqueos</p>
-                        <p className="text-4xl font-black text-red-500 tabular-nums">{stats.blocked}</p>
+
+                    {/* Pending Card */}
+                    <div className="bg-white rounded-[1.2rem] p-4 w-36 shadow-sm border border-slate-100 flex flex-col">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="size-10 rounded-xl bg-[#f5b027] flex items-center justify-center text-white shadow-sm shrink-0">
+                                <span className="material-symbols-outlined !text-[20px]">schedule</span>
+                            </div>
+                            <svg className="w-12 h-6 text-[#f5b027] opacity-50" viewBox="0 0 40 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2 14 L10 16 L18 8 L28 14 L38 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                        </div>
+                        <div className="flex items-end gap-2 mt-4 mb-1">
+                            <h3 className="text-[28px] font-bold text-slate-900 leading-none">{stats.pending}</h3>
+                        </div>
+                        <p className="text-[10px] text-slate-500 font-medium whitespace-nowrap">Pending Businesses</p>
+                    </div>
+
+                    {/* Blocked Card */}
+                    <div className="bg-white rounded-[1.2rem] p-4 w-36 shadow-sm border border-slate-100 flex flex-col">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="size-10 rounded-xl bg-[#ef4444] flex items-center justify-center text-white shadow-sm shrink-0">
+                                <span className="material-symbols-outlined !text-[20px]">block</span>
+                            </div>
+                            <svg className="w-12 h-6 text-[#ef4444] opacity-50" viewBox="0 0 40 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2 6 L12 12 L22 4 L38 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                        </div>
+                        <div className="flex items-end gap-2 mt-4 mb-1">
+                            <h3 className="text-[28px] font-bold text-slate-900 leading-none">{stats.blocked}</h3>
+                        </div>
+                        <p className="text-[10px] text-slate-500 font-medium whitespace-nowrap">Blocked Businesses</p>
                     </div>
                 </div>
             </div>
 
-            {/* Pending Requests Section */}
-            {pendingRequests.length > 0 && (
-                <div className="px-8 mt-10">
-                    <div className="flex items-center gap-3 mb-6 px-2">
-                        <span className="size-2 rounded-full bg-warning animate-pulse ring-4 ring-warning/20"></span>
-                        <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Solicitudes Nuevas</h2>
-                    </div>
-
-                    <div className="space-y-4">
-                        {pendingRequests.map(biz => (
-                            <div key={biz.id} className="bg-white border-2 border-[#595A5B] p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 animate-in slide-in-from-right duration-500 border-l-8 border-l-warning">
-                                <div className="flex justify-between items-start mb-6">
-                                    <div className="space-y-1">
-                                        <h3 className="text-xl font-black text-slate-900 leading-tight tracking-tight">{biz.name}</h3>
-                                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">RIF: {biz.rif || 'NO DEFINIDO'}</p>
-                                    </div>
-                                    <span className="px-4 py-1.5 bg-warning/10 text-warning text-[9px] font-black rounded-full uppercase tracking-widest border border-warning/20">
-                                        REVISIÓN
-                                    </span>
-                                </div>
-
-                                <div className="flex gap-3">
-                                    <button
-                                        onClick={() => setConfirmModal({ show: true, biz, type: 'APPROVE' })}
-                                        className="flex-1 bg-primary text-white h-14 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-3"
-                                    >
-                                        <span className="material-symbols-outlined !text-xl font-black">verified</span>
-                                        Aprobar Comercio
-                                    </button>
-                                    <button
-                                        onClick={() => setConfirmModal({ show: true, biz, type: 'REJECT' })}
-                                        className="size-14 bg-white border-2 border-[#595A5B] text-slate-400 rounded-2xl flex items-center justify-center active:scale-95 hover:text-red-500 hover:border-red-100 hover:bg-red-50 transition-all shadow-sm"
-                                    >
-                                        <span className="material-symbols-outlined font-black">block</span>
-                                    </button>
+            {/* Pendientes - Only visible if there are pending items, modeled like the alert boxes */}
+            {(pendingRequests.length > 0 || pendingPayments.length > 0) && (
+                <div className="px-5 mt-2 space-y-3 mb-6">
+                    {pendingRequests.map(biz => (
+                        <div key={biz.id} className="bg-white border-l-4 border-l-[#f5b027] rounded-[1rem] p-3 flex items-center justify-between shadow-sm">
+                            <div className="flex items-center gap-3">
+                                <div className="leading-tight">
+                                    <h3 className="text-sm font-bold text-slate-900 truncate">{biz.name}</h3>
+                                    <span className="text-[11px] text-slate-500 font-medium">New registration request</span>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Management Section */}
-            <div className="px-8 mt-12 pb-10">
-                <div className="flex justify-between items-center mb-8 px-2">
-                    <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Gestionar Directorio</h2>
-                    <span className="text-[10px] font-black text-slate-300 bg-white border-2 border-[#595A5B] px-3 py-1 rounded-full">{filteredBusinesses.length} Comercios</span>
-                </div>
-
-                {/* Search Bar */}
-                <div className="relative mb-8">
-                    <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 font-black">search</span>
-                    <input
-                        type="text"
-                        placeholder="Buscar por nombre o RIF..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-white border-2 border-[#595A5B] h-16 pl-14 pr-8 rounded-[1.5rem] text-sm font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/40 transition-all shadow-sm"
-                    />
-                </div>
-
-                <div className="space-y-4">
-                    {filteredBusinesses.map(biz => (
-                        <div
-                            key={biz.id}
-                            onClick={() => setSelectedBiz(biz)}
-                            className="bg-white p-5 rounded-[2rem] border-2 border-[#595A5B] flex items-center justify-between group hover:border-primary/20 hover:shadow-lg hover:shadow-slate-200/50 transition-all shadow-sm cursor-pointer"
-                        >
-                            <div className="flex items-center gap-5 min-w-0">
-                                <div className={`size-14 rounded-3xl flex items-center justify-center ${biz.is_active ? 'bg-primary/5 text-primary' : 'bg-red-50/5 text-red-500'} border-2 border-[#595A5B] shrink-0 shadow-inner group-hover:scale-110 transition-transform`}>
-                                    <span className="material-symbols-outlined !text-3xl font-black">
-                                        {biz.is_active ? 'store' : 'storefront'}
-                                    </span>
-                                </div>
-                                <div className="min-w-0 space-y-1">
-                                    <h4 className="font-black text-slate-900 text-[15px] truncate tracking-tight">{biz.name}</h4>
-                                    <div className="flex items-center gap-3">
-                                        {!biz.is_active ? (
-                                            <span className="text-[8px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-red-100">
-                                                Bloqueado
-                                            </span>
-                                        ) : biz.registration_status === 'PENDING' ? (
-                                            <span className="text-[8px] bg-warning/10 text-warning px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-warning/10">
-                                                Pendiente
-                                            </span>
-                                        ) : (
-                                            <span className="text-[8px] bg-primary/5 text-primary px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-primary-light/10">
-                                                Online
-                                            </span>
-                                        )}
-                                        <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">RIF: {biz.rif || 'N/A'}</span>
-                                    </div>
-                                </div>
+                            <div className="flex gap-2">
+                                <button onClick={() => setConfirmModal({ show: true, biz, type: 'APPROVE' })} className="size-9 rounded-lg bg-[#f5b027] text-white flex items-center justify-center hover:bg-amber-500 active:scale-90 transition-all shadow-sm">
+                                    <span className="material-symbols-outlined !text-sm">check</span>
+                                </button>
+                                <button onClick={() => setConfirmModal({ show: true, biz, type: 'REJECT' })} className="size-9 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 active:scale-90 transition-all">
+                                    <span className="material-symbols-outlined !text-sm">close</span>
+                                </button>
                             </div>
+                        </div>
+                    ))}
 
+                    {pendingPayments.map(payment => (
+                        <div key={payment.id} className="bg-white border-l-4 border-l-green-500 rounded-[1rem] p-3 flex items-center justify-between shadow-sm">
+                            <div className="leading-tight flex-1">
+                                <h3 className="text-sm font-bold text-slate-900 truncate">{payment.businesses?.name}</h3>
+                                <span className="text-[11px] text-slate-500 font-medium">Payment verification: ${payment.amount_usd}</span>
+                            </div>
                             <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setPushTarget({ businessId: biz.id, name: biz.name });
-                                    setIsNotificationModalOpen(true);
-                                }}
-                                className="size-11 rounded-full bg-primary/5 text-primary hover:bg-primary hover:text-white border border-primary/20 flex items-center justify-center transition-all active:scale-90 shadow-sm"
-                                title="Enviar Aviso"
+                                onClick={() => setPaymentModal({ show: true, payment, daysToAdd: 30, plan: 'KPOINT PLUS' })}
+                                className="px-4 h-9 rounded-lg bg-green-500 text-white font-bold text-[11px] uppercase tracking-wider hover:bg-green-600 active:scale-95 transition-all shadow-sm"
                             >
-                                <span className="material-symbols-outlined !text-lg font-black">campaign</span>
-                            </button>
-
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation(); // Prevent opening details modal
-                                    const newStatus = !biz.is_active;
-                                    if (newStatus) {
-                                        setConfirmModal({
-                                            show: true,
-                                            biz,
-                                            type: 'APPROVE',
-                                            customMessage: `¿Reactivar el acceso de "${biz.name}"?`
-                                        });
-                                    } else {
-                                        setConfirmModal({
-                                            show: true,
-                                            biz,
-                                            type: 'REJECT',
-                                            customMessage: `¿Bloquear el acceso para "${biz.name}"? Sus operaciones quedarán suspendidas.`
-                                        });
-                                    }
-                                }}
-                                className={`size-11 rounded-full flex items-center justify-center transition-all active:scale-[0.85] shadow-sm ${biz.is_active
-                                    ? 'bg-red-50 text-red-500 hover:bg-red-500 hover:text-white border border-red-100'
-                                    : 'bg-primary/5 text-primary hover:bg-primary hover:text-white border border-primary/20'
-                                    }`}
-                                title={biz.is_active ? 'Bloquear' : 'Desbloquear'}
-                            >
-                                <span className="material-symbols-outlined !text-lg font-black">
-                                    {biz.is_active ? 'block' : 'lock_open'}
-                                </span>
+                                Process
                             </button>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Business List */}
+            <div className="px-5 mt-2 pb-10">
+                <h2 className="text-[17px] font-bold text-slate-900 tracking-[-0.01em] mb-4">
+                    Business Overview ({filteredBusinesses.length} Total)
+                </h2>
+
+                <div className="flex justify-between items-center text-[12px] font-medium text-slate-500 px-3 mb-3">
+                    <span className="flex-1">Business Name</span>
+                    <span className="w-[72px] text-left">Plan</span>
+                    <span className="w-24 text-center">Quick Actions</span>
+                </div>
+
+                <div className="space-y-3">
+                    {filteredBusinesses.map((biz) => (
+                        <div
+                            key={biz.id}
+                            onClick={() => {
+                                setSelectedBiz(biz);
+                                setEditData({
+                                    name: biz.name || '',
+                                    rif: biz.rif || '',
+                                    business_code: biz.business_code || '',
+                                    address: biz.address || '',
+                                    points_per_dollar: biz.points_per_dollar || 10,
+                                    currency_symbol: biz.currency_symbol || '$',
+                                    subscription_expiry: biz.subscription_expiry ? biz.subscription_expiry.split('T')[0] : '',
+                                    subscription_plan: biz.subscription_plan || 'FREE'
+                                });
+                            }}
+                            className="bg-white p-3.5 rounded-[1.2rem] flex items-center justify-between cursor-pointer shadow-sm border border-slate-100 active:scale-[0.98] transition-all"
+                        >
+                            <div className="flex items-center gap-3 flex-1 min-w-0 pr-2">
+                                <div className="size-10 rounded-full bg-slate-100 border border-slate-100 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                                    {biz.logo_url ? (
+                                        <img src={biz.logo_url} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="material-symbols-outlined text-slate-400 !text-xl">store</span>
+                                    )}
+                                </div>
+                                <div className="min-w-0 leading-tight">
+                                    <h4 className="font-bold text-slate-900 text-[14px] truncate">{biz.name}</h4>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                        <div className="size-4 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+                                            <span className="material-symbols-outlined text-slate-500 !text-[12px]">person</span>
+                                        </div>
+                                        <p className="text-[11.5px] text-slate-600 truncate font-medium">{biz.profiles?.full_name?.split(' ')[0] || 'Admin'}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="w-[72px] shrink-0 flex items-center justify-start">
+                                <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-slate-700">
+                                    <span className={`size-2 rounded-full ${!biz.is_active ? 'bg-slate-300' : 'bg-green-500'}`}></span>
+                                    {biz.is_active ? 'Online' : 'Offline'}
+                                </span>
+                            </div>
+
+                            <div className="w-24 shrink-0 flex items-center justify-end gap-2 pr-1">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setPushTarget({ 
+                                            businessId: biz.id, 
+                                            name: biz.name,
+                                            ownerClient: {
+                                                profile_id: biz.owner_id,
+                                                full_name: biz.name // Usamos el nombre del comercio u owner
+                                            }
+                                        });
+                                        setIsNotificationModalOpen(true);
+                                    }}
+                                    className="size-9 rounded-xl bg-[#ff8228] text-white flex items-center justify-center active:scale-90 transition-all shadow-sm shadow-[#ff8228]/20"
+                                >
+                                    <span className="material-symbols-outlined !text-[17px] !font-light rounded-full border border-white p-0.5">notifications</span>
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const newStatus = !biz.is_active;
+                                        setConfirmModal({
+                                            show: true,
+                                            biz,
+                                            type: newStatus ? 'APPROVE' : 'REJECT',
+                                            customMessage: newStatus ? `¿Reactivar el nodo "${biz.name}"?` : `¿Bloquear nodo "${biz.name}"?`
+                                        });
+                                    }}
+                                    className="size-9 rounded-xl bg-[#ff8228] text-white flex items-center justify-center active:scale-90 transition-all shadow-sm shadow-[#ff8228]/20"
+                                >
+                                    <span className="material-symbols-outlined !text-[17px] !font-light rounded-full border border-white p-0.5">
+                                        {biz.is_active ? 'block' : 'lock_open'}
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                    {filteredBusinesses.length === 0 && (
+                        <div className="text-center py-6 text-sm text-slate-500 font-medium">
+                            No businesses found.
+                        </div>
+                    )}
                 </div>
             </div>
             {/* Admin Navigation Bar */}
@@ -393,235 +530,243 @@ const PlatformControl = () => {
                         </div>
                     </div>
 
-                    {/* Contenido del Dashboard Técnico */}
-                    <div className="flex-1 bg-slate-50 px-4 md:px-8 pb-32 overflow-y-auto -mt-10 relative z-10 custom-scrollbar rounded-t-[2.5rem] border-t border-white/40 shadow-[0_-20px_50px_-20px_rgba(0,0,0,0.1)]">
-                        <div className="max-w-5xl mx-auto pt-12">
-                            {/* Title Section Compacted */}
-                            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6 border-b-2 border-slate-100 pb-6">
-                                <div className="space-y-2 flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                        <div className={`h-2.5 w-2.5 rounded-full ${selectedBiz.is_active ? 'bg-primary shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'} animate-pulse`}></div>
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">
-                                            NODE: {selectedBiz.is_active ? 'ACTIVE' : 'LOCKED'}
-                                        </p>
-                                    </div>
-                                    <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter leading-tight truncate px-0.5" title={selectedBiz.name}>
-                                        {selectedBiz.name}
-                                    </h2>
-
-                                    {/* UUID Highlighted Compact */}
-                                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border-2 border-[#595A5B]/20 hover:border-[#595A5B]/60 transition-colors group/uuid">
-                                        <span className="material-symbols-outlined text-[12px] text-slate-400 group-hover/uuid:text-primary transition-colors">fingerprint</span>
-                                        <p className="text-[10px] font-black text-slate-500 font-mono tracking-tighter tabular-nums">
-                                            <span className="text-slate-300 mr-2 text-[8px] tracking-widest uppercase">UUID</span>
-                                            {selectedBiz.id}
-                                        </p>
-                                    </div>
+                    {/* Tech-Oriented Dashboard Content */}
+                    <div className="flex-1 bg-slate-50 px-4 md:px-6 pb-24 overflow-y-auto -mt-8 relative z-10 custom-scrollbar rounded-t-[2rem] border-t border-white/60 shadow-2xl">
+                        <div className="max-w-4xl mx-auto pt-8">
+                            
+                            {/* SECTION: SYSTEM_MANIFEST (Non-Editable Core Data) */}
+                            <div className="mb-6">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="text-[10px] font-black text-primary font-mono tracking-widest uppercase opacity-70">0x01 // SYSTEM_MANIFEST</span>
+                                    <div className="h-px flex-1 bg-slate-200"></div>
                                 </div>
-
-                                <div className="flex gap-3 shrink-0">
-                                    <div className="bg-white border-2 border-[#595A5B] px-4 py-3 rounded-xl shadow-sm min-w-[120px]">
-                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Registration</p>
-                                        <div className="flex items-center justify-between">
-                                            <p className="text-xl font-black text-primary tracking-tighter">{selectedBiz.registration_status}</p>
-                                            <span className="material-symbols-outlined text-primary-light/30 text-sm">verified</span>
+                                
+                                <div className="bg-white rounded-2xl border-2 border-slate-100 p-4 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-y-4 md:gap-x-6">
+                                    {/* UUID Field */}
+                                    <div className="md:col-span-2">
+                                        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 block">NODE_UID (READ_ONLY)</label>
+                                        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200 group/id">
+                                            <span className="material-symbols-outlined text-[14px] text-slate-400 group-hover/id:text-primary transition-colors">fingerprint</span>
+                                            <code className="text-[11px] font-mono font-bold text-slate-500 tracking-tighter truncate">
+                                                {selectedBiz.id}
+                                            </code>
                                         </div>
                                     </div>
-                                    <div className="bg-white border-2 border-[#595A5B] px-4 py-3 rounded-xl shadow-sm min-w-[120px]">
-                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Plan</p>
-                                        <div className="flex items-center justify-between">
-                                            <p className="text-xl font-black text-slate-900 tracking-tighter font-mono">{selectedBiz.subscription_plan || 'FREE'}</p>
-                                            <span className="material-symbols-outlined text-slate-200 text-sm">workspace_premium</span>
+
+                                    {/* Registration Status */}
+                                    <div>
+                                        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 block">AUTH_STATUS</label>
+                                        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
+                                            <div className={`h-2 w-2 rounded-full ${selectedBiz.is_active ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.3)]' : 'bg-red-500 animate-pulse'}`}></div>
+                                            <p className="text-[11px] font-black text-slate-900 font-mono tracking-tight uppercase">
+                                                {selectedBiz.registration_status} // {selectedBiz.is_active ? 'LIVE' : 'LOCKED'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Administrative Metadata */}
+                                    <div className="md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-3 pt-2 border-t border-slate-50">
+                                        <div>
+                                            <label className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">SYS_ENTRY_DATE</label>
+                                            <p className="text-[10px] font-mono font-bold text-slate-600 uppercase">
+                                                {new Date(selectedBiz.created_at).toLocaleDateString('es-VE')}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <label className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">AUTH_BY_NODE</label>
+                                            <p className="text-[10px] font-mono font-bold text-slate-600 uppercase truncate">
+                                                {selectedBiz.profiles?.full_name?.split(' ')[0] || 'KOS_ROOT'}
+                                            </p>
+                                        </div>
+                                        <div className="md:col-span-2">
+                                            <label className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">MGMT_UPLINK</label>
+                                            <p className="text-[10px] font-mono font-bold text-slate-600 truncate">
+                                                {selectedBiz.profiles?.email || 'OFFLINE'}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-                                {/* Left Column: Core Data */}
-                                <div className="lg:col-span-2 space-y-4">
-                                    {/* Primary Identifiers Grid */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        <div className="bg-white border shadow-sm rounded-xl p-4 border-slate-200">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">RIF / Tax ID</label>
-                                                <span className="material-symbols-outlined text-slate-300 text-sm">fingerprint</span>
-                                            </div>
-                                            <p className="text-base font-black text-slate-900 tracking-tight font-mono">{selectedBiz.rif || 'UNREGISTERED'}</p>
-                                        </div>
-                                        <div className="bg-white border shadow-sm rounded-xl p-4 border-slate-200">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Access Key</label>
-                                                <span className="material-symbols-outlined text-primary text-sm">key</span>
-                                            </div>
-                                            <p className="text-base font-black text-primary tracking-widest font-mono">{selectedBiz.business_code || '---'}</p>
-                                        </div>
+                            {/* SECTION: NODE_CONFIGURATION (Editable Data) */}
+                            <div className="mb-6">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="text-[10px] font-black text-[#ff6a00] font-mono tracking-widest uppercase opacity-70">0x02 // NODE_CONFIGURATION</span>
+                                    <div className="h-px flex-1 bg-slate-200"></div>
+                                </div>
+
+                                <div className="bg-white rounded-2xl border-2 border-slate-900/[0.08] p-5 shadow-inner gap-4 grid grid-cols-1 md:grid-cols-2">
+                                    {/* Business Name */}
+                                    <div className="md:col-span-2">
+                                        <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                                            <span className="size-1 bg-[#ff6a00] rounded-full"></span>
+                                            DISPLAY_LABEL
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={editData.name}
+                                            onChange={handleEditChange}
+                                            placeholder="NODE_NAME"
+                                            className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 font-black text-[15px] text-slate-900 focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all"
+                                        />
                                     </div>
 
-                                    {/* Location & Context */}
-                                    <div className="space-y-3">
-                                        <div className="bg-white border shadow-sm rounded-xl p-5 border-slate-200">
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <span className="material-symbols-outlined text-slate-400 text-sm">location_on</span>
-                                                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Physical Headquarters</label>
-                                            </div>
-                                            <p className="text-xs font-bold text-slate-700 leading-relaxed border-l-2 border-slate-100 pl-4 py-1">
-                                                {selectedBiz.address || 'No physical address provided.'}
-                                            </p>
-                                        </div>
+                                    {/* RIF / Tax ID */}
+                                    <div>
+                                        <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                                            <span className="size-1 bg-[#ff6a00] rounded-full"></span>
+                                            TAX_IDENTIFIER
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="rif"
+                                            value={editData.rif}
+                                            onChange={handleEditChange}
+                                            placeholder="V-00000000-0"
+                                            className="w-full h-11 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 font-mono font-bold text-[13px] text-slate-900 focus:outline-none focus:border-primary/40 transition-all font-mono"
+                                        />
+                                    </div>
 
-                                        {/* Affiliation Highlight */}
-                                        <div className="bg-[#1E293B] rounded-xl p-5 shadow-xl relative overflow-hidden">
-                                            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent"></div>
-                                            <div className="relative flex items-center justify-between">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="size-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-primary">
-                                                        <span className="material-symbols-outlined text-sm">analytics</span>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-[7px] font-black text-slate-500 uppercase tracking-[0.2em] mb-0.5">System Entry Date</p>
-                                                        <p className="text-base font-black text-white tracking-tight">
-                                                            {new Date(selectedBiz.created_at).toLocaleDateString('es-VE', {
-                                                                day: 'numeric', month: 'long', year: 'numeric'
-                                                            })}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-sm font-mono text-primary font-black">
-                                                        {new Date(selectedBiz.created_at).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit', hour12: true })}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    {/* Access Key */}
+                                    <div>
+                                        <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                                            <span className="size-1 bg-[#ff6a00] rounded-full"></span>
+                                            AUTH_KEY_UPLINK
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="business_code"
+                                            value={editData.business_code}
+                                            onChange={handleEditChange}
+                                            placeholder="SECURE_KEY"
+                                            className="w-full h-11 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 font-mono font-black text-[13px] text-primary tracking-widest focus:outline-none focus:border-primary/40 transition-all uppercase"
+                                        />
+                                    </div>
+
+                                    {/* Physical Headquarters */}
+                                    <div className="md:col-span-2">
+                                        <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                                            <span className="size-1 bg-[#ff6a00] rounded-full"></span>
+                                            GEOLOCATION_STRING
+                                        </label>
+                                        <textarea
+                                            name="address"
+                                            value={editData.address}
+                                            onChange={handleEditChange}
+                                            rows="2"
+                                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold text-[12px] text-slate-600 focus:outline-none focus:border-primary/40 transition-all resize-none"
+                                            placeholder="Enter physical address..."
+                                        />
                                     </div>
 
                                     {/* Fidelity Parameters */}
-                                    <div className="pt-1">
-                                        <div className="bg-slate-100/50 p-5 rounded-xl border border-slate-200 space-y-4">
-                                            <h3 className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Fidelity Parameters</h3>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="size-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 font-black">
-                                                        <span className="material-symbols-outlined !text-lg">stars</span>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Rate (Pts/$)</p>
-                                                        <p className="font-black text-slate-900 text-sm tabular-nums">{selectedBiz.points_per_dollar || 10}.00</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="size-8 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500 font-black">
-                                                        <span className="material-symbols-outlined !text-lg">payments</span>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Currency Base</p>
-                                                        <p className="font-black text-slate-900 text-sm">{selectedBiz.currency_symbol || '$'} USD</p>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200 flex items-center justify-between">
+                                        <div className="flex-1">
+                                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 block">EXCHANGE_RATE (PTS/$)</label>
+                                            <input
+                                                type="number"
+                                                name="points_per_dollar"
+                                                value={editData.points_per_dollar}
+                                                onChange={handleEditChange}
+                                                className="w-full bg-transparent font-mono font-black text-lg text-slate-900 focus:outline-none"
+                                            />
                                         </div>
-                                    </div>
-                                </div>
-
-                                {/* Right Column: Management & Meta */}
-                                <div className="space-y-4">
-                                    {/* Owner Information Card */}
-                                    <div className="bg-white border shadow-sm rounded-xl overflow-hidden border-slate-200">
-                                        <div className="bg-slate-900 p-3 border-b border-slate-800">
-                                            <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Administration Node</p>
-                                        </div>
-                                        <div className="p-5 space-y-4">
-                                            <div className="flex items-start gap-3">
-                                                <span className="material-symbols-outlined text-slate-300 text-sm">account_box</span>
-                                                <div className="min-w-0">
-                                                    <label className="text-[7px] font-black text-slate-400 uppercase block mb-0.5">Assigned Manager</label>
-                                                    <p className="font-black text-slate-900 text-[12px] break-words leading-tight uppercase">
-                                                        {selectedBiz.profiles?.full_name || 'UNDEFINED'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="h-px bg-slate-50"></div>
-                                            <div className="flex items-start gap-3">
-                                                <span className="material-symbols-outlined text-slate-300 text-sm">alternate_email</span>
-                                                <div className="min-w-0">
-                                                    <label className="text-[7px] font-black text-slate-400 uppercase block mb-0.5">Management Contact</label>
-                                                    <p className="font-bold text-slate-600 text-[11px] break-all leading-tight">
-                                                        {selectedBiz.profiles?.email || 'N/A'}
-                                                    </p>
-                                                </div>
-                                            </div>
+                                        <div className="w-16 h-px bg-slate-200 rotate-90 opacity-40"></div>
+                                        <div className="flex-1 pl-4 text-right">
+                                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 block">CURRENCY_BASE</label>
+                                            <select
+                                                name="currency_symbol"
+                                                value={editData.currency_symbol}
+                                                onChange={handleEditChange}
+                                                className="bg-transparent font-black text-lg text-slate-900 focus:outline-none text-right appearance-none"
+                                            >
+                                                <option value="$">$ (USD)</option>
+                                                <option value="€">€ (EUR)</option>
+                                                <option value="Bs">Bs (VES)</option>
+                                            </select>
                                         </div>
                                     </div>
 
-                                    {/* Subscription Management */}
-                                    <div className="bg-white border shadow-sm rounded-xl p-5 border-slate-200 space-y-4">
-                                        <div className="flex justify-between items-center">
-                                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Billing Cycle</label>
-                                            <span className="material-symbols-outlined text-slate-200 text-xs">published_with_changes</span>
+                                    {/* Subscription Management (Editable) */}
+                                    <div className="bg-[#1e2836] p-4 rounded-xl shadow-lg flex flex-col justify-between">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">BILLING_MANIFEST</label>
+                                            <select
+                                                name="subscription_plan"
+                                                value={editData.subscription_plan}
+                                                onChange={handleEditChange}
+                                                className="bg-primary/20 text-primary border border-primary/20 text-[10px] font-black rounded-lg px-2 py-1 focus:outline-none outline-none"
+                                            >
+                                                <option className="bg-[#1e2836]" value="FREE">FREE_PLAN</option>
+                                                <option className="bg-[#1e2836]" value="BASIC">BASIC_NODE</option>
+                                                <option className="bg-[#1e2836]" value="PLUS">KPOINT_PLUS</option>
+                                                <option className="bg-[#1e2836]" value="PRO">ENTERPRISE_PRO</option>
+                                            </select>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <div className={`size-2.5 rounded-full ${selectedBiz.subscription_expiry ? 'bg-primary' : 'bg-slate-300'}`}></div>
-                                            <p className="text-[11px] font-black text-slate-900">
-                                                {selectedBiz.subscription_expiry ? 'ANNUAL PREPAID' : 'LIFETIME ACCESS'}
-                                            </p>
+                                        <div className="pt-2">
+                                            <label className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 block">EXPIRATION_MARK (EDITABLE)</label>
+                                            <input
+                                                type="date"
+                                                name="subscription_expiry"
+                                                value={editData.subscription_expiry}
+                                                onChange={handleEditChange}
+                                                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 h-10 font-mono text-xs font-black text-white focus:outline-none focus:border-primary transition-all color-scheme-dark"
+                                            />
                                         </div>
-                                        {selectedBiz.subscription_expiry && (
-                                            <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                                                <p className="text-[7px] text-slate-400 uppercase font-black mb-0.5">Valid Until</p>
-                                                <p className="text-[10px] font-bold text-slate-700">
-                                                    {new Date(selectedBiz.subscription_expiry).toLocaleDateString()}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Action Shortcuts */}
-                                    <div className="grid grid-cols-2 gap-2 mt-4">
-                                        <button className="bg-slate-900 text-white h-10 rounded-lg flex items-center justify-center gap-2 text-[8px] font-black uppercase tracking-widest active:scale-95 transition-all">
-                                            <span className="material-symbols-outlined text-xs">edit</span> EDIT
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                fetchLogs(selectedBiz.id);
-                                                setShowLogs(true);
-                                            }}
-                                            className="bg-white border-2 border-slate-900 text-slate-900 h-10 rounded-lg flex items-center justify-center gap-2 text-[8px] font-black uppercase tracking-widest active:scale-95 transition-all"
-                                        >
-                                            <span className="material-symbols-outlined text-xs">print</span> LOGS
-                                        </button>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Technical Meta Section (Full Width) */}
+                            {/* SECTION: RAW_METADATA */}
                             {selectedBiz.registration_data && Object.keys(selectedBiz.registration_data).length > 0 && (
-                                <div className="mt-12">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="h-px flex-1 bg-slate-200"></div>
-                                        <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-100 rounded-full border border-slate-200">
-                                            <span className="material-symbols-outlined text-slate-400 text-xs">code</span>
-                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.4em]">RAW DATA COMPONENT</span>
-                                        </div>
-                                        <div className="h-px flex-1 bg-slate-200"></div>
+                                <div className="mb-8">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <span className="text-[10px] font-black text-slate-400 font-mono tracking-[0.3em] uppercase opacity-50">0x03 // CORE_BLOB_STRUCTURE</span>
+                                        <div className="h-px flex-1 bg-slate-100"></div>
                                     </div>
-                                    <div className="bg-[#0f172a] p-8 rounded-[2rem] shadow-2xl overflow-hidden relative group">
-                                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/40 via-transparent to-primary/40 opacity-30"></div>
-                                        <pre className="font-mono text-[10px] text-slate-400 leading-relaxed uppercase overflow-x-auto custom-scrollbar-mini">
-                                            {JSON.stringify(selectedBiz.registration_data, null, 4)}
+                                    <div className="bg-[#0f172a] p-5 rounded-2xl border border-white/5 relative group overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+                                        <pre className="font-mono text-[9px] text-slate-500 leading-normal uppercase whitespace-pre-wrap">
+                                            {JSON.stringify(selectedBiz.registration_data, null, 2)}
                                         </pre>
                                     </div>
                                 </div>
                             )}
 
-                            {/* Exit Action */}
-                            <div className="mt-16 text-center">
+                            {/* CORE ACTIONS */}
+                            <div className="flex flex-col md:flex-row gap-3 pt-6 border-t border-slate-100 pb-12">
+                                <button
+                                    onClick={updateBusinessDetails}
+                                    disabled={isSaving}
+                                    className="flex-1 h-14 bg-primary text-white rounded-[1.2rem] font-black text-[12px] uppercase tracking-[0.4em] shadow-xl shadow-primary/20 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+                                >
+                                    {isSaving ? (
+                                        <div className="animate-spin size-5 border-2 border-white/30 border-t-white rounded-full"></div>
+                                    ) : (
+                                        <>
+                                            <span className="material-symbols-outlined text-xl">commit</span>
+                                            DEPLOY_CHANGES
+                                        </>
+                                    )}
+                                </button>
+                                
+                                <button
+                                    onClick={() => {
+                                        fetchLogs(selectedBiz.id);
+                                        setShowLogs(true);
+                                    }}
+                                    className="h-14 md:w-32 bg-white border-2 border-slate-900 text-slate-900 rounded-[1.2rem] font-black text-[12px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm"
+                                >
+                                    <span className="material-symbols-outlined text-lg">terminal</span>
+                                    LOGS
+                                </button>
+                                
                                 <button
                                     onClick={() => setSelectedBiz(null)}
-                                    className="inline-flex items-center gap-4 px-12 h-16 bg-slate-900 text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.5em] active:scale-[0.98] transition-all shadow-2xl"
+                                    className="h-14 md:w-20 bg-slate-100 text-slate-400 rounded-[1.2rem] font-black text-[10px] flex items-center justify-center hover:text-slate-900 transition-all"
                                 >
-                                    <span className="material-symbols-outlined !text-xl">arrow_back</span>
-                                    DASHBOARD EXIT
+                                    <span className="material-symbols-outlined">close</span>
                                 </button>
                             </div>
                         </div>
@@ -729,7 +874,79 @@ const PlatformControl = () => {
                 isOpen={isNotificationModalOpen}
                 onClose={() => setIsNotificationModalOpen(false)}
                 businessId={pushTarget.businessId}
+                targetClient={pushTarget.ownerClient}
             />
+
+            {/* Payment Processing Modal */}
+            {paymentModal.show && (
+                <div className="fixed inset-0 z-[400] flex items-center justify-center px-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="relative w-full max-w-sm bg-white border-2 border-[#595A5B] rounded-[2.5rem] p-8 shadow-2xl animate-in zoom-in duration-300">
+                        <div className="size-20 rounded-[2rem] mx-auto mb-6 flex items-center justify-center border shadow-xl bg-green-500/10 border-green-500/20 text-green-600">
+                            <span className="material-symbols-outlined !text-4xl font-black">payments</span>
+                        </div>
+                        <h3 className="text-xl font-black text-center text-slate-900 mb-6 uppercase tracking-tight">Procesar Pago</h3>
+
+                        <div className="space-y-4 mb-8 bg-slate-50 p-4 rounded-2xl border-2 border-slate-100">
+                            <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-100">
+                                <span className="text-[10px] font-black text-slate-400 uppercase">Referencia</span>
+                                <span className="text-sm font-black text-slate-900">{paymentModal.payment?.reference_number}</span>
+                            </div>
+                            <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-100">
+                                <span className="text-[10px] font-black text-slate-400 uppercase">Verificación</span>
+                                <span className="text-sm font-black text-primary">${paymentModal.payment?.amount_usd} USD</span>
+                            </div>
+
+                            <div className="space-y-2 pt-2 border-t border-slate-200">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Días a Añadir</label>
+                                <select
+                                    value={paymentModal.daysToAdd}
+                                    onChange={(e) => setPaymentModal({ ...paymentModal, daysToAdd: e.target.value })}
+                                    className="w-full h-12 bg-white border border-slate-300 rounded-xl px-4 text-sm font-bold text-slate-900 outline-none focus:border-primary transition-colors focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/expand_more/default/24px.svg')] bg-no-repeat bg-[position:calc(100%-1rem)_center] pr-10"
+                                >
+                                    <option value={30}>1 Mes (30 días)</option>
+                                    <option value={90}>3 Meses (90 días)</option>
+                                    <option value={180}>6 Meses (180 días)</option>
+                                    <option value={365}>1 Año (365 días)</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-2 pt-2">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Plan a Asignar</label>
+                                <select
+                                    value={paymentModal.plan}
+                                    onChange={(e) => setPaymentModal({ ...paymentModal, plan: e.target.value })}
+                                    className="w-full h-12 bg-white border border-slate-300 rounded-xl px-4 text-sm font-bold text-slate-900 outline-none focus:border-primary transition-colors focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/expand_more/default/24px.svg')] bg-no-repeat bg-[position:calc(100%-1rem)_center] pr-10"
+                                >
+                                    <option value="KPOINT PLUS">KPOINT PLUS</option>
+                                    <option value="KPOINT PRO">KPOINT PRO</option>
+                                    <option value="KPOINT ENTERPRISE">KPOINT ENTERPRISE</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={() => handleProcessPayment('APPROVED')}
+                                className="w-full h-14 rounded-2xl bg-green-500 text-white font-black text-[11px] uppercase tracking-widest shadow-lg shadow-green-500/20 active:scale-95 transition-all outline-none"
+                            >
+                                APROBAR Y EXTENDER
+                            </button>
+                            <button
+                                onClick={() => handleProcessPayment('REJECTED')}
+                                className="w-full h-14 rounded-2xl bg-red-50 text-red-500 font-black text-[11px] uppercase tracking-widest hover:bg-red-500 hover:text-white border border-red-100 active:scale-95 transition-all outline-none"
+                            >
+                                RECHAZAR PAGO
+                            </button>
+                            <button
+                                onClick={() => setPaymentModal({ show: false, payment: null, daysToAdd: 30, plan: 'KPOINT PLUS' })}
+                                className="w-full h-12 rounded-full font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all outline-none"
+                            >
+                                CANCELAR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

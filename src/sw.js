@@ -35,7 +35,8 @@ self.addEventListener('push', (event) => {
 
     if (event.data) {
         try {
-            data = event.data.json();
+            const parsed = event.data.json();
+            data = { ...data, ...parsed };
             console.log('[SW] Datos del push (JSON):', data);
         } catch (e) {
             data.message = event.data.text();
@@ -44,7 +45,7 @@ self.addEventListener('push', (event) => {
     }
 
     const options = {
-        body: data.message,
+        body: data.message || data.body || 'Notificación',
         icon: '/pwa-192x192.png',
         badge: '/pwa-192x192.png',
         vibrate: [100, 50, 100],
