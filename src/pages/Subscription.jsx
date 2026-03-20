@@ -273,9 +273,14 @@ const Subscription = () => {
                 <section className="space-y-4">
                     <div className="space-y-1 ml-1">
                         <h2 className="text-xl font-black text-slate-900">Tu Plan de Suscripción</h2>
-                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                            (Próxima fecha de cobro: {business?.subscription_expiry ? new Date(business.subscription_expiry).toLocaleDateString('es-VE') : 'N/A'})
-                        </p>
+                        <div className="flex flex-col gap-2 mt-2">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Próxima fecha de cobro:</p>
+                            <div className="inline-flex">
+                                <span className="bg-green-500 text-white px-5 py-2 rounded-full text-base font-black shadow-lg shadow-green-500/20">
+                                    {business?.subscription_expiry ? new Date(business.subscription_expiry).toLocaleDateString('es-VE') : 'N/A'}
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 gap-4">
@@ -398,36 +403,65 @@ const Subscription = () => {
                     </div>
                 </section>
 
-                {/* Form Card: Darker gray background, orange border */}
-                <section id="payment-form" className="bg-slate-100 rounded-[32px] p-6 shadow-md border-2 border-primary space-y-6">
-                    <form onSubmit={handleReportPayment} className="space-y-5">
-                        <div className="space-y-2">
-                            <label className="text-xs font-black text-slate-700 ml-1 uppercase tracking-wider">Número de Referencia</label>
-                            <input 
-                                type="text"
-                                placeholder="12345678"
-                                className="w-full h-14 bg-white border border-slate-200 rounded-2xl px-5 font-bold text-slate-900 focus:outline-none focus:border-primary transition-all"
-                                value={formData.reference}
-                                onChange={(e) => setFormData({...formData, reference: e.target.value})}
-                            />
+                {/* Sección de Pago Condicional */}
+                {hasPendingPayment || (daysLeft > 3 && !user?.is_super_admin) ? (
+                    <div className="bg-white border-2 border-green-500 rounded-[32px] p-8 text-center space-y-4 shadow-xl animate-in fade-in zoom-in duration-500">
+                        <div className="size-20 rounded-[2.2rem] bg-green-500 text-white flex items-center justify-center mx-auto shadow-xl shadow-green-500/20">
+                            <span className="material-symbols-outlined !text-4xl font-black italic">verified_user</span>
                         </div>
-
                         <div className="space-y-2">
-                            <label className="text-xs font-black text-slate-700 ml-1 uppercase tracking-wider">Monto en Bs. (VES)</label>
-                             <input 
-                                type="text"
-                                placeholder="0.00"
-                                className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-5 font-bold text-slate-500 cursor-not-allowed opacity-80"
-                                value={formData.amountVes}
-                                readOnly
-                                disabled
-                            />
-                             {bcvRate > 0 && formData.amountVes && (
-                                <p className="text-[10px] text-slate-400 font-bold mt-1 ml-1 uppercase tracking-widest">
-                                    Aprox. ${(parseFloat(formData.amountVes) / bcvRate).toFixed(2)} USD (BCV: {bcvRate})
+                            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Estás al Día</h3>
+                            <p className="text-sm font-bold text-slate-400 leading-tight">No tienes deuda pendiente o pagos por realizar en este momento.</p>
+                        </div>
+                        
+                        <div className="h-px w-full bg-slate-100 my-4"></div>
+                        
+                        {hasPendingPayment ? (
+                            <div className="bg-amber-50 p-4 rounded-2xl flex items-center gap-3">
+                                <span className="material-symbols-outlined text-amber-500 animate-spin-slow">sync</span>
+                                <p className="text-[11px] font-black text-amber-700 text-left uppercase leading-tight">
+                                    VERIFICANDO TU RECIENTE REPORTE DE PAGO. ESPERA LA APROBACIÓN DEL SISTEMA.
                                 </p>
-                            )}
-                        </div>
+                            </div>
+                        ) : (
+                            <div className="bg-slate-50 p-4 rounded-2xl">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-relaxed">
+                                    EL FORMULARIO DE PAGO SE ACTIVARÁ CUANDO TU SUSCRIPCIÓN ESTÉ A 3 DÍAS DE VENCER.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    /* Form Card: Darker gray background, orange border */
+                    <section id="payment-form" className="bg-slate-100 rounded-[32px] p-6 shadow-md border-2 border-primary space-y-6">
+                        <form onSubmit={handleReportPayment} className="space-y-5">
+                            <div className="space-y-2">
+                                <label className="text-xs font-black text-slate-700 ml-1 uppercase tracking-wider">Número de Referencia</label>
+                                <input 
+                                    type="text"
+                                    placeholder="12345678"
+                                    className="w-full h-14 bg-white border border-slate-200 rounded-2xl px-5 font-bold text-slate-900 focus:outline-none focus:border-primary transition-all"
+                                    value={formData.reference}
+                                    onChange={(e) => setFormData({...formData, reference: e.target.value})}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-black text-slate-700 ml-1 uppercase tracking-wider">Monto en Bs. (VES)</label>
+                                 <input 
+                                    type="text"
+                                    placeholder="0.00"
+                                    className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-5 font-bold text-slate-500 cursor-not-allowed opacity-80"
+                                    value={formData.amountVes}
+                                    readOnly
+                                    disabled
+                                />
+                                 {bcvRate > 0 && formData.amountVes && (
+                                    <p className="text-[10px] text-slate-400 font-bold mt-1 ml-1 uppercase tracking-widest">
+                                        Aprox. ${(parseFloat(formData.amountVes) / bcvRate).toFixed(2)} USD (BCV: {bcvRate})
+                                    </p>
+                                )}
+                            </div>
 
                         <button 
                             type="submit"
@@ -437,7 +471,8 @@ const Subscription = () => {
                             {reporting ? 'Procesando...' : 'Reportar Pago'}
                         </button>
                     </form>
-                </section>
+                    </section>
+                )}
 
                 {/* Simplified History for Review */}
                 {paymentHistory.length > 0 && (
