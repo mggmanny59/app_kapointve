@@ -90,7 +90,7 @@ const PlatformControl = () => {
             // Fetch Pending
             const { data: pending, error: pError } = await supabase
                 .from('subscription_payments')
-                .select('*, businesses(name, rif, subscription_expiry, owner_id)')
+                .select('*, businesses(name, rif, created_at, subscription_expiry, owner_id)')
                 .eq('status', 'PENDING')
                 .order('created_at', { ascending: false });
             if (pError) throw pError;
@@ -99,7 +99,7 @@ const PlatformControl = () => {
             // Fetch All Recent
             const { data: all, error: aError } = await supabase
                 .from('subscription_payments')
-                .select('*, businesses(name)')
+                .select('*, businesses(name, created_at, subscription_expiry)')
                 .order('created_at', { ascending: false })
                 .limit(20);
             if (aError) throw aError;
@@ -1045,66 +1045,103 @@ const PlatformControl = () => {
             {/* Payment Processing Modal */}
             {paymentModal.show && (
                 <div className="fixed inset-0 z-[400] flex items-center justify-center px-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="relative w-full max-w-sm bg-white border-2 border-[#595A5B] rounded-[2.5rem] p-8 shadow-2xl animate-in zoom-in duration-300">
-                        <div className="size-20 rounded-[2rem] mx-auto mb-6 flex items-center justify-center border shadow-xl bg-green-500/10 border-green-500/20 text-green-600">
+                    <div className="relative w-full max-w-sm bg-white border-2 border-[#595A5B] rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in duration-300">
+                        {/* Status Icon */}
+                        <div className="size-20 rounded-[2rem] mx-auto mb-8 flex items-center justify-center border shadow-xl bg-green-500/10 border-green-500/20 text-green-600">
                             <span className="material-symbols-outlined !text-4xl font-black">payments</span>
                         </div>
-                        <h3 className="text-xl font-black text-center text-slate-900 mb-6 uppercase tracking-tight">Procesar Pago</h3>
+                        
+                        <h3 className="text-2xl font-black text-center text-slate-900 mb-2 uppercase tracking-tight">Procesar Pago</h3>
+                        <p className="text-xs text-center text-slate-400 font-bold mb-8 uppercase tracking-widest">{paymentModal.payment?.businesses?.name}</p>
 
-                        <div className="space-y-4 mb-8 bg-slate-50 p-4 rounded-2xl border-2 border-slate-100">
-                            <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-100">
-                                <span className="text-[10px] font-black text-slate-400 uppercase">Referencia</span>
-                                <span className="text-sm font-black text-slate-900">{paymentModal.payment?.reference_number}</span>
-                            </div>
-                            <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-100">
-                                <span className="text-[10px] font-black text-slate-400 uppercase">Verificación</span>
-                                <span className="text-sm font-black text-primary">${paymentModal.payment?.amount_usd} USD</span>
-                            </div>
-
-                            <div className="space-y-2 pt-2 border-t border-slate-200">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Días a Añadir</label>
-                                <select
-                                    value={paymentModal.daysToAdd}
-                                    onChange={(e) => setPaymentModal({ ...paymentModal, daysToAdd: e.target.value })}
-                                    className="w-full h-12 bg-white border border-slate-300 rounded-xl px-4 text-sm font-bold text-slate-900 outline-none focus:border-primary transition-colors focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/expand_more/default/24px.svg')] bg-no-repeat bg-[position:calc(100%-1rem)_center] pr-10"
-                                >
-                                    <option value={30}>1 Mes (30 días)</option>
-                                    <option value={90}>3 Meses (90 días)</option>
-                                    <option value={180}>6 Meses (180 días)</option>
-                                    <option value={365}>1 Año (365 días)</option>
-                                </select>
+                        <div className="space-y-6 mb-10">
+                            {/* Registration Info */}
+                            <div className="flex justify-between items-center px-1">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha de Registro</span>
+                                <span className="text-xs font-black text-slate-900">
+                                    {paymentModal.payment?.businesses?.created_at ? new Date(paymentModal.payment.businesses.created_at).toLocaleDateString('es-VE') : 'N/A'}
+                                </span>
                             </div>
 
-                            <div className="space-y-2 pt-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Plan a Asignar</label>
-                                <select
-                                    value={paymentModal.plan}
-                                    onChange={(e) => setPaymentModal({ ...paymentModal, plan: e.target.value })}
-                                    className="w-full h-12 bg-white border border-slate-300 rounded-xl px-4 text-sm font-bold text-slate-900 outline-none focus:border-primary transition-colors focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/expand_more/default/24px.svg')] bg-no-repeat bg-[position:calc(100%-1rem)_center] pr-10"
-                                >
-                                    <option value="KPOINT PLUS">KPOINT PLUS</option>
-                                    <option value="KPOINT PRO">KPOINT PRO</option>
-                                    <option value="KPOINT ENTERPRISE">KPOINT ENTERPRISE</option>
-                                </select>
+                            <div className="h-px w-full bg-slate-100"></div>
+
+                            {/* Payment Info */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Referencia</span>
+                                    <span className="text-sm font-black text-slate-900">#{paymentModal.payment?.reference_number}</span>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Monto Validado</span>
+                                    <span className="text-sm font-black text-primary">${paymentModal.payment?.amount_usd} USD</span>
+                                </div>
+                            </div>
+
+                            <div className="h-px w-full bg-slate-100"></div>
+
+                            {/* Options */}
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Añadir Tiempo</label>
+                                    <select
+                                        value={paymentModal.daysToAdd}
+                                        onChange={(e) => setPaymentModal({ ...paymentModal, daysToAdd: e.target.value })}
+                                        className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 text-sm font-black text-slate-900 outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all appearance-none bg-[url('https://api.iconify.design/material-symbols:expand-more.svg?color=%2394a3b8')] bg-no-repeat bg-[position:calc(100%-1rem)_center] pr-10"
+                                    >
+                                        <option value={30}>1 Mes (30 días)</option>
+                                        <option value={90}>3 Meses (90 días)</option>
+                                        <option value={180}>6 Meses (180 días)</option>
+                                        <option value={365}>1 Año (365 días)</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Plan de Acceso</label>
+                                    <select
+                                        value={paymentModal.plan}
+                                        onChange={(e) => setPaymentModal({ ...paymentModal, plan: e.target.value })}
+                                        className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 text-sm font-black text-slate-900 outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all appearance-none bg-[url('https://api.iconify.design/material-symbols:expand-more.svg?color=%2394a3b8')] bg-no-repeat bg-[position:calc(100%-1rem)_center] pr-10"
+                                    >
+                                        <option value="KPOINT PLUS">KPOINT PLUS</option>
+                                        <option value="KPOINT PRO">KPOINT PRO</option>
+                                        <option value="KPOINT ENTERPRISE">KPOINT ENTERPRISE</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="h-px w-full bg-slate-100"></div>
+
+                            {/* Expiration Extension */}
+                            <div className="flex justify-between items-center px-1">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Próxima Expiración</span>
+                                <span className="text-sm font-black text-green-600">
+                                    {(() => {
+                                        const b = paymentModal.payment?.businesses;
+                                        const currentDate = b?.subscription_expiry ? new Date(b.subscription_expiry) : new Date();
+                                        const newExpiry = new Date(Math.max(currentDate.getTime(), new Date().getTime()));
+                                        newExpiry.setDate(newExpiry.getDate() + parseInt(paymentModal.daysToAdd));
+                                        return newExpiry.toLocaleDateString('es-VE');
+                                    })()}
+                                </span>
                             </div>
                         </div>
 
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-4">
                             <button
                                 onClick={() => handleProcessPayment('APPROVED')}
-                                className="w-full h-14 rounded-2xl bg-green-500 text-white font-black text-[11px] uppercase tracking-widest shadow-lg shadow-green-500/20 active:scale-95 transition-all outline-none"
+                                className="w-full h-16 rounded-[2rem] bg-green-500 text-white font-black text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-green-500/20 active:scale-[0.97] transition-all outline-none"
                             >
                                 APROBAR Y EXTENDER
                             </button>
                             <button
                                 onClick={() => handleProcessPayment('REJECTED')}
-                                className="w-full h-14 rounded-2xl bg-red-50 text-red-500 font-black text-[11px] uppercase tracking-widest hover:bg-red-500 hover:text-white border border-red-100 active:scale-95 transition-all outline-none"
+                                className="w-full h-14 rounded-full font-black text-[11px] uppercase tracking-widest text-red-500 hover:bg-red-50 active:scale-95 transition-all outline-none"
                             >
                                 RECHAZAR PAGO
                             </button>
                             <button
                                 onClick={() => setPaymentModal({ show: false, payment: null, daysToAdd: 30, plan: 'KPOINT PLUS' })}
-                                className="w-full h-12 rounded-full font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all outline-none"
+                                className="w-full h-10 rounded-full font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all outline-none"
                             >
                                 CANCELAR
                             </button>
