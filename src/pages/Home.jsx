@@ -219,6 +219,14 @@ const Home = () => {
         }
     };
 
+    const [hideExpiryAlert, setHideExpiryAlert] = useState(sessionStorage.getItem('hideExpiryAlert') === 'true');
+
+    const handleManageSubscription = () => {
+        setHideExpiryAlert(true);
+        sessionStorage.setItem('hideExpiryAlert', 'true');
+        navigate('/subscription');
+    };
+
     const businessId = profile?.business_members?.[0]?.business_id || '00000000-0000-0000-0000-000000000001';
 
     const fetchDashboardData = async () => {
@@ -928,6 +936,7 @@ const Home = () => {
                 {user?.businessStatus?.days_left !== null && 
                  user?.businessStatus?.days_left <= 3 && 
                  user?.businessStatus?.days_left > 0 && 
+                 !hideExpiryAlert &&
                  !user.is_super_admin && (
                     <div className="bg-amber-50 border-2 border-amber-500 rounded-3xl p-6 flex flex-col gap-4 shadow-sm animate-in slide-in-from-top-4 duration-500">
                         <div className="flex items-start gap-4">
@@ -945,7 +954,7 @@ const Home = () => {
                             </div>
                         </div>
                         <button
-                            onClick={() => navigate('/subscription')}
+                            onClick={handleManageSubscription}
                             className="w-full h-11 rounded-2xl bg-amber-600 text-white text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-amber-200"
                         >
                             Gestionar Suscripción

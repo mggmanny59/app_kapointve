@@ -273,6 +273,9 @@ const Subscription = () => {
                 <section className="space-y-4">
                     <div className="space-y-1 ml-1">
                         <h2 className="text-xl font-black text-slate-900">Tu Plan de Suscripción</h2>
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            (Próxima fecha de cobro: {business?.subscription_expiry ? new Date(business.subscription_expiry).toLocaleDateString('es-VE') : 'N/A'})
+                        </p>
                     </div>
 
                     <div className="grid grid-cols-1 gap-4">
