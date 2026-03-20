@@ -1044,17 +1044,24 @@ const PlatformControl = () => {
 
             {/* Payment Processing Modal */}
             {paymentModal.show && (
-                <div className="fixed inset-0 z-[400] flex items-center justify-center px-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="relative w-full max-w-sm bg-white border-2 border-[#595A5B] rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in duration-300">
+                <div className="fixed inset-0 z-[400] bg-white animate-in slide-in-from-bottom duration-500 overflow-y-auto">
+                    <div className="min-h-screen px-6 py-10 flex flex-col max-w-sm mx-auto">
+                        <button 
+                            onClick={() => setPaymentModal({ show: false, payment: null, daysToAdd: 30, plan: 'KPOINT PLUS' })}
+                            className="absolute top-6 right-6 size-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 active:scale-90 transition-transform"
+                        >
+                            <span className="material-symbols-outlined">close</span>
+                        </button>
+
                         {/* Status Icon */}
-                        <div className="size-20 rounded-[2rem] mx-auto mb-8 flex items-center justify-center border shadow-xl bg-green-500/10 border-green-500/20 text-green-600">
+                        <div className="size-20 rounded-[2rem] mx-auto mb-6 flex items-center justify-center border shadow-xl bg-green-500/10 border-green-500/20 text-green-600 shrink-0">
                             <span className="material-symbols-outlined !text-4xl font-black">payments</span>
                         </div>
                         
-                        <h3 className="text-2xl font-black text-center text-slate-900 mb-2 uppercase tracking-tight">Procesar Pago</h3>
-                        <p className="text-xs text-center text-slate-400 font-bold mb-8 uppercase tracking-widest">{paymentModal.payment?.businesses?.name}</p>
+                        <h3 className="text-2xl font-black text-center text-slate-900 mb-1 uppercase tracking-tight">Procesar Pago</h3>
+                        <p className="text-[10px] text-center text-slate-400 font-bold mb-6 uppercase tracking-widest leading-tight">{paymentModal.payment?.businesses?.name}</p>
 
-                        <div className="space-y-6 mb-10">
+                        <div className="space-y-4 mb-8">
                             {/* Registration Info */}
                             <div className="flex justify-between items-center px-1">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha de Registro</span>
@@ -1068,11 +1075,11 @@ const PlatformControl = () => {
                             {/* Payment Info */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Referencia</span>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Referencia</span>
                                     <span className="text-sm font-black text-slate-900">#{paymentModal.payment?.reference_number}</span>
                                 </div>
                                 <div className="text-right">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Monto Validado</span>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Monto Validado</span>
                                     <span className="text-sm font-black text-primary">${paymentModal.payment?.amount_usd} USD</span>
                                 </div>
                             </div>
@@ -1080,13 +1087,13 @@ const PlatformControl = () => {
                             <div className="h-px w-full bg-slate-100"></div>
 
                             {/* Options */}
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Añadir Tiempo</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5 px-1">Añadir Tiempo</label>
                                     <select
                                         value={paymentModal.daysToAdd}
                                         onChange={(e) => setPaymentModal({ ...paymentModal, daysToAdd: e.target.value })}
-                                        className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 text-sm font-black text-slate-900 outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all appearance-none bg-[url('https://api.iconify.design/material-symbols:expand-more.svg?color=%2394a3b8')] bg-no-repeat bg-[position:calc(100%-1rem)_center] pr-10"
+                                        className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 text-sm font-black text-slate-900 outline-none focus:border-primary/40 transition-all appearance-none bg-[url('https://api.iconify.design/material-symbols:expand-more.svg?color=%2394a3b8')] bg-no-repeat bg-[position:calc(100%-1rem)_center] pr-10"
                                     >
                                         <option value={30}>1 Mes (30 días)</option>
                                         <option value={90}>3 Meses (90 días)</option>
@@ -1096,11 +1103,11 @@ const PlatformControl = () => {
                                 </div>
 
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Plan de Acceso</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5 px-1">Plan de Acceso</label>
                                     <select
                                         value={paymentModal.plan}
                                         onChange={(e) => setPaymentModal({ ...paymentModal, plan: e.target.value })}
-                                        className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 text-sm font-black text-slate-900 outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all appearance-none bg-[url('https://api.iconify.design/material-symbols:expand-more.svg?color=%2394a3b8')] bg-no-repeat bg-[position:calc(100%-1rem)_center] pr-10"
+                                        className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 text-sm font-black text-slate-900 outline-none focus:border-primary/40 transition-all appearance-none bg-[url('https://api.iconify.design/material-symbols:expand-more.svg?color=%2394a3b8')] bg-no-repeat bg-[position:calc(100%-1rem)_center] pr-10"
                                     >
                                         <option value="KPOINT PLUS">KPOINT PLUS</option>
                                         <option value="KPOINT PRO">KPOINT PRO</option>
@@ -1126,7 +1133,7 @@ const PlatformControl = () => {
                             </div>
                         </div>
 
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-3 mt-auto">
                             <button
                                 onClick={() => handleProcessPayment('APPROVED')}
                                 className="w-full h-16 rounded-[2rem] bg-green-500 text-white font-black text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-green-500/20 active:scale-[0.97] transition-all outline-none"
