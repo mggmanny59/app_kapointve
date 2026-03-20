@@ -7,7 +7,7 @@ import { useNotification } from '../context/NotificationContext';
 import Navigation from '../components/Navigation';
 
 const PrizeDesigner = () => {
-    const { user } = useAuth();
+    const { user, signOut } = useAuth();
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
 
@@ -212,22 +212,25 @@ const PrizeDesigner = () => {
             {/* Header */}
             <header className="px-6 pt-8 pb-6 sticky top-0 bg-[#f8fafc]/95 backdrop-blur-md z-50 transition-all border-b border-slate-100/50">
                 <div className="flex flex-col mb-6">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="size-14 rounded-2xl bg-orange-50 flex items-center justify-center text-primary shadow-inner border-2 border-[#595A5B]">
-                            <span className="material-symbols-outlined !text-3xl font-black">inventory_2</span>
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-4">
+                            <div className="size-14 rounded-2xl bg-orange-50 flex items-center justify-center text-primary shadow-inner border-2 border-[#595A5B]">
+                                <span className="material-symbols-outlined !text-3xl font-black">inventory_2</span>
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-none">
+                                    {view === 'create'
+                                        ? (editingPrizeId ? 'Actualizar' : 'Diseñador')
+                                        : 'Mis Premios'}
+                                </h1>
+                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mt-1.5 opacity-70">
+                                    {view === 'create'
+                                        ? (editingPrizeId ? 'Editando beneficio existente' : 'Configuración de nuevo premio')
+                                        : 'Gestión de recompensas activas'}
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-none">
-                                {view === 'create'
-                                    ? (editingPrizeId ? 'Actualizar' : 'Diseñador')
-                                    : 'Mis Premios'}
-                            </h1>
-                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mt-1.5 opacity-70">
-                                {view === 'create'
-                                    ? (editingPrizeId ? 'Editando beneficio existente' : 'Configuración de nuevo premio')
-                                    : 'Gestión de recompensas activas'}
-                            </p>
-                        </div>
+
                     </div>
 
                     <div className="flex gap-2 mb-4">

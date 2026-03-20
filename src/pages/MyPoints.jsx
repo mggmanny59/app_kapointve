@@ -276,19 +276,29 @@ const MyPoints = () => {
 
     return (
         <div className="relative flex min-h-screen w-full flex-col pb-24 bg-[#F0F2F5] font-display text-slate-900 antialiased">
-            <header className="pt-8 pb-4 px-6 flex items-center justify-between sticky top-0 bg-[#F0F2F5]/80 backdrop-blur-md z-40">
-                <div className="flex items-center gap-3">
-                    <div className="size-10 bg-white p-1.5 rounded-xl flex items-center justify-center overflow-hidden border-2 border-[#595A5B] shadow-sm">
-                        <img src="/Logo KPoint Solo K (sin Fondo).png" alt="Logo" className="w-full h-full object-contain" />
-                    </div>
-                    <div>
-                        <h1 className="text-lg font-black tracking-tight text-slate-900 leading-tight">Dashboard</h1>
-                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Tablero de Mando</p>
+            <header className="pt-8 pb-4 px-6 sticky top-0 bg-[#F0F2F5]/80 backdrop-blur-md z-40 flex flex-col gap-4">
+                <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-3">
+                        <div className="size-10 bg-white p-1.5 rounded-xl flex items-center justify-center overflow-hidden border-2 border-[#595A5B] shadow-sm">
+                            <img src="/Logo KPoint Solo K (sin Fondo).png" alt="Logo" className="w-full h-full object-contain" />
+                        </div>
+                        <div>
+                            <h1 className="text-lg font-black tracking-tight text-slate-900 leading-tight">Dashboard</h1>
+                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Tablero de Mando</p>
+                        </div>
                     </div>
                 </div>
-                <div className="flex gap-2">
-                    <button onClick={signOut} className="w-10 h-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-300 shadow-sm">
-                        <span className="material-symbols-outlined text-xl">logout</span>
+
+                {/* Second row for Logout button */}
+                <div className="flex justify-end pr-1">
+                    <button
+                        onClick={signOut}
+                        className="h-10 pl-2 pr-5 rounded-full bg-red-500/10 border-2 border-red-500/30 flex items-center gap-2 hover:bg-red-500 hover:border-red-500 hover:text-white transition-all shadow-sm active:scale-95 group shrink-0"
+                    >
+                        <div className="size-7 rounded-full bg-red-500/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                            <span className="material-symbols-outlined !text-base font-black text-red-500 group-hover:text-white">logout</span>
+                        </div>
+                        <span className="text-[9px] font-black text-red-500 uppercase tracking-[0.2em] mt-0.5 group-hover:text-white">Cerrar Sesión</span>
                     </button>
                 </div>
             </header>

@@ -20,8 +20,7 @@ const NavigationAdmin = () => {
         { path: '/platform-admin', label: 'Comercios', icon: 'storefront' },
         { path: '/platform-reports', label: 'Métricas', icon: 'monitoring' },
         { path: '/platform-broadcast', label: 'Global Push', icon: 'campaign' },
-        { path: '/platform-settings', label: 'Sistema', icon: 'settings_applications' },
-        { action: 'logout', label: 'Salir', icon: 'logout' }
+        { path: '/platform-settings', label: 'Sistema', icon: 'settings_applications' }
     ];
 
     return (

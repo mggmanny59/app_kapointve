@@ -896,37 +896,47 @@ const Home = () => {
     return (
         <div className="relative flex min-h-screen w-full flex-col pb-24 bg-[#F0F2F5] font-display text-slate-900 antialiased">
             {/* Header */}
-            <header className="pt-8 pb-4 px-6 flex items-center justify-between sticky top-0 bg-[#F0F2F5]/80 backdrop-blur-md z-40">
-                <div className="flex items-center gap-3">
-                    <div className="bg-white p-2 rounded-xl shadow-sm border-2 border-[#595A5B] flex items-center justify-center">
-                        <img 
-                            src="/Logo KPoint Solo K (sin Fondo).png" 
-                            alt="KPoint Logo" 
-                            className="size-6 object-contain"
-                        />
+            <header className="pt-8 pb-4 px-6 sticky top-0 bg-[#F0F2F5]/80 backdrop-blur-md z-40 flex flex-col gap-4">
+                <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-white p-2 rounded-xl shadow-sm border-2 border-[#595A5B] flex items-center justify-center">
+                            <img 
+                                src="/Logo KPoint Solo K (sin Fondo).png" 
+                                alt="KPoint Logo" 
+                                className="size-6 object-contain"
+                            />
+                        </div>
+                        <div>
+                            <h1 className="text-lg font-black tracking-tight text-slate-900 leading-tight">KPoint</h1>
+                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Panel de Control • v1.1.0</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-lg font-black tracking-tight"><span className="text-primary">K</span>Point</h1>
-                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Panel de Control • v1.1.0</p>
+                    
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setIsMessageCenterOpen(true)}
+                            className="w-10 h-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center relative group active:scale-90 transition-all shadow-sm"
+                        >
+                            <span className="material-symbols-outlined text-slate-500 group-hover:text-primary transition-colors">notifications</span>
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-1 -right-1 size-5 bg-primary text-white text-[10px] font-black rounded-full border-2 border-white flex items-center justify-center shadow-lg">
+                                    {unreadCount}
+                                </span>
+                            )}
+                        </button>
                     </div>
                 </div>
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => setIsMessageCenterOpen(true)}
-                        className="w-10 h-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center relative group active:scale-90 transition-all shadow-sm"
-                    >
-                        <span className="material-symbols-outlined text-slate-500 group-hover:text-primary transition-colors">notifications</span>
-                        {unreadCount > 0 && (
-                            <span className="absolute -top-1 -right-1 size-5 bg-primary text-white text-[10px] font-black rounded-full border-2 border-white flex items-center justify-center shadow-lg">
-                                {unreadCount}
-                            </span>
-                        )}
-                    </button>
+
+                {/* Second row for Logout button */}
+                <div className="flex justify-end pr-1">
                     <button
                         onClick={signOut}
-                        className="w-10 h-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center hover:text-red-500 transition-colors shadow-sm"
+                        className="h-10 pl-2 pr-5 rounded-full bg-red-500/10 border-2 border-red-500/30 flex items-center gap-2 hover:bg-red-500 hover:border-red-500 hover:text-white transition-all shadow-sm active:scale-95 group shrink-0"
                     >
-                        <span className="material-symbols-outlined">logout</span>
+                        <div className="size-7 rounded-full bg-red-500/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                            <span className="material-symbols-outlined !text-base font-black text-red-500 group-hover:text-white">logout</span>
+                        </div>
+                        <span className="text-[9px] font-black text-red-500 uppercase tracking-[0.2em] mt-0.5 group-hover:text-white">Cerrar Sesión</span>
                     </button>
                 </div>
             </header>

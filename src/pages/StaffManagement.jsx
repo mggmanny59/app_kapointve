@@ -6,7 +6,7 @@ import { useNotification } from '../context/NotificationContext';
 import Navigation from '../components/Navigation';
 
 const StaffManagement = () => {
-    const { user } = useAuth();
+    const { user, signOut } = useAuth();
     const navigate = useNavigate();
     const { showNotification } = useNotification();
     const [loading, setLoading] = useState(true);
@@ -243,7 +243,7 @@ const StaffManagement = () => {
         <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-32 antialiased">
             {/* Header */}
             <header className="px-6 pt-10 pb-6 sticky top-0 bg-[#f8fafc]/80 backdrop-blur-xl z-50 border-b border-[#595A5B]">
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center justify-between gap-4 mb-6">
                     <div className="flex flex-col">
                         <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary !text-3xl font-black">badge</span>
@@ -251,6 +251,7 @@ const StaffManagement = () => {
                         </h1>
                         <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">Control de accesos y personal</p>
                     </div>
+
                 </div>
 
                 {/* Tab Navigation */}

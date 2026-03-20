@@ -10,7 +10,7 @@ import Navigation from '../components/Navigation';
 
 const KPIDashboard = () => {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, signOut } = useAuth();
     const [loading, setLoading] = useState(true);
     const [kpiData, setKpiData] = useState({
         aov: 0,
@@ -214,7 +214,7 @@ const KPIDashboard = () => {
             <header className="pt-8 pb-4 px-6 flex items-center justify-between sticky top-0 bg-[#F0F2F5]/80 backdrop-blur-md z-40">
                 <div className="flex items-center gap-4">
                     <button 
-                        onClick={() => navigate('/home')}
+                        onClick={() => navigate('/dashboard')}
                         className="size-10 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center text-slate-600 active:scale-95 transition-all shadow-sm"
                     >
                         <span className="material-symbols-outlined !text-xl">arrow_back</span>
@@ -227,6 +227,7 @@ const KPIDashboard = () => {
                         <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">Inteligencia de Negocio</p>
                     </div>
                 </div>
+
             </header>
 
             <main className="px-6 space-y-4 animate-in slide-in-from-bottom-4 duration-500">

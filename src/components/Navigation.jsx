@@ -32,16 +32,14 @@ const Navigation = () => {
         { path: '/prizes', label: 'Premios', icon: 'cards' },
         { path: '/subscription', label: 'Plan', icon: 'payments' },
         { path: '/settings', label: 'Ajustes', icon: 'settings' },
-        { path: '/platform-admin', label: 'Admin', icon: 'admin_panel_settings', superAdminOnly: true },
-        { action: 'logout', label: 'Salir', icon: 'logout' }
+        { path: '/platform-admin', label: 'Admin', icon: 'admin_panel_settings', superAdminOnly: true }
     ];
 
     // Menú para Clientes
     const clientItems = [
         { path: '/my-points', label: 'Puntos', icon: 'token' },
         { path: '/activity-history', label: 'Actividad', icon: 'history' },
-        { action: 'messages', label: 'Mensajes', icon: 'mail', showBadge: true },
-        { action: 'logout', label: 'Salir', icon: 'person_off' }
+        { action: 'messages', label: 'Mensajes', icon: 'mail', showBadge: true }
     ];
 
     const isClient = userRole === 'client';

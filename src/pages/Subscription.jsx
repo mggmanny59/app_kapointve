@@ -6,7 +6,7 @@ import Navigation from '../components/Navigation';
 import { useNavigate } from 'react-router-dom';
 
 const Subscription = () => {
-    const { user } = useAuth();
+    const { user, signOut } = useAuth();
     const { showNotification } = useNotification();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
@@ -202,14 +202,17 @@ const Subscription = () => {
         <div className="min-h-screen bg-[#F8F9FA] pb-32 animate-fade-in font-sans antialiased">
             {/* Header: Estilo Diseñador (Fondo claro, icono en recuadro, título y subtítulo) */}
             <header className="px-6 pt-10 pb-6 sticky top-0 bg-[#f8fafc]/80 backdrop-blur-xl z-50 border-b border-[#595A5B]">
-                <div className="flex items-center gap-4">
-                    <div className="size-16 rounded-[1.5rem] bg-[#FEF6F0] border-2 border-primary flex items-center justify-center shadow-lg">
-                        <span className="material-symbols-outlined text-primary !text-4xl font-black">card_membership</span>
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="size-16 rounded-[1.5rem] bg-[#FEF6F0] border-2 border-primary flex items-center justify-center shadow-lg">
+                            <span className="material-symbols-outlined text-primary !text-4xl font-black">card_membership</span>
+                        </div>
+                        <div className="flex flex-col">
+                            <h1 className="text-3xl font-black text-slate-900 leading-tight">Suscripción</h1>
+                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">Gestión de Plan y Pagos</p>
+                        </div>
                     </div>
-                    <div className="flex flex-col">
-                        <h1 className="text-3xl font-black text-slate-900 leading-tight">Suscripción</h1>
-                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">Gestión de Plan y Pagos</p>
-                    </div>
+
                 </div>
             </header>
 

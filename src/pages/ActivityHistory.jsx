@@ -7,7 +7,7 @@ import Navigation from '../components/Navigation';
 import MessageCenter from '../components/MessageCenter';
 
 const ActivityHistory = () => {
-    const { user } = useAuth();
+    const { user, signOut } = useAuth();
     const navigate = useNavigate();
     const { showNotification } = useNotification();
     const [transactions, setTransactions] = useState([]);
@@ -136,11 +136,12 @@ const ActivityHistory = () => {
     return (
         <div className="relative flex min-h-screen w-full flex-col pb-24 bg-[#F0F2F5] font-display text-slate-900 antialiased">
             {/* Header */}
-            <header className="pt-8 pb-4 px-6 flex items-center gap-4 sticky top-0 bg-[#F0F2F5]/80 backdrop-blur-md z-40">
+            <header className="pt-8 pb-4 px-6 flex items-center justify-between sticky top-0 bg-[#F0F2F5]/80 backdrop-blur-md z-40">
                 <div>
                     <h1 className="text-xl font-black tracking-tight text-slate-900 leading-tight">Últimos <span className="text-primary">Movimientos</span></h1>
                     <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.1em]">HISTORIAL COMPLETO</p>
                 </div>
+
             </header>
 
             <main className="flex-1 px-6 pt-4">

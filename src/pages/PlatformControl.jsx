@@ -53,9 +53,9 @@ const PlatformControl = () => {
         try {
             await signOut();
             navigate('/login');
-            showNotification('success', 'Sesión Cerrada', 'Has salido del Centro de Control.');
+            showNotification('success', 'SesiÃ³n Cerrada', 'Has salido del Centro de Control.');
         } catch (err) {
-            showNotification('error', 'Error', 'No se pudo cerrar la sesión.');
+            showNotification('error', 'Error', 'No se pudo cerrar la sesiÃ³n.');
         }
     };
 
@@ -137,7 +137,7 @@ const PlatformControl = () => {
                 .eq('id', selectedBiz.id);
 
             if (error) throw error;
-            showNotification('success', 'Éxito', 'Configuración del nodo actualizada.');
+            showNotification('success', 'Ã‰xito', 'ConfiguraciÃ³n del nodo actualizada.');
             fetchBusinesses();
             // Refresh local selectedBiz to reflect changes if staying in detail view
             setSelectedBiz({ ...selectedBiz, ...editData });
@@ -178,7 +178,7 @@ const PlatformControl = () => {
                 .eq('id', paymentId);
             if (paymentError) throw paymentError;
 
-            // Si es aprobado, extender la suscripción del negocio
+            // Si es aprobado, extender la suscripciÃ³n del negocio
             if (status === 'APPROVED') {
                 const b = paymentModal.payment.businesses;
                 const currentDate = b?.subscription_expiry ? new Date(b.subscription_expiry) : new Date();
@@ -195,16 +195,33 @@ const PlatformControl = () => {
                     .eq('id', businessId);
                 if (bizError) throw bizError;
 
-                // 2. Enviar Notificación Interna y Push al Dueño
+                // 2. Enviar NotificaciÃ³n Interna y Push al DueÃ±o
                 const ownerId = b?.owner_id;
                 if (ownerId) {
                     const title = "Pago Procesado";
-                    const message = "Tu pago ha sido procesado y tu cuenta ya se encuentra activa. ¡Gracias por tu confianza!";
+                    const p = paymentModal.payment;
+                    const message = `Tu pago de ${p.amount_ves} VES ($${p.amount_usd} USD) con Ref: ${p.reference_number} ha sido procesado y tu cuenta ya se encuentra activa. ¡Gracias por tu confianza!`;
                     
-                    // Notificación Interna
+                    // NotificaciÃ³n Interna
                     await sendMessage(businessId, ownerId, title, message, 'GENERAL');
 
                     // Push Notification (Prioritaria)
+                    await sendPushToProfile({
+                        profileId: ownerId,
+                        title: title,
+                        message: message,
+                        url: '/subscription'
+                    });
+                }
+            } else if (status === 'REJECTED') {
+                const b = paymentModal.payment.businesses;
+                const ownerId = b?.owner_id;
+                if (ownerId) {
+                    const title = "Pago Rechazado";
+                    const p = paymentModal.payment;
+                    const message = `Tu reporte de pago por ${p.amount_ves} VES ($${p.amount_usd} USD) con Ref: ${p.reference_number} ha sido rechazado. Por favor, verifica los detalles e intenta de nuevo.`;
+                    
+                    await sendMessage(businessId, ownerId, title, message, 'GENERAL');
                     await sendPushToProfile({
                         profileId: ownerId,
                         title: title,
@@ -220,7 +237,7 @@ const PlatformControl = () => {
             fetchBusinesses();
         } catch (error) {
             console.error('Error processing payment:', error);
-            showNotification('error', 'Error', 'Ocurrió un error al procesar el pago.');
+            showNotification('error', 'Error', 'OcurriÃ³ un error al procesar el pago.');
         }
     };
 
@@ -254,7 +271,7 @@ const PlatformControl = () => {
                 
                 <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">Super Admin Panel</h2>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col gap-4">
                     <div className="relative flex-1">
                         <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 !text-[20px] font-black">search</span>
                         <input
@@ -265,12 +282,17 @@ const PlatformControl = () => {
                             className="w-full bg-white h-12 pl-12 pr-4 rounded-xl text-[15px] font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm placeholder:text-slate-400"
                         />
                     </div>
-                    <button
-                        onClick={handleLogout}
-                        className="size-12 rounded-xl bg-[#2e3b4e] border border-white/5 flex items-center justify-center text-white relative active:scale-95 transition-all"
+                    <div className="flex justify-end pr-1 mt-4">
+                        <button
+                            onClick={handleLogout}
+                        className="h-10 pl-2 pr-5 rounded-full bg-red-500/10 border-2 border-red-500/30 flex items-center gap-2 hover:bg-red-500 hover:border-red-500 hover:text-white transition-all shadow-sm active:scale-95 group shrink-0"
                     >
-                        <span className="material-symbols-outlined !text-xl">logout</span>
+                        <div className="size-7 rounded-full bg-red-500/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                            <span className="material-symbols-outlined !text-base font-black text-red-500 group-hover:text-white">logout</span>
+                        </div>
+                        <span className="text-[9px] font-black text-red-500 uppercase tracking-[0.2em] mt-0.5 group-hover:text-white">Cerrar Sesión</span>
                     </button>
+                    </div>
                 </div>
 
                 {/* Section Tabs */}
@@ -475,7 +497,7 @@ const PlatformControl = () => {
                                             show: true,
                                             biz,
                                             type: newStatus ? 'APPROVE' : 'REJECT',
-                                            customMessage: newStatus ? `¿Reactivar el nodo "${biz.name}"?` : `¿Bloquear nodo "${biz.name}"?`
+                                            customMessage: newStatus ? `Â¿Reactivar el nodo "${biz.name}"?` : `Â¿Bloquear nodo "${biz.name}"?`
                                         });
                                     }}
                                     className="size-9 rounded-xl bg-[#ff8228] text-white flex items-center justify-center active:scale-90 transition-all shadow-sm shadow-[#ff8228]/20"
@@ -501,7 +523,7 @@ const PlatformControl = () => {
                     <div className="flex items-center justify-between px-1">
                         <div>
                             <h2 className="text-xl font-black text-slate-900 tracking-tight">Centro de Pagos</h2>
-                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Verificación de suscripciones</p>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">VerificaciÃ³n de suscripciones</p>
                         </div>
                         <div className="bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
                             <span className="text-[10px] font-black text-slate-400 uppercase block leading-none mb-1">Pendientes</span>
@@ -513,7 +535,7 @@ const PlatformControl = () => {
                     <div className="space-y-4">
                         <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
                             <span className="size-1.5 bg-primary rounded-full animate-pulse"></span>
-                            Validación Requerida
+                            ValidaciÃ³n Requerida
                         </h3>
                         {pendingPayments.length > 0 ? (
                             <div className="grid grid-cols-1 gap-3">
@@ -531,7 +553,7 @@ const PlatformControl = () => {
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-lg font-black text-slate-900 leading-none">${payment.amount_usd}</p>
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">Vía {payment.bcv_rate} Bs/$</p>
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">VÃ­a {payment.bcv_rate} Bs/$</p>
                                             </div>
                                         </div>
                                         
@@ -552,14 +574,14 @@ const PlatformControl = () => {
                                 <div className="size-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mx-auto">
                                     <span className="material-symbols-outlined !text-3xl">done_all</span>
                                 </div>
-                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">No hay pagos pendientes de revisión</p>
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">No hay pagos pendientes de revisiÃ³n</p>
                             </div>
                         )}
                     </div>
 
                     {/* Historial de Pagos Recientes */}
                     <div className="space-y-4">
-                        <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Historial de Transacciones (Últimos 20)</h3>
+                        <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Historial de Transacciones (Ãšltimos 20)</h3>
                         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-collapse">
@@ -615,12 +637,12 @@ const PlatformControl = () => {
                             </span>
                         </div>
                         <h3 className="text-2xl font-black text-center text-slate-900 mb-2 uppercase tracking-tight">
-                            {confirmModal.type === 'APPROVE' ? '¿Autorizar Acceso?' : '¿Atención!'}
+                            {confirmModal.type === 'APPROVE' ? 'Â¿Autorizar Acceso?' : 'Â¿AtenciÃ³n!'}
                         </h3>
                         <p className="text-sm text-center text-slate-400 font-bold mb-10 leading-relaxed px-2">
                             {confirmModal.customMessage || (confirmModal.type === 'APPROVE'
-                                ? `¿Confirmas la activación de "${confirmModal.biz?.name}"? Podrá operar de inmediato.`
-                                : `¿Confirmas que deseas rechazar la solicitud de "${confirmModal.biz?.name}"?`)}
+                                ? `Â¿Confirmas la activaciÃ³n de "${confirmModal.biz?.name}"? PodrÃ¡ operar de inmediato.`
+                                : `Â¿Confirmas que deseas rechazar la solicitud de "${confirmModal.biz?.name}"?`)}
                         </p>
                         <div className="flex flex-col gap-4">
                             <button
@@ -675,7 +697,7 @@ const PlatformControl = () => {
                         )}
                         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-slate-50"></div>
 
-                        {/* Botón Volver */}
+                        {/* BotÃ³n Volver */}
                         <button
                             onClick={() => setSelectedBiz(null)}
                             className="absolute top-8 left-6 size-12 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white active:scale-95 transition-all z-20"
@@ -847,7 +869,7 @@ const PlatformControl = () => {
                                                 className="bg-transparent font-black text-lg text-slate-900 focus:outline-none text-right appearance-none"
                                             >
                                                 <option value="$">$ (USD)</option>
-                                                <option value="€">€ (EUR)</option>
+                                                <option value="â‚¬">â‚¬ (EUR)</option>
                                                 <option value="Bs">Bs (VES)</option>
                                             </select>
                                         </div>
@@ -1033,131 +1055,131 @@ const PlatformControl = () => {
                     className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[300] transition-opacity"
                 />
             )}
-
             {/* Notification Modal */}
-            <SendNotificationModal
-                isOpen={isNotificationModalOpen}
-                onClose={() => setIsNotificationModalOpen(false)}
-                businessId={pushTarget.businessId}
-                targetClient={pushTarget.ownerClient}
-            />
+    <SendNotificationModal
+        isOpen={isNotificationModalOpen}
+        onClose={() => setIsNotificationModalOpen(false)}
+        businessId={pushTarget.businessId}
+        targetClient={pushTarget.ownerClient}
+    />
 
-            {/* Payment Processing Modal */}
-            {paymentModal.show && (
-                <div className="fixed inset-0 z-[400] bg-white animate-in slide-in-from-bottom duration-500 overflow-y-auto">
-                    <div className="min-h-screen px-6 py-10 flex flex-col max-w-sm mx-auto">
-                        <button 
-                            onClick={() => setPaymentModal({ show: false, payment: null, daysToAdd: 30, plan: 'KPOINT PLUS' })}
-                            className="absolute top-6 right-6 size-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 active:scale-90 transition-transform"
-                        >
-                            <span className="material-symbols-outlined">close</span>
-                        </button>
+    {/* Payment Processing Modal */}
+    {paymentModal.show && (
+        <div className="fixed inset-0 z-[400] bg-white animate-in slide-in-from-bottom duration-500 overflow-y-auto">
+            <div className="min-h-screen px-6 py-10 flex flex-col max-w-sm mx-auto">
+                <button 
+                    onClick={() => setPaymentModal({ show: false, payment: null, daysToAdd: 30, plan: 'KPOINT PLUS' })}
+                    className="absolute top-6 right-6 size-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 active:scale-90 transition-transform"
+                >
+                    <span className="material-symbols-outlined">close</span>
+                </button>
 
-                        {/* Status Icon */}
-                        <div className="size-20 rounded-[2rem] mx-auto mb-6 flex items-center justify-center border shadow-xl bg-green-500/10 border-green-500/20 text-green-600 shrink-0">
-                            <span className="material-symbols-outlined !text-4xl font-black">payments</span>
+                {/* Status Icon */}
+                <div className="size-20 rounded-[2rem] mx-auto mb-6 flex items-center justify-center border shadow-xl bg-green-500/10 border-green-500/20 text-green-600 shrink-0">
+                    <span className="material-symbols-outlined !text-4xl font-black">payments</span>
+                </div>
+                
+                <h3 className="text-2xl font-black text-center text-slate-900 mb-1 uppercase tracking-tight">Procesar Pago</h3>
+                <p className="text-[10px] text-center text-slate-400 font-bold mb-6 uppercase tracking-widest leading-tight">{paymentModal.payment?.businesses?.name}</p>
+
+                <div className="space-y-4 mb-8">
+                    {/* Registration Info */}
+                    <div className="flex justify-between items-center px-1">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha de Registro</span>
+                        <span className="text-xs font-black text-slate-900">
+                            {paymentModal.payment?.businesses?.created_at ? new Date(paymentModal.payment.businesses.created_at).toLocaleDateString('es-VE') : 'N/A'}
+                        </span>
+                    </div>
+
+                    <div className="h-px w-full bg-slate-100"></div>
+
+                    {/* Payment Info */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Referencia</span>
+                            <span className="text-sm font-black text-slate-900">#{paymentModal.payment?.reference_number}</span>
                         </div>
-                        
-                        <h3 className="text-2xl font-black text-center text-slate-900 mb-1 uppercase tracking-tight">Procesar Pago</h3>
-                        <p className="text-[10px] text-center text-slate-400 font-bold mb-6 uppercase tracking-widest leading-tight">{paymentModal.payment?.businesses?.name}</p>
-
-                        <div className="space-y-4 mb-8">
-                            {/* Registration Info */}
-                            <div className="flex justify-between items-center px-1">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha de Registro</span>
-                                <span className="text-xs font-black text-slate-900">
-                                    {paymentModal.payment?.businesses?.created_at ? new Date(paymentModal.payment.businesses.created_at).toLocaleDateString('es-VE') : 'N/A'}
-                                </span>
-                            </div>
-
-                            <div className="h-px w-full bg-slate-100"></div>
-
-                            {/* Payment Info */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Referencia</span>
-                                    <span className="text-sm font-black text-slate-900">#{paymentModal.payment?.reference_number}</span>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Monto Validado</span>
-                                    <span className="text-sm font-black text-primary">${paymentModal.payment?.amount_usd} USD</span>
-                                </div>
-                            </div>
-
-                            <div className="h-px w-full bg-slate-100"></div>
-
-                            {/* Options */}
-                            <div className="space-y-3">
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5 px-1">Añadir Tiempo</label>
-                                    <select
-                                        value={paymentModal.daysToAdd}
-                                        onChange={(e) => setPaymentModal({ ...paymentModal, daysToAdd: e.target.value })}
-                                        className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 text-sm font-black text-slate-900 outline-none focus:border-primary/40 transition-all appearance-none bg-[url('https://api.iconify.design/material-symbols:expand-more.svg?color=%2394a3b8')] bg-no-repeat bg-[position:calc(100%-1rem)_center] pr-10"
-                                    >
-                                        <option value={30}>1 Mes (30 días)</option>
-                                        <option value={90}>3 Meses (90 días)</option>
-                                        <option value={180}>6 Meses (180 días)</option>
-                                        <option value={365}>1 Año (365 días)</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5 px-1">Plan de Acceso</label>
-                                    <select
-                                        value={paymentModal.plan}
-                                        onChange={(e) => setPaymentModal({ ...paymentModal, plan: e.target.value })}
-                                        className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 text-sm font-black text-slate-900 outline-none focus:border-primary/40 transition-all appearance-none bg-[url('https://api.iconify.design/material-symbols:expand-more.svg?color=%2394a3b8')] bg-no-repeat bg-[position:calc(100%-1rem)_center] pr-10"
-                                    >
-                                        <option value="KPOINT PLUS">KPOINT PLUS</option>
-                                        <option value="KPOINT PRO">KPOINT PRO</option>
-                                        <option value="KPOINT ENTERPRISE">KPOINT ENTERPRISE</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="h-px w-full bg-slate-100"></div>
-
-                            {/* Expiration Extension */}
-                            <div className="flex justify-between items-center px-1">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Próxima Expiración</span>
-                                <span className="text-sm font-black text-green-600">
-                                    {(() => {
-                                        const b = paymentModal.payment?.businesses;
-                                        const currentDate = b?.subscription_expiry ? new Date(b.subscription_expiry) : new Date();
-                                        const newExpiry = new Date(Math.max(currentDate.getTime(), new Date().getTime()));
-                                        newExpiry.setDate(newExpiry.getDate() + parseInt(paymentModal.daysToAdd));
-                                        return newExpiry.toLocaleDateString('es-VE');
-                                    })()}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col gap-3 mt-auto">
-                            <button
-                                onClick={() => handleProcessPayment('APPROVED')}
-                                className="w-full h-16 rounded-[2rem] bg-green-500 text-white font-black text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-green-500/20 active:scale-[0.97] transition-all outline-none"
-                            >
-                                APROBAR Y EXTENDER
-                            </button>
-                            <button
-                                onClick={() => handleProcessPayment('REJECTED')}
-                                className="w-full h-14 rounded-full font-black text-[11px] uppercase tracking-widest text-red-500 hover:bg-red-50 active:scale-95 transition-all outline-none"
-                            >
-                                RECHAZAR PAGO
-                            </button>
-                            <button
-                                onClick={() => setPaymentModal({ show: false, payment: null, daysToAdd: 30, plan: 'KPOINT PLUS' })}
-                                className="w-full h-10 rounded-full font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all outline-none"
-                            >
-                                CANCELAR
-                            </button>
+                        <div className="text-right">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Monto Validado</span>
+                            <span className="text-sm font-black text-primary">${paymentModal.payment?.amount_usd} USD</span>
                         </div>
                     </div>
+
+                    <div className="h-px w-full bg-slate-100"></div>
+
+                    {/* Options */}
+                    <div className="space-y-3">
+                        <div>
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5 px-1">AÃ±adir Tiempo</label>
+                            <select
+                                value={paymentModal.daysToAdd}
+                                onChange={(e) => setPaymentModal({ ...paymentModal, daysToAdd: e.target.value })}
+                                className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 text-sm font-black text-slate-900 outline-none focus:border-primary/40 transition-all appearance-none bg-[url('https://api.iconify.design/material-symbols:expand-more.svg?color=%2394a3b8')] bg-no-repeat bg-[position:calc(100%-1rem)_center] pr-10"
+                            >
+                                <option value={30}>1 Mes (30 dÃ­as)</option>
+                                <option value={90}>3 Meses (90 dÃ­as)</option>
+                                <option value={180}>6 Meses (180 dÃ­as)</option>
+                                <option value={365}>1 AÃ±o (365 dÃ­as)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5 px-1">Plan de Acceso</label>
+                            <select
+                                value={paymentModal.plan}
+                                onChange={(e) => setPaymentModal({ ...paymentModal, plan: e.target.value })}
+                                className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 text-sm font-black text-slate-900 outline-none focus:border-primary/40 transition-all appearance-none bg-[url('https://api.iconify.design/material-symbols:expand-more.svg?color=%2394a3b8')] bg-no-repeat bg-[position:calc(100%-1rem)_center] pr-10"
+                            >
+                                <option value="KPOINT PLUS">KPOINT PLUS</option>
+                                <option value="KPOINT PRO">KPOINT PRO</option>
+                                <option value="KPOINT ENTERPRISE">KPOINT ENTERPRISE</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="h-px w-full bg-slate-100"></div>
+
+                    {/* Expiration Extension */}
+                    <div className="flex justify-between items-center px-1">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">PrÃ³xima ExpiraciÃ³n</span>
+                        <span className="text-sm font-black text-green-600">
+                            {(() => {
+                                const b = paymentModal.payment?.businesses;
+                                const currentDate = b?.subscription_expiry ? new Date(b.subscription_expiry) : new Date();
+                                const newExpiry = new Date(Math.max(currentDate.getTime(), new Date().getTime()));
+                                newExpiry.setDate(newExpiry.getDate() + parseInt(paymentModal.daysToAdd));
+                                return newExpiry.toLocaleDateString('es-VE');
+                            })()}
+                        </span>
+                    </div>
                 </div>
-            )}
+
+                <div className="flex flex-col gap-3 mt-auto">
+                    <button
+                        onClick={() => handleProcessPayment('APPROVED')}
+                        className="w-full h-16 rounded-[2rem] bg-green-500 text-white font-black text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-green-500/20 active:scale-[0.97] transition-all outline-none"
+                    >
+                        APROBAR Y EXTENDER
+                    </button>
+                    <button
+                        onClick={() => handleProcessPayment('REJECTED')}
+                        className="w-full h-14 rounded-full font-black text-[11px] uppercase tracking-widest text-red-500 hover:bg-red-50 active:scale-95 transition-all outline-none"
+                    >
+                        RECHAZAR PAGO
+                    </button>
+                    <button
+                        onClick={() => setPaymentModal({ show: false, payment: null, daysToAdd: 30, plan: 'KPOINT PLUS' })}
+                        className="w-full h-10 rounded-full font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all outline-none"
+                    >
+                        CANCELAR
+                    </button>
+                </div>
+            </div>
         </div>
-    );
+    )}
+</div>
+);
 };
 
 export default PlatformControl;
+

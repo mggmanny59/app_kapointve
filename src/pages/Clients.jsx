@@ -7,7 +7,7 @@ import SendNotificationModal from '../components/SendNotificationModal';
 
 const Clients = () => {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, signOut } = useAuth();
     const [clients, setClients] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
@@ -162,6 +162,7 @@ const Clients = () => {
                         >
                             <span className="material-symbols-outlined text-xl font-black">campaign</span>
                         </button>
+
                     </div>
                 </div>
                 <div className="flex gap-3">
