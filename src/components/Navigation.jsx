@@ -32,7 +32,8 @@ const Navigation = () => {
         { path: '/prizes', label: 'Premios', icon: 'cards' },
         { path: '/subscription', label: 'Plan', icon: 'payments' },
         { path: '/settings', label: 'Ajustes', icon: 'settings' },
-        { path: '/platform-admin', label: 'Admin', icon: 'admin_panel_settings', superAdminOnly: true }
+        { path: '/platform-admin', label: 'Admin', icon: 'admin_panel_settings', superAdminOnly: true },
+        { action: 'logout', label: 'Salir', icon: 'logout' }
     ];
 
     // Menú para Clientes
@@ -52,9 +53,16 @@ const Navigation = () => {
         if (item.superAdminOnly && !user?.is_super_admin) return false;
 
         // 2. Verificar Miembros de Negocio (Staff vs Owner)
-        if (!isClient && userRole !== 'owner') {
-            // Si es un miembro del equipo (manager, cashier, etc), solo ve el Panel
-            if (item.path !== '/dashboard') return false;
+        if (!isClient && userRole !== 'owner' && userRole !== 'manager') {
+            // Si es un cajero, solo ve el Panel y la pestaña de Plan
+            if (item.path !== '/dashboard' && item.path !== '/subscription') return false;
+        }
+
+        // 3. Verificar Expiración (Bloqueo)
+        const isExpired = user?.businessStatus?.is_expired && !user?.is_super_admin;
+        if (isExpired) {
+            // Si está bloqueado por falta de pago, SOLO ve Plan y Salir
+            if (item.path !== '/subscription' && item.action !== 'logout') return false;
         }
 
         return true;

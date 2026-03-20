@@ -22,6 +22,14 @@ import BackNavigationHandler from './components/BackNavigationHandler';
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
+  
+  const isExpired = user.businessStatus?.is_expired && !user.is_super_admin;
+  
+  // If expired, and NOT on subscription page, redirect to subscription
+  if (isExpired && window.location.pathname !== '/subscription') {
+    return <Navigate to="/subscription" replace />;
+  }
+  
   return children;
 };
 
@@ -29,7 +37,17 @@ const AdminRoute = ({ children }) => {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
 
-  const role = user.user_metadata?.role;
+  const isExpired = user.businessStatus?.is_expired && !user.is_super_admin;
+  const role = user.role;
+  
+  // Special case: allow access to subscription page for admins even if expired
+  if (window.location.pathname === '/subscription') {
+    if (role === 'admin') return children;
+    // For cashiers, we allow them to enter the page so ProtectedRoute doesn't loop them,
+    // but the Subscription page itself should handle the limited view.
+    return children; 
+  }
+
   if (role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
   }

@@ -13,31 +13,51 @@ export const AuthProvider = ({ children }) => {
                 // Fetch Profile and Business Status
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('*, business_members(business_id, businesses(is_active, registration_status))')
+                    .select('*, business_members(business_id, businesses(is_active, registration_status, subscription_expiry))')
                     .eq('id', session.user.id)
                     .maybeSingle();
 
                 const isSuperAdmin = !!profile?.is_super_admin;
                 const businessInfo = profile?.business_members?.[0]?.businesses;
+                let businessStatus = null;
 
                 // Enforce Business Rules for non-Super Admins
                 if (businessInfo && !isSuperAdmin) {
+                    const expiryPlusGrace = businessInfo.subscription_expiry
+                        ? new Date(new Date(businessInfo.subscription_expiry).getTime() + (3 * 24 * 60 * 60 * 1000))
+                        : null;
+                    const isExpired = expiryPlusGrace && new Date() > expiryPlusGrace;
+
                     if (businessInfo.is_active === false) {
                         await supabase.auth.signOut();
                         setUser(null);
                         throw new Error('STATUS_BLOCKED');
                     }
+
                     if (businessInfo.registration_status === 'PENDING') {
                         await supabase.auth.signOut();
                         setUser(null);
                         throw new Error('STATUS_PENDING');
                     }
+
+                    const today = new Date();
+                    const expiryDate = businessInfo.subscription_expiry ? new Date(businessInfo.subscription_expiry) : null;
+                    const diffTime = expiryDate ? expiryDate.getTime() - today.getTime() : null;
+                    const daysLeft = diffTime ? Math.ceil(diffTime / (1000 * 60 * 60 * 24)) : null;
+
+                    // For expired users, we don't sign out, but we add a flag to the state
+                    businessStatus = {
+                        ...businessInfo,
+                        is_expired: isExpired,
+                        days_left: daysLeft
+                    };
                 }
 
                 setUser({
                     ...session.user,
                     is_super_admin: isSuperAdmin,
-                    businessStatus: businessInfo
+                    role: profile?.business_members?.[0]?.role || session.user.user_metadata?.role,
+                    businessStatus: businessStatus || businessInfo
                 });
             } else {
                 setUser(null);
@@ -45,8 +65,6 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             console.error('Error in refreshUser:', error);
             setUser(null);
-            // We can emit a custom event or use notification context if available
-            // But for now, just ensure they are logged out
         } finally {
             setLoading(false);
         }

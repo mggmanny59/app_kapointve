@@ -98,6 +98,10 @@ const Register = () => {
                     throw new Error('El nombre del negocio y el RIF son obligatorios.');
                 }
 
+                // Calculate initial subscription expiry (30 days from now)
+                const initialExpiry = new Date();
+                initialExpiry.setDate(initialExpiry.getDate() + 30);
+
                 // Create the Business Entry
                 const { data: newBiz, error: bizError } = await supabase
                     .from('businesses')
@@ -106,7 +110,9 @@ const Register = () => {
                         rif: formData.rif,
                         owner_id: userId,
                         is_active: true,
-                        registration_status: isPlatformOwner ? 'OK' : 'PENDING' // Auto-approve the owner
+                        registration_status: isPlatformOwner ? 'OK' : 'PENDING', // Auto-approve the owner
+                        subscription_plan: 'BASIC', // Consistent with user request
+                        subscription_expiry: initialExpiry.toISOString()
                     })
                     .select()
                     .single();

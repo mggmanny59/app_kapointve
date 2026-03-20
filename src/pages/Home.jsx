@@ -521,16 +521,20 @@ const Home = () => {
             console.log(`Puntos a ganar calculados: ${pointsToGain} para cliente: ${clientId}`);
             
             const broadcastChannel = supabase.channel(`client-points-realtime-${clientId}`);
-            broadcastChannel.send({
-                type: 'broadcast',
-                event: 'points_earned',
-                payload: {
-                    businessName: business?.name || 'Comercio',
-                    points: pointsToGain,
-                    amountUSD: amount
+            broadcastChannel.subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') {
+                    await broadcastChannel.send({
+                        type: 'broadcast',
+                        event: 'points_earned',
+                        payload: {
+                            businessName: business?.name || 'Comercio',
+                            points: pointsToGain,
+                            amountUSD: amount
+                        }
+                    }).then(() => console.log('Broadcast enviado con éxito'))
+                      .catch(err => console.error('Error en broadcast:', err));
                 }
-            }).then(() => console.log('Broadcast enviado con éxito'))
-              .catch(err => console.error('Error en broadcast:', err));
+            });
 
             // 2. NOTIFICACIÓN PUSH PERSONALIZADA
             // Esperamos un poco para que los triggers de DB procesen el saldo antes de buscar premios
@@ -702,18 +706,10 @@ const Home = () => {
 
             if (txError) throw txError;
 
-            // 2. Manually update points in loyalty_cards for immediate balance reflection
-            const { error: updateError } = await supabase
-                .from('loyalty_cards')
-                .update({
-                    current_points: Number(client.current_points) - Number(reward.cost_points),
-                    last_activity: new Date().toISOString()
-                })
-                .eq('id', client.id);
+            // ELIMINADO: Actualización manual de loyalty_cards. Ya lo hace el Trigger de DB.
+            // Para asegurar sincronización limpia sin interferencias.
 
-            if (updateError) console.error('Error updating loyalty card directly:', updateError);
-
-            // 3. Success Feedback & Cleanup
+            // 2. Success Feedback & Cleanup
             await closeModal();
             await closeRedeemModal();
 
@@ -928,6 +924,35 @@ const Home = () => {
             </header>
 
             <main className="px-6 space-y-6">
+                {/* Alerta de Vencimiento de Plan (3 días antes) */}
+                {user?.businessStatus?.days_left !== null && 
+                 user?.businessStatus?.days_left <= 3 && 
+                 user?.businessStatus?.days_left > 0 && 
+                 !user.is_super_admin && (
+                    <div className="bg-amber-50 border-2 border-amber-500 rounded-3xl p-6 flex flex-col gap-4 shadow-sm animate-in slide-in-from-top-4 duration-500">
+                        <div className="flex items-start gap-4">
+                            <div className="size-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 border border-amber-500">
+                                <span className="material-symbols-outlined !text-3xl">warning</span>
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-black uppercase tracking-wider text-amber-900">
+                                    Suscripción por Vencer
+                                </h3>
+                                <p className="text-xs mt-1 leading-relaxed text-amber-700">
+                                    Tu plan {user.businessStatus.subscription_plan} vence en {user.businessStatus.days_left} {user.businessStatus.days_left === 1 ? 'día' : 'días'}. 
+                                    Realiza tu pago para evitar interrupciones en el servicio.
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => navigate('/subscription')}
+                            className="w-full h-11 rounded-2xl bg-amber-600 text-white text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-amber-200"
+                        >
+                            Gestionar Suscripción
+                        </button>
+                    </div>
+                )}
+
                 {/* Banner de Notificaciones Push */}
                 {showPushBanner && (
                     <div className="bg-white border-2 border-[#595A5B] rounded-3xl p-6 flex flex-col gap-4 shadow-sm animate-in slide-in-from-top-4 duration-500">

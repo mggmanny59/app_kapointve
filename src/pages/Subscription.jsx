@@ -17,10 +17,30 @@ const Subscription = () => {
     const [activeTab, setActiveTab] = useState('PAGO_MOVIL');
     
     // Form State
+    const [selectedPlan, setSelectedPlan] = useState('BASIC');
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [showBlockedModal, setShowBlockedModal] = useState(false);
     const [formData, setFormData] = useState({
         reference: '',
         amountVes: ''
     });
+
+    const hasPendingPayment = paymentHistory.some(p => p.status === 'PENDING');
+    const isExpired = user?.businessStatus?.is_expired && !user?.is_super_admin;
+
+    const plans = [
+        { id: 'BASIC', label: 'BASIC / PLUS', name: 'KPoint Plus', price: 15, level: 'Nivel Intermedio', active: true },
+        { id: 'PRO', label: 'PLUS / PRO', name: 'KPoint Pro', price: 30, level: 'Nivel Avanzado', active: false },
+        { id: 'ENTERPRISE', label: 'PRO / ENT', name: 'KPoint Enterprise', price: null, level: 'Nivel Corporativo', active: false }
+    ];
+
+    useEffect(() => {
+        const plan = plans.find(p => p.id === selectedPlan);
+        if (plan && plan.price && bcvRate > 0) {
+            const total = (plan.price * bcvRate).toFixed(2);
+            setFormData(prev => ({ ...prev, amountVes: total }));
+        }
+    }, [selectedPlan, bcvRate]);
 
     // KPoint Payment Data
     const paymentData = {
@@ -52,9 +72,15 @@ const Subscription = () => {
 
             const memberInfo = profileData.business_members?.[0];
             const biz = memberInfo?.businesses;
+            const isExpired = biz?.subscription_expiry && new Date(biz.subscription_expiry) < new Date();
             setBusiness(biz);
 
             if (memberInfo?.role !== 'owner' && memberInfo?.role !== 'manager') {
+                // If the business is expired, we allow them to stay on this page to avoid the redirect loop from App.jsx
+                if (isExpired) {
+                    setLoading(false);
+                    return;
+                }
                 navigate('/dashboard');
                 return;
             }
@@ -93,6 +119,25 @@ const Subscription = () => {
         if (user) fetchSubscriptionData();
     }, [user]);
 
+    // Notification for blocking
+    useEffect(() => {
+        if (!loading && isExpired) {
+            const hasShown = sessionStorage.getItem('hasShownBlockedModal');
+            if (!hasShown) {
+                setShowBlockedModal(true);
+                sessionStorage.setItem('hasShownBlockedModal', 'true');
+            }
+        }
+    }, [loading, isExpired]);
+
+    const scrollToForm = () => {
+        setShowBlockedModal(false);
+        const formElement = document.getElementById('payment-form');
+        if (formElement) {
+            formElement.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     const handleReportPayment = async (e) => {
         e.preventDefault();
         if (!formData.reference || !formData.amountVes) {
@@ -117,10 +162,10 @@ const Subscription = () => {
                 });
 
             if (error) throw error;
-
-            showNotification('success', '¡Reportado!', 'Tu pago ha sido enviado para verificación.');
+            
             setFormData({ reference: '', amountVes: '' });
             fetchSubscriptionData();
+            setShowSuccessModal(true);
         } catch (error) {
             console.error('Error reporting payment:', error);
             showNotification('error', 'Error', 'No se pudo reportar el pago.');
@@ -168,6 +213,18 @@ const Subscription = () => {
                 </div>
             </header>
 
+            {hasPendingPayment && (
+                <div className="mx-6 mt-6 bg-amber-50 border-2 border-amber-200 p-4 rounded-[2rem] flex items-center gap-3 animate-pulse">
+                    <div className="size-10 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined !text-xl animate-spin-slow">history</span>
+                    </div>
+                    <div className="leading-tight">
+                        <p className="text-sm font-black text-amber-900">Pago en Verificación</p>
+                        <p className="text-[10px] font-bold text-amber-700/80 uppercase">Por favor, espera la validación del Super Usuario</p>
+                    </div>
+                </div>
+            )}
+
             <main className="px-6 mt-8 space-y-6">
                 {/* Tarjeta de Estado: Más contraste y tamaño reducido (80%) */}
                 <section className="relative p-6 rounded-[32px] border-2 border-primary bg-gradient-to-br from-slate-500 to-slate-700 shadow-xl overflow-hidden max-w-[320px] mx-auto">
@@ -209,6 +266,52 @@ const Subscription = () => {
                                 <div className="size-1 bg-white/20 rounded-full"></div>
                             </div>
                         </div>
+                    </div>
+                </section>
+
+                {/* Plan Selection Section */}
+                <section className="space-y-4">
+                    <div className="space-y-1 ml-1">
+                        <h2 className="text-xl font-black text-slate-900">Tu Plan de Suscripción</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4">
+                        {plans.filter(p => {
+                            const bizPlan = business?.subscription_plan === 'FREE' ? 'BASIC' : business?.subscription_plan;
+                            return p.id === (bizPlan || 'BASIC');
+                        }).map((p) => (
+                            <div 
+                                key={p.id}
+                                onClick={() => p.active && setSelectedPlan(p.id)}
+                                className={`relative p-5 rounded-[2.2rem] border-2 transition-all duration-300 cursor-pointer overflow-hidden ${
+                                    selectedPlan === p.id 
+                                        ? 'bg-white border-primary shadow-xl scale-[1.02]' 
+                                        : p.active ? 'bg-white/60 border-slate-200 opacity-80' : 'bg-slate-50 border-slate-100 opacity-60 grayscale'
+                                }`}
+                            >
+                                {!p.active && (
+                                    <div className="absolute top-4 right-4 bg-slate-200 text-slate-500 text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-tighter">Próximamente</div>
+                                )}
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex-1">
+                                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1">{p.label}</p>
+                                        <h4 className="text-lg font-black text-slate-900 leading-none">{p.name}</h4>
+                                        <p className="text-[10px] font-bold text-slate-400 mt-1">{p.level}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[22px] font-black text-slate-900 leading-none">
+                                            {p.price ? `$${p.price}` : 'Consulta'}
+                                        </p>
+                                        <p className="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-widest">{p.price ? 'Al Mes' : 'Custom'}</p>
+                                    </div>
+                                </div>
+                                {selectedPlan === p.id && (
+                                    <div className="absolute -bottom-1 -right-1 size-10 bg-primary rounded-tl-[2rem] flex items-center justify-center pt-1 pl-1">
+                                        <span className="material-symbols-outlined text-white !text-xl">check</span>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </section>
 
@@ -293,7 +396,7 @@ const Subscription = () => {
                 </section>
 
                 {/* Form Card: Darker gray background, orange border */}
-                <section className="bg-slate-100 rounded-[32px] p-6 shadow-md border-2 border-primary space-y-6">
+                <section id="payment-form" className="bg-slate-100 rounded-[32px] p-6 shadow-md border-2 border-primary space-y-6">
                     <form onSubmit={handleReportPayment} className="space-y-5">
                         <div className="space-y-2">
                             <label className="text-xs font-black text-slate-700 ml-1 uppercase tracking-wider">Número de Referencia</label>
@@ -308,15 +411,13 @@ const Subscription = () => {
 
                         <div className="space-y-2">
                             <label className="text-xs font-black text-slate-700 ml-1 uppercase tracking-wider">Monto en Bs. (VES)</label>
-                            <input 
+                             <input 
                                 type="text"
                                 placeholder="0.00"
-                                className="w-full h-14 bg-white border border-slate-200 rounded-2xl px-5 font-bold text-slate-900 focus:outline-none focus:border-primary transition-all"
+                                className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-5 font-bold text-slate-500 cursor-not-allowed opacity-80"
                                 value={formData.amountVes}
-                                onChange={(e) => {
-                                    const val = e.target.value.replace(/[^\d.]/g, '');
-                                    setFormData({...formData, amountVes: val});
-                                }}
+                                readOnly
+                                disabled
                             />
                              {bcvRate > 0 && formData.amountVes && (
                                 <p className="text-[10px] text-slate-400 font-bold mt-1 ml-1 uppercase tracking-widest">
@@ -357,6 +458,61 @@ const Subscription = () => {
             </main>
 
             <Navigation />
+
+            {/* Success Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-[600] flex items-center justify-center px-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="relative w-full max-w-sm bg-white border-2 border-primary rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in duration-300">
+                        <div className="size-20 rounded-[2rem] mx-auto mb-8 bg-green-500/10 border-2 border-green-500/20 text-green-500 flex items-center justify-center shadow-inner">
+                            <span className="material-symbols-outlined !text-4xl font-black">verified</span>
+                        </div>
+                        <h3 className="text-xl font-black text-center text-slate-900 mb-4 uppercase tracking-tight leading-tight">
+                            ¡Pago Registrado!
+                        </h3>
+                        <p className="text-sm text-center text-slate-400 font-bold mb-10 leading-relaxed px-4">
+                            Tan pronto su pago sea verificado su cuenta estará activa nuevamente.
+                        </p>
+                        <button
+                            onClick={() => setShowSuccessModal(false)}
+                            className="w-full h-16 rounded-3xl bg-primary text-white font-black text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 transition-all active:scale-[0.97]"
+                        >
+                            ENTENDIDO
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Blocked Account Modal */}
+            {showBlockedModal && (
+                <div className="fixed inset-0 z-[600] flex items-center justify-center px-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="relative w-full max-w-sm bg-white border-2 border-red-500 rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in duration-300">
+                        <div className="size-20 rounded-[2rem] mx-auto mb-8 bg-red-500/10 border-2 border-red-500/20 text-red-500 flex items-center justify-center shadow-inner">
+                            <span className="material-symbols-outlined !text-4xl font-black italic">lock_clock</span>
+                        </div>
+                        <h3 className="text-xl font-black text-center text-slate-900 mb-4 uppercase tracking-tighter leading-tight">
+                            Cuenta Bloqueada
+                        </h3>
+                        <p className="text-[11px] text-center text-slate-400 font-bold mb-10 leading-relaxed px-2 uppercase tracking-widest">
+                            Su cuenta está temporalmente bloqueada por falta de pago. Reporte su pago para reactivar el servicio.
+                        </p>
+                        <div className="space-y-3">
+                            <button
+                                onClick={scrollToForm}
+                                className="w-full h-16 rounded-3xl bg-red-500 text-white font-black text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-red-500/20 transition-all active:scale-[0.97] flex items-center justify-center gap-2"
+                            >
+                                <span className="material-symbols-outlined !text-lg">payments</span>
+                                IR AL PAGO
+                            </button>
+                            <button
+                                onClick={() => setShowBlockedModal(false)}
+                                className="w-full text-center text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors"
+                            >
+                                Reusar Después
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

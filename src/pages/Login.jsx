@@ -63,16 +63,22 @@ const Login = () => {
                 // Check Business Status
                 const { data: businessStatus } = await supabase
                     .from('businesses')
-                    .select('is_active, registration_status')
+                    .select('is_active, registration_status, subscription_expiry')
                     .eq('id', businessMember.business_id)
                     .single();
 
                 if (businessStatus && !isSuperAdmin) {
+                    const isExpired = businessStatus.subscription_expiry && new Date(businessStatus.subscription_expiry) < new Date();
+
                     // Rule 1: Fixed Blocked Account
                     if (businessStatus.is_active === false) {
                         await signOut();
                         throw new Error('Estimado usuario. Su cuenta bloqueada. Comuniquese con el departamento de soporte técnico para su activacion.');
                     }
+
+                    // Rule Expiry: We NO LONGER throw an error here. 
+                    // We allow the login and the App.jsx will redirect them to /subscription.
+                    // However, we can track it if we want to show a message later.
 
                     // Rule 3: Pending Review (Current message maintained)
                     if (businessStatus.registration_status === 'PENDING') {

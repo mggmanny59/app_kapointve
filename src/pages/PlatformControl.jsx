@@ -3,11 +3,14 @@ import { supabase } from '../lib/supabase';
 import { useNotification } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useMessages } from '../context/MessageContext';
+import { sendPushToProfile } from '../lib/pushNotifications';
 import NavigationAdmin from '../components/NavigationAdmin';
 import SendNotificationModal from '../components/SendNotificationModal';
 
 const PlatformControl = () => {
     const { signOut } = useAuth();
+    const { sendMessage } = useMessages();
     const [businesses, setBusinesses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ active: 0, pending: 0, blocked: 0 });
@@ -22,6 +25,8 @@ const PlatformControl = () => {
     const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
     const [pushTarget, setPushTarget] = useState({ businessId: null, name: 'Global' });
     const [pendingPayments, setPendingPayments] = useState([]);
+    const [allPayments, setAllPayments] = useState([]);
+    const [activeSection, setActiveSection] = useState('businesses');
     const [paymentModal, setPaymentModal] = useState({ show: false, payment: null, daysToAdd: 30, plan: 'KPOINT PLUS' });
     const { showNotification } = useNotification();
     const navigate = useNavigate();
@@ -80,15 +85,25 @@ const PlatformControl = () => {
         }
     };
 
-    const fetchPendingPayments = async () => {
+    const fetchPayments = async () => {
         try {
-            const { data, error } = await supabase
+            // Fetch Pending
+            const { data: pending, error: pError } = await supabase
                 .from('subscription_payments')
-                .select('*, businesses(name, rif, subscription_expiry)')
+                .select('*, businesses(name, rif, subscription_expiry, owner_id)')
                 .eq('status', 'PENDING')
                 .order('created_at', { ascending: false });
-            if (error) throw error;
-            setPendingPayments(data || []);
+            if (pError) throw pError;
+            setPendingPayments(pending || []);
+
+            // Fetch All Recent
+            const { data: all, error: aError } = await supabase
+                .from('subscription_payments')
+                .select('*, businesses(name)')
+                .order('created_at', { ascending: false })
+                .limit(20);
+            if (aError) throw aError;
+            setAllPayments(all || []);
         } catch (err) {
             console.error('Error fetching payments:', err);
         }
@@ -96,7 +111,7 @@ const PlatformControl = () => {
 
     useEffect(() => {
         fetchBusinesses();
-        fetchPendingPayments();
+        fetchPayments();
     }, []);
 
     const handleEditChange = (e) => {
@@ -179,11 +194,29 @@ const PlatformControl = () => {
                     })
                     .eq('id', businessId);
                 if (bizError) throw bizError;
+
+                // 2. Enviar Notificación Interna y Push al Dueño
+                const ownerId = b?.owner_id;
+                if (ownerId) {
+                    const title = "Pago Procesado";
+                    const message = "Tu pago ha sido procesado y tu cuenta ya se encuentra activa. ¡Gracias por tu confianza!";
+                    
+                    // Notificación Interna
+                    await sendMessage(businessId, ownerId, title, message, 'GENERAL');
+
+                    // Push Notification (Prioritaria)
+                    await sendPushToProfile({
+                        profileId: ownerId,
+                        title: title,
+                        message: message,
+                        url: '/subscription'
+                    });
+                }
             }
 
             showNotification('success', 'Pago Procesado', `El pago fue ${status === 'APPROVED' ? 'Aprobado' : 'Rechazado'}.`);
             setPaymentModal({ show: false, payment: null, daysToAdd: 30, plan: 'KPOINT PLUS' });
-            fetchPendingPayments();
+            fetchPayments();
             fetchBusinesses();
         } catch (error) {
             console.error('Error processing payment:', error);
@@ -226,7 +259,7 @@ const PlatformControl = () => {
                         <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 !text-[20px] font-black">search</span>
                         <input
                             type="text"
-                            placeholder="Search businesses..."
+                            placeholder={activeSection === 'businesses' ? "Search businesses..." : "Search payments..."}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full bg-white h-12 pl-12 pr-4 rounded-xl text-[15px] font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm placeholder:text-slate-400"
@@ -236,18 +269,38 @@ const PlatformControl = () => {
                         onClick={handleLogout}
                         className="size-12 rounded-xl bg-[#2e3b4e] border border-white/5 flex items-center justify-center text-white relative active:scale-95 transition-all"
                     >
-                        <span className="material-symbols-outlined !text-xl">notifications</span>
-                        {(pendingRequests.length > 0 || pendingPayments.length > 0) && (
-                            <span className="absolute -top-1.5 -right-1.5 size-5 bg-[#64748b] text-[10px] font-bold text-white flex items-center justify-center rounded-full border-2 border-[#1e2836]">
-                                {pendingRequests.length + pendingPayments.length}
+                        <span className="material-symbols-outlined !text-xl">logout</span>
+                    </button>
+                </div>
+
+                {/* Section Tabs */}
+                <div className="flex mt-8 bg-[#2e3b4e] p-1 rounded-2xl gap-1">
+                    <button 
+                        onClick={() => setActiveSection('businesses')}
+                        className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all ${activeSection === 'businesses' ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                    >
+                        <span className="material-symbols-outlined !text-lg">storefront</span>
+                        Comercios
+                    </button>
+                    <button 
+                        onClick={() => setActiveSection('subscriptions')}
+                        className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all ${activeSection === 'subscriptions' ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                    >
+                        <span className="material-symbols-outlined !text-lg">payments</span>
+                        Suscripciones
+                        {pendingPayments.length > 0 && (
+                            <span className="size-5 bg-white text-primary text-[10px] rounded-full flex items-center justify-center animate-pulse">
+                                {pendingPayments.length}
                             </span>
                         )}
                     </button>
                 </div>
             </div>
 
-            {/* Stats Cards Row */}
-            <div className="px-6 -mt-4 relative z-20 overflow-x-auto pb-4 custom-scrollbar-mini">
+            {activeSection === 'businesses' ? (
+                <>
+                    {/* Stats Cards Row */}
+                    <div className="px-6 -mt-4 relative z-20 overflow-x-auto pb-4 custom-scrollbar-mini">
                 <div className="flex gap-4 min-w-[max-content]">
                     {/* Active Card */}
                     <div className="bg-white rounded-[1.2rem] p-4 w-36 shadow-sm border border-slate-100 flex flex-col">
@@ -441,6 +494,114 @@ const PlatformControl = () => {
                     )}
                 </div>
             </div>
+            </>
+            ) : (
+                <div className="px-5 mt-6 pb-20 space-y-8">
+                    {/* Header de Suscripciones */}
+                    <div className="flex items-center justify-between px-1">
+                        <div>
+                            <h2 className="text-xl font-black text-slate-900 tracking-tight">Centro de Pagos</h2>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Verificación de suscripciones</p>
+                        </div>
+                        <div className="bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
+                            <span className="text-[10px] font-black text-slate-400 uppercase block leading-none mb-1">Pendientes</span>
+                            <span className="text-lg font-black text-primary leading-none">{pendingPayments.length}</span>
+                        </div>
+                    </div>
+
+                    {/* Pagos Pendientes (High Priority) */}
+                    <div className="space-y-4">
+                        <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
+                            <span className="size-1.5 bg-primary rounded-full animate-pulse"></span>
+                            Validación Requerida
+                        </h3>
+                        {pendingPayments.length > 0 ? (
+                            <div className="grid grid-cols-1 gap-3">
+                                {pendingPayments.map(payment => (
+                                    <div key={payment.id} className="bg-white border-2 border-primary/20 rounded-[1.5rem] p-4 flex flex-col gap-4 shadow-md relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-10 -mt-10"></div>
+                                        
+                                        <div className="flex justify-between items-start relative z-10">
+                                            <div className="leading-tight flex-1">
+                                                <h3 className="text-[15px] font-black text-slate-900 truncate">{payment.businesses?.name}</h3>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded uppercase">{payment.payment_method}</span>
+                                                    <span className="text-[10px] font-mono font-bold text-primary">#{payment.reference_number}</span>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-lg font-black text-slate-900 leading-none">${payment.amount_usd}</p>
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">Vía {payment.bcv_rate} Bs/$</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="flex gap-2 relative z-10">
+                                            <button
+                                                onClick={() => setPaymentModal({ show: true, payment, daysToAdd: 30, plan: 'KPOINT PLUS' })}
+                                                className="flex-1 h-11 rounded-xl bg-primary text-white font-black text-[11px] uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                                            >
+                                                <span className="material-symbols-outlined text-lg">verified</span>
+                                                PROCESAR AHORA
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-10 text-center space-y-3">
+                                <div className="size-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mx-auto">
+                                    <span className="material-symbols-outlined !text-3xl">done_all</span>
+                                </div>
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">No hay pagos pendientes de revisión</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Historial de Pagos Recientes */}
+                    <div className="space-y-4">
+                        <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Historial de Transacciones (Últimos 20)</h3>
+                        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-50 border-b border-slate-100">
+                                            <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Comercio</th>
+                                            <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Monto</th>
+                                            <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Estado</th>
+                                            <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Fecha</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {allPayments.map(pay => (
+                                            <tr key={pay.id} className="hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-4 py-3">
+                                                    <p className="text-[12px] font-bold text-slate-900 truncate max-w-[120px]">{pay.businesses?.name}</p>
+                                                    <p className="text-[9px] font-mono text-slate-400">Ref: {pay.reference_number}</p>
+                                                </td>
+                                                <td className="px-4 py-3 text-[12px] font-black text-slate-900">
+                                                    ${pay.amount_usd}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase ${
+                                                        pay.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 
+                                                        pay.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 
+                                                        'bg-red-100 text-red-700'
+                                                    }`}>
+                                                        {pay.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 text-[10px] font-medium text-slate-500">
+                                                    {new Date(pay.created_at).toLocaleDateString()}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* Admin Navigation Bar */}
             <NavigationAdmin />
 
@@ -465,9 +626,13 @@ const PlatformControl = () => {
                             <button
                                 onClick={() => {
                                     if (confirmModal.type === 'APPROVE') {
+                                        const expiry = new Date();
+                                        expiry.setDate(expiry.getDate() + 30);
                                         updateStatus(confirmModal.biz.id, {
                                             registration_status: 'OK',
-                                            is_active: true
+                                            is_active: true,
+                                            subscription_plan: 'BASIC',
+                                            subscription_expiry: expiry.toISOString()
                                         });
                                     } else {
                                         updateStatus(confirmModal.biz.id, {
