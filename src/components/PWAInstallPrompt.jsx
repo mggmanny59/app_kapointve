@@ -50,22 +50,8 @@ const PWAInstallPrompt = () => {
     const handleInstallClick = async () => {
         if (!deferredPrompt) return;
 
-        // Intentamos poner la aplicación en pantalla completa para una experiencia inmersiva
-        try {
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.warn(`Fullscreen no disponible: ${err.message}`);
-                });
-            } else if (document.documentElement.webkitRequestFullscreen) { /* Safari */
-                document.documentElement.webkitRequestFullscreen();
-            } else if (document.documentElement.msRequestFullscreen) { /* IE11 */
-                document.documentElement.msRequestFullscreen();
-            }
-        } catch (e) {
-            console.warn('Error al intentar activar Fullscreen', e);
-        }
-
-        // Disparamos la ventana de instalación nativa del navegador
+        // Disparamos la ventana de instalación nativa del navegador PRIMERO
+        // sin interferencias de otras APIs como Fullscreen para asegurar el éxito.
         deferredPrompt.prompt();
 
         // Esperamos la respuesta del usuario
