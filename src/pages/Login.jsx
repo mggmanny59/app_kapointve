@@ -133,7 +133,7 @@ const Login = () => {
     };
 
     return (
-        <div className="h-[100dvh] w-full flex flex-col bg-white text-slate-900 font-display overflow-hidden relative">
+        <div className="h-[100dvh] w-full flex flex-col bg-white text-slate-900 font-display overflow-y-auto relative">
             {/* Fondo con imagen original y degradado ampliado hacia blanco puro */}
             <div className="absolute inset-0 z-0 overflow-hidden">
                 <img
@@ -144,7 +144,7 @@ const Login = () => {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent via-[45%] to-white to-[85%]"></div>
             </div>
 
-            <div className="relative z-10 flex flex-col flex-1 px-6 pt-[22vh] pb-8 justify-between">
+            <div className="relative z-10 flex flex-col flex-1 px-6 pt-[8vh] pb-8 justify-between">
                 <div>
                     {/* Logo / Brand Header */}
                     <div className="flex flex-col items-center mb-6">

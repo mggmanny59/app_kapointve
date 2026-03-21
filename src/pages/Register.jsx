@@ -157,7 +157,7 @@ const Register = () => {
     };
 
     return (
-        <div className="h-[100dvh] w-full flex flex-col bg-white text-slate-900 font-display overflow-hidden relative">
+        <div className="h-[100dvh] w-full flex flex-col bg-white text-slate-900 font-display overflow-y-auto relative">
             {/* Fondo con imagen original y degradado ampliado hacia blanco puro */}
             <div className="absolute inset-0 z-0 overflow-hidden">
                 <img

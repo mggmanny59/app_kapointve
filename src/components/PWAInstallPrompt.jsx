@@ -39,14 +39,16 @@ const PWAInstallPrompt = () => {
 
         window.addEventListener('beforeinstallprompt', handler);
 
-        // Fallback: Si después de 3 segundos el navegador no ha disparado el evento 
-        // (por ejemplo, porque ya está instalada o el navegador no es compatible), 
+        // Fallback: Si después de un tiempo razonable el navegador no ha disparado el evento 
+        // (por ejemplo, porque ya está instalada o el dispositivo es iOS), 
         // permitimos el acceso al login para no dejar al usuario bloqueado.
+        const waitTime = /iPhone|iPad|iPod/i.test(navigator.userAgent) ? 800 : 3000;
+        
         const timeout = setTimeout(() => {
             if (step === 'waiting') {
                 setStep('resolved');
             }
-        }, 3000);
+        }, waitTime);
 
         return () => {
             window.removeEventListener('beforeinstallprompt', handler);
