@@ -66,7 +66,8 @@ const SendNotificationModal = ({ isOpen, onClose, businessId, targetClient = nul
                             profileId: pid,
                             title: title,
                             message: message,
-                            url: '/my-points'
+                            url: '/my-points',
+                            icon: '/pwa-192x192.png' // Aseguramos que pase el icono aunque la función sea vieja
                         })
                     );
                     const pushResults = await Promise.all(pushPromises);
@@ -109,7 +110,7 @@ const SendNotificationModal = ({ isOpen, onClose, businessId, targetClient = nul
                             </h2>
                             <p className="text-[10px] text-[#ff8228] font-black uppercase tracking-[0.3em] mt-1.5 flex items-center gap-2">
                                 <span className="size-2 rounded-full bg-[#ff8228] animate-pulse"></span>
-                                {targetClient ? `DEST_ID: ${targetClient.full_name || 'CLIENT'}` : 'ESTRATEGIA FIDELIZACIÓN'}
+                                {targetClient ? `DESTINATARIO: ${targetClient.profiles?.full_name || 'CLIENTE'}` : 'ESTRATEGIA FIDELIZACIÓN'}
                             </p>
                         </div>
                     </div>

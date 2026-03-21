@@ -30,24 +30,28 @@ self.addEventListener('push', (event) => {
     let data = {
         title: 'KPoint',
         message: '¡Tienes una nueva actualización!',
-        url: '/'
+        url: '/',
+        icon: '/pwa-192x192.png'
     };
 
     if (event.data) {
         try {
             const parsed = event.data.json();
             data = { ...data, ...parsed };
+            // El campo de cuerpo del mensaje puede venir como 'message' o 'body'
+            data.body = parsed.message || parsed.body || data.message;
             console.log('[SW] Datos del push (JSON):', data);
         } catch (e) {
-            data.message = event.data.text();
-            console.log('[SW] Datos del push (Text):', data.message);
+            data.body = event.data.text();
+            console.log('[SW] Datos del push (Text):', data.body);
         }
     }
 
     const options = {
-        body: data.message || data.body || 'Notificación',
-        icon: '/pwa-192x192.png',
+        body: data.body,
+        icon: data.icon || '/pwa-192x192.png',
         badge: '/pwa-192x192.png',
+        image: data.image || null, // Imagen grande opcional
         vibrate: [100, 50, 100],
         data: {
             url: data.url || '/'
@@ -55,7 +59,7 @@ self.addEventListener('push', (event) => {
         actions: [
             { action: 'open', title: 'Ver detalle' }
         ],
-        tag: 'kpoint-notification', // Evita duplicados
+        tag: 'kpoint-notification',
         renotify: true
     };
 
