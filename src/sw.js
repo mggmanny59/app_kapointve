@@ -29,7 +29,7 @@ self.addEventListener('push', (event) => {
 
     let data = {
         title: 'KPoint',
-        message: '¡Tienes una nueva actualización!',
+        body: '¡Tienes una nueva actualización!',
         url: '/',
         icon: '/pwa-192x192.png'
     };
