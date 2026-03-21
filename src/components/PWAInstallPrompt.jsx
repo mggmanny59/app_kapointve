@@ -54,6 +54,13 @@ const PWAInstallPrompt = () => {
         // sin interferencias de otras APIs como Fullscreen para asegurar el éxito.
         deferredPrompt.prompt();
 
+        // Intentamos poner la aplicación en pantalla completa para que la descarga sea inmersiva
+        try {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            }
+        } catch (e) {}
+
         // Esperamos la respuesta del usuario
         const { outcome } = await deferredPrompt.userChoice;
         console.log(`[PWA] Respuesta del usuario a la instalación: ${outcome}`);
