@@ -16,6 +16,7 @@ import ActivityHistory from './pages/ActivityHistory';
 import Subscription from './pages/Subscription';
 import { useAuth } from './context/AuthContext';
 import BackNavigationHandler from './components/BackNavigationHandler';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 // Registro de PWA movido a main.jsx para máxima compatibilidad
 // Splash Screen desactivada para restaurar PWA original
 
@@ -71,6 +72,7 @@ function App() {
       {/* showSplash && <SplashScreen onComplete={() => setShowSplash(false)} /> */}
       {/* Notificación PWA desactivada para forzar el banner nativo del navegador */}
       <BackNavigationHandler />
+      <PWAInstallPrompt />
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Navigate to="/" replace />} />
