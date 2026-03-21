@@ -69,9 +69,8 @@ function App() {
 
   return (
     <Router>
-      {/* showSplash && <SplashScreen onComplete={() => setShowSplash(false)} /> */}
-      {/* Notificación PWA desactivada para forzar el banner nativo del navegador */}
       <BackNavigationHandler />
+      {/* PWAInstallPrompt actúa como Portero (Gateway) visual antes del Login */}
       <PWAInstallPrompt />
       <Routes>
         <Route path="/" element={<Login />} />
