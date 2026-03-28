@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KPoint — Análisis de Infraestructura para Producción</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #1e293b;
+    background: #ffffff;
+    padding: 40px 60px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* COVER HEADER */
+  .cover {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f2944 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 40px 48px;
+    margin-bottom: 36px;
+  }
+  .cover .tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    color: #93c5fd;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+  .cover h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .cover .subtitle {
+    color: #93c5fd;
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .cover .meta {
+    display: flex;
+    gap: 24px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    border-top: 1px solid rgba(255,255,255,0.15);
+    padding-top: 20px;
+    margin-top: 20px;
+  }
+  .cover .meta span strong { color: white; }
+
+  /* PROFILE TABLE */
+  .profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .profile-item {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .profile-item .label { color: #64748b; font-size: 12px; }
+  .profile-item .value { font-weight: 600; font-size: 12px; color: #1e293b; }
+
+  /* ALERT BOXES */
+  .alert {
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .alert-critical {
+    background: #fff1f2;
+    border: 1.5px solid #fecdd3;
+    border-left: 4px solid #ef4444;
+  }
+  .alert-warning {
+    background: #fffbeb;
+    border: 1.5px solid #fde68a;
+    border-left: 4px solid #f59e0b;
+  }
+  .alert-info {
+    background: #eff6ff;
+    border: 1.5px solid #bfdbfe;
+    border-left: 4px solid #3b82f6;
+  }
+  .alert-success {
+    background: #f0fdf4;
+    border: 1.5px solid #bbf7d0;
+    border-left: 4px solid #22c55e;
+  }
+  .alert-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .alert-content .alert-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .alert-critical .alert-title { color: #b91c1c; }
+  .alert-warning .alert-title { color: #92400e; }
+  .alert-info .alert-title { color: #1d4ed8; }
+
+  /* SECTIONS */
+  h2 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f2944;
+    margin: 32px 0 14px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e3a5f;
+    margin: 20px 0 10px 0;
+  }
+
+  /* TABLES */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px 0;
+    font-size: 12px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  thead { background: #1e3a5f; color: white; }
+  thead th { padding: 10px 14px; text-align: left; font-weight: 600; font-size: 11px; letter-spacing: 0.5px; }
+  tbody tr { border-bottom: 1px solid #f1f5f9; }
+  tbody tr:nth-child(even) { background: #f8fafc; }
+  tbody tr:hover { background: #eff6ff; }
+  td { padding: 9px 14px; vertical-align: middle; }
+  td:first-child { font-weight: 500; }
+
+  /* RISK BADGES */
+  .risk-high { background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .risk-med { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .risk-low { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+
+  /* ROADMAP */
+  .roadmap-phase {
+    border-left: 3px solid #3b82f6;
+    padding: 16px 20px;
+    margin: 16px 0;
+    background: #f8fafc;
+    border-radius: 0 8px 8px 0;
+  }
+  .roadmap-phase.go-live { border-left-color: #22c55e; }
+  .roadmap-phase.growth { border-left-color: #f59e0b; }
+  .roadmap-phase.mature { border-left-color: #8b5cf6; }
+  .phase-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .phase-title { font-weight: 700; font-size: 14px; color: #1e293b; }
+  .phase-badge {
+    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+  }
+  .badge-blue { background: #dbeafe; color: #1d4ed8; }
+  .badge-green { background: #dcfce7; color: #15803d; }
+  .badge-amber { background: #fef3c7; color: #92400e; }
+  .badge-purple { background: #ede9fe; color: #6d28d9; }
+
+  /* CHECKLIST */
+  .checklist { list-style: none; margin: 10px 0; }
+  .checklist li {
+    padding: 6px 0;
+    padding-left: 24px;
+    position: relative;
+    font-size: 12.5px;
+    border-bottom: 1px dashed #f1f5f9;
+  }
+  .checklist li:before {
+    content: '☐';
+    position: absolute;
+    left: 0;
+    color: #94a3b8;
+    font-size: 14px;
+  }
+
+  /* BENEFIT LIST */
+  .benefit { padding: 5px 0; padding-left: 20px; position: relative; font-size: 12.5px; }
+  .benefit:before { content: '✓'; position: absolute; left: 0; color: #22c55e; font-weight: 700; }
+
+  /* CODE */
+  code {
+    font-family: 'Fira Code', monospace;
+    background: #f1f5f9;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 11.5px;
+    color: #0f2944;
+    border: 1px solid #e2e8f0;
+  }
+
+  /* FINANCIAL SUMMARY */
+  .fin-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .fin-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .fin-card .period { font-size: 11px; color: #64748b; font-weight: 500; margin-bottom: 4px; }
+  .fin-card .cost { font-size: 22px; font-weight: 700; color: #1e3a5f; }
+  .fin-card .desc { font-size: 11px; color: #64748b; margin-top: 4px; }
+  .fin-card.highlight { background: #1e3a5f; border-color: #1e3a5f; }
+  .fin-card.highlight .period, .fin-card.highlight .desc { color: #93c5fd; }
+  .fin-card.highlight .cost { color: white; }
+
+  /* SECURITY STEPS */
+  .sec-step {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .sec-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #1e3a5f; color: white;
+    font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .sec-content strong { font-size: 13px; color: #1e293b; }
+  .sec-content p { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 2px solid #e2e8f0;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 11px;
+  }
+  .footer strong { color: #1e3a5f; }
+
+  /* PRINT */
+  @media print {
+    body { padding: 20px 40px; }
+    .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    h2 { page-break-before: auto; }
+    table, .roadmap-phase, .fin-grid { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="tag">Documento Interno — Infraestructura SaaS</div>
+  <h1>🏗️ KPoint — Análisis de Infraestructura para Producción</h1>
+  <div class="subtitle">Supabase · Vercel · Plan de Migración a Planes Pagos</div>
+  <div class="meta">
+    <span><strong>Proyecto:</strong> FidelityApp-MVP</span>
+    <span><strong>Fecha:</strong> Marzo 2026</span>
+    <span><strong>Mercado:</strong> Venezuela</span>
+    <span><strong>Estado:</strong> Fase Piloto</span>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<h2>📋 Perfil de Operación</h2>
+<div class="profile-grid">
+  <div class="profile-item"><span class="label">Negocios (3 meses)</span><span class="value">15 kioskos</span></div>
+  <div class="profile-item"><span class="label">Negocios (1 año)</span><span class="value">120 kioskos</span></div>
+  <div class="profile-item"><span class="label">Usuarios finales (6 meses)</span><span class="value">~225 consumidores</span></div>
+  <div class="profile-item"><span class="label">Edge Functions activas</span><span class="value">5 funciones</span></div>
+  <div class="profile-item"><span class="label">Push Notifications</span><span class="value">✅ Por transacción</span></div>
+  <div class="profile-item"><span class="label">Tiempo Real</span><span class="value">✅ Activado</span></div>
+  <div class="profile-item"><span class="label">Imágenes (Storage)</span><span class="value">✅ Supabase Storage</span></div>
+  <div class="profile-item"><span class="label">Backups</span><span class="value">⚠️ Ninguno propio</span></div>
+  <div class="profile-item"><span class="label">Administrador</span><span class="value">👤 Solo tú</span></div>
+  <div class="profile-item"><span class="label">Presupuesto futuro</span><span class="value">$200/mes</span></div>
+</div>
+
+<!-- ALERTAS CRITICAS -->
+<h2>🚨 Alertas Críticas</h2>
+
+<div class="alert alert-critical">
+  <div class="alert-icon">🔴</div>
+  <div class="alert-content">
+    <div class="alert-title">ALERTA #1 — Vercel Hobby prohíbe el uso comercial</div>
+    El plan gratuito de Vercel está limitado explícitamente a proyectos personales y no comerciales (Terms of Service). KPoint es un SaaS con suscripciones. Vercel puede suspender tu cuenta <strong>sin previo aviso</strong>. Debes migrar a Pro el mismo día que cobres tu primer cliente.
+  </div>
+</div>
+
+<div class="alert alert-critical">
+  <div class="alert-icon">🔴</div>
+  <div class="alert-content">
+    <div class="alert-title">ALERTA #2 — Supabase Free pausa proyectos automáticamente</div>
+    Si no hay actividad en los últimos 7 días, Supabase pausa el proyecto. Para un SaaS de producción, esto es inaceptable. <strong>Solución inmediata y gratuita:</strong> Configura un cron job en cron-job.org que haga un SELECT a tu DB cada 3 días.
+  </div>
+</div>
+
+<!-- SUPABASE -->
+<h2>📊 Plan Gratuito de SUPABASE</h2>
+
+<h3>✅ Ventajas en tu Fase Actual (Piloto)</h3>
+<div class="benefit">Costo cero — protege tu capital mientras no tienes ingresos</div>
+<div class="benefit">PostgreSQL completo — RLS, Triggers y funciones ya implementadas funcionan sin restricciones</div>
+<div class="benefit">500K invocaciones Edge Functions/mes — estimado real: ~9,000/mes al inicio (muy por debajo del límite)</div>
+<div class="benefit">1 GB Storage — 15 negocios × 20 imágenes × 200KB ≈ 60MB usados actualmente</div>
+<div class="benefit">2M mensajes Realtime/mes — con 225 usuarios consumes ~15,000/mes</div>
+<div class="benefit">Autenticación ilimitada sin costo por usuarios</div>
+
+<h3>🚨 Limitaciones Críticas para Producción</h3>
+<table>
+  <thead>
+    <tr><th>Limitación</th><th>Impacto en KPoint</th><th>Riesgo</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Proyectos se pausan automáticamente (7 días sin actividad)</td><td>KPoint cae si un negocio no entra en una semana</td><td><span class="risk-high">🔴 CRÍTICO</span></td></tr>
+    <tr><td>Sin backups automáticos diarios</td><td>Un error borra todos los puntos y datos de clientes</td><td><span class="risk-high">🔴 CRÍTICO</span></td></tr>
+    <tr><td>Sin soporte técnico prioritario</td><td>Si algo falla, dependes solo de foros</td><td><span class="risk-med">🟠 ALTO</span></td></tr>
+    <tr><td>Storage limitado a 1 GB</td><td>Al llegar a 120 negocios con imágenes, lo superarás</td><td><span class="risk-low">🟡 MEDIO</span></td></tr>
+    <tr><td>Base de datos limitada a 500 MB</td><td>Con miles de transacciones históricas, podrías acercarte en Año 1</td><td><span class="risk-low">🟡 MEDIO</span></td></tr>
+  </tbody>
+</table>
+
+<!-- VERCEL -->
+<h2>📊 Plan Gratuito de VERCEL</h2>
+
+<h3>✅ Ventajas en tu Fase Actual (Solo Piloto Cerrado)</h3>
+<div class="benefit">100 GB de ancho de banda/mes — tráfico estimado inicial: menos de 5 GB/mes</div>
+<div class="benefit">Deployments ilimitados — actualiza KPoint sin restricciones</div>
+<div class="benefit">HTTPS automático y CDN global — carga rápido sin configuración extra</div>
+<div class="benefit">Preview URLs por commit — prueba cambios antes de publicar</div>
+<div class="benefit">Deployments sin tiempo de inactividad (zero-downtime)</div>
+
+<h3>🚨 Limitaciones Críticas</h3>
+<table>
+  <thead>
+    <tr><th>Limitación</th><th>Impacto en KPoint</th><th>Riesgo</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Uso comercial PROHIBIDO</td><td>Suspensión de cuenta sin aviso previo</td><td><span class="risk-high">🔴 CRÍTICO</span></td></tr>
+    <tr><td>Sin soporte técnico</td><td>Sin a quién llamar cuando un deploy falla</td><td><span class="risk-med">🟠 ALTO</span></td></tr>
+    <tr><td>Sin analíticas web integradas</td><td>No ves métricas reales de uso de la app</td><td><span class="risk-low">🟡 MEDIO</span></td></tr>
+    <tr><td>Sin firewall ni rate limiting a nivel CDN</td><td>Vulnerable a tráfico abusivo</td><td><span class="risk-low">🟡 MEDIO</span></td></tr>
+  </tbody>
+</table>
+
+<!-- ROADMAP -->
+<h2>🗓️ ROADMAP — ¿Cuándo Subir a Planes Pagos?</h2>
+
+<div class="roadmap-phase">
+  <div class="phase-header">
+    <div class="phase-title">FASE 0 — Piloto Cerrado</div>
+    <span class="phase-badge badge-blue">Ahora | $0/mes</span>
+  </div>
+  <p style="font-size:12px;color:#475569;margin-bottom:8px;">Implementar mitigaciones gratuitas de inmediato:</p>
+  <ul class="checklist">
+    <li>Configurar cron job keep-alive en cron-job.org</li>
+    <li>Activar 2FA en Supabase y Vercel</li>
+    <li>Backup manual semanal de tablas críticas en Google Drive</li>
+    <li>Adquirir dominio personal (kpoint.app, kpoint.lat, usekpoint.com)</li>
+  </ul>
+</div>
+
+<div class="roadmap-phase go-live">
+  <div class="phase-header">
+    <div class="phase-title">FASE 1 — Go-Live (Primer Cliente Pago)</div>
+    <span class="phase-badge badge-green">$45/mes</span>
+  </div>
+  <p style="font-size:12px;color:#475569;margin-bottom:8px;"><strong>Trigger exacto:</strong> El mismo día que cobres tu primera suscripción.</p>
+  <table style="margin:10px 0;">
+    <thead><tr><th>Servicio</th><th>Plan</th><th>Costo</th><th>Beneficio Clave</th></tr></thead>
+    <tbody>
+      <tr><td>Supabase</td><td>Pro</td><td>$25/mes</td><td>Sin pausas + backups diarios + 8GB DB + 100GB Storage</td></tr>
+      <tr><td>Vercel</td><td>Pro</td><td>$20/mes</td><td>Uso comercial legal + dominio personalizado + analíticas</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="roadmap-phase growth">
+  <div class="phase-header">
+    <div class="phase-title">FASE 2 — Crecimiento (+60 negocios / +500 usuarios)</div>
+    <span class="phase-badge badge-amber">~$100/mes</span>
+  </div>
+  <table style="margin:10px 0;">
+    <thead><tr><th>Servicio</th><th>Para qué</th><th>Costo</th></tr></thead>
+    <tbody>
+      <tr><td>Supabase Pro</td><td>Base de datos (ya activo)</td><td>$25/mes</td></tr>
+      <tr><td>Vercel Pro</td><td>Hosting (ya activo)</td><td>$20/mes</td></tr>
+      <tr><td>Resend / SendGrid</td><td>Emails transaccionales y recordatorios</td><td>$15–20/mes</td></tr>
+      <tr><td>Sentry Team</td><td>Monitoreo de errores en tiempo real</td><td>$26/mes</td></tr>
+      <tr><td>UptimeRobot Pro</td><td>Alertas si KPoint cae (SMS/email inmediato)</td><td>$7/mes</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="roadmap-phase mature">
+  <div class="phase-header">
+    <div class="phase-title">FASE 3 — Operación Madura (+100 negocios, Año 2)</div>
+    <span class="phase-badge badge-purple">~$150/mes</span>
+  </div>
+  <p style="font-size:12px;color:#475569;">Añadir Cloudflare (capa de seguridad/caché) y evaluar Supabase Team Plan si superas 500,000 filas o necesitas restauración punto a tiempo (PITR).</p>
+</div>
+
+<!-- PROYECCION FINANCIERA -->
+<h2>💰 Proyección de Costos vs. Ingresos</h2>
+<p style="font-size:12px;color:#64748b;margin-bottom:16px;">Asumiendo suscripción BASIC a $15/mes por negocio:</p>
+
+<div class="fin-grid">
+  <div class="fin-card">
+    <div class="period">Piloto (Ahora)</div>
+    <div class="cost">$0</div>
+    <div class="desc">Costo infra</div>
+  </div>
+  <div class="fin-card highlight">
+    <div class="period">Go-Live (Mes 1–3)</div>
+    <div class="cost">$105</div>
+    <div class="desc">Margen neto<br>(10 clientes pagando)</div>
+  </div>
+  <div class="fin-card">
+    <div class="period">Mes 6</div>
+    <div class="cost">$555</div>
+    <div class="desc">Margen neto<br>(40 clientes)</div>
+  </div>
+  <div class="fin-card">
+    <div class="period">Año 1</div>
+    <div class="cost">$1,370</div>
+    <div class="desc">Margen neto<br>(100 clientes)</div>
+  </div>
+</div>
+
+<div class="alert alert-success">
+  <div class="alert-icon">💡</div>
+  <div class="alert-content">
+    <div class="alert-title">Conclusión Financiera</div>
+    Con solo <strong>3 negocios pagando</strong> ya cubres el costo de Supabase Pro + Vercel Pro ($45/mes). La infraestructura nunca será tu cuello de botella económico.
+  </div>
+</div>
+
+<!-- SEGURIDAD -->
+<h2>🛡️ Seguridad para Operador Único</h2>
+
+<div class="sec-step">
+  <div class="sec-num">1</div>
+  <div class="sec-content">
+    <strong>Activa 2FA en Supabase y Vercel ahora mismo</strong>
+    <p>Como eres el único administrador, si alguien accede a tu cuenta, pierdes el negocio. Usa Google Authenticator o Authy.</p>
+  </div>
+</div>
+<div class="sec-step">
+  <div class="sec-num">2</div>
+  <div class="sec-content">
+    <strong>Nunca expongas Service Keys en el frontend</strong>
+    <p>Solo usa la <code>anon key</code> en el cliente. Las Service Keys solo en Edge Functions o backend. ✅ Ya implementado en tu arquitectura.</p>
+  </div>
+</div>
+<div class="sec-step">
+  <div class="sec-num">3</div>
+  <div class="sec-content">
+    <strong>Variables de entorno en Vercel para todas las claves</strong>
+    <p>SUPABASE_URL, SUPABASE_ANON_KEY, y otras claves sensibles nunca deben estar en el código fuente.</p>
+  </div>
+</div>
+<div class="sec-step">
+  <div class="sec-num">4</div>
+  <div class="sec-content">
+    <strong>Configura alertas de uso en Supabase Dashboard</strong>
+    <p>Dashboard → Settings → Alerts. Te avisará si algo consume recursos inusualmente.</p>
+  </div>
+</div>
+<div class="sec-step">
+  <div class="sec-num">5</div>
+  <div class="sec-content">
+    <strong>Documenta credenciales en un gestor de contraseñas</strong>
+    <p>Bitwarden (gratis) es ideal. Como eres solo tú, perder acceso a una cuenta significa perder el negocio.</p>
+  </div>
+</div>
+
+<!-- RESUMEN EJECUTIVO -->
+<h2>🎯 Resumen Ejecutivo</h2>
+<table>
+  <thead>
+    <tr><th>Servicio</th><th>Piloto (Hoy)</th><th>Go-Live</th><th>Crecimiento</th><th>Maduro</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Supabase</td><td>Free ⚠️</td><td>Pro ($25) ✅</td><td>Pro ✅</td><td>Team</td></tr>
+    <tr><td>Vercel</td><td>Free 🚨</td><td>Pro ($20) ✅</td><td>Pro ✅</td><td>Pro/Enterprise</td></tr>
+    <tr><td>Email</td><td>—</td><td>—</td><td>Resend ($15)</td><td>Resend</td></tr>
+    <tr><td>Monitoring</td><td>—</td><td>UptimeRobot Free</td><td>Sentry ($26)</td><td>Sentry</td></tr>
+    <tr><td><strong>Total</strong></td><td><strong>$0</strong></td><td><strong>$45/mes</strong></td><td><strong>~$100/mes</strong></td><td><strong>~$150/mes</strong></td></tr>
+  </tbody>
+</table>
+
+<div class="alert alert-warning">
+  <div class="alert-icon">⚡</div>
+  <div class="alert-content">
+    <div class="alert-title">La Regla de Oro</div>
+    Cambia a planes pagos <strong>el mismo día que cobres tu primer cliente</strong>. Ese es el momento exacto en que tienes una obligación, y esa obligación necesita infraestructura profesional que la respalde. Tu presupuesto de $200/mes cubre con holgura todas las fases del Año 1.
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p><strong>KPoint</strong> — Documento de Infraestructura SaaS · Generado en Marzo 2026</p>
+  <p style="margin-top:4px;">Proyecto Supabase: <code>FidelityApp-MVP</code> · Región: <code>us-east-1</code></p>
+</div>
+
+</body>
+</html>

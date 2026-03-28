@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useNotification } from '../context/NotificationContext';
 import Navigation from '../components/Navigation';
+import MarketingHub from '../components/MarketingHub';
 
 const BusinessSettings = () => {
     const { user, signOut } = useAuth();
@@ -14,6 +15,7 @@ const BusinessSettings = () => {
     const [business, setBusiness] = useState(null);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [activeTab, setActiveTab] = useState('info'); // 'info' | 'marketing'
 
     useEffect(() => {
         const fetchBusiness = async () => {
@@ -124,12 +126,39 @@ const BusinessSettings = () => {
                         </h1>
                         <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">Identidad y Reglas</p>
                     </div>
+                </div>
 
+                {/* Tabs */}
+                <div className="flex mt-6 bg-slate-200/50 p-1 rounded-2xl">
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('info')}
+                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all ${
+                            activeTab === 'info' 
+                            ? 'bg-white text-slate-900 shadow-sm' 
+                            : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                    >
+                        Info Básica
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('marketing')}
+                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all flex items-center justify-center gap-1 ${
+                            activeTab === 'marketing' 
+                            ? 'bg-primary text-white shadow-sm shadow-primary/30' 
+                            : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                    >
+                        <span className="material-symbols-outlined !text-sm">campaign</span>
+                        Marketing Hub
+                    </button>
                 </div>
             </header>
 
             <main className="px-6 space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500 pt-6">
-                <form onSubmit={handleSave} className="space-y-3">
+                {activeTab === 'info' ? (
+                    <form onSubmit={handleSave} className="space-y-3">
 
                     <div className="space-y-2 px-1">
                         {/* Section Header */}
@@ -347,6 +376,9 @@ const BusinessSettings = () => {
                         Volver al Panel
                     </button>
                 </form>
+                ) : (
+                    <MarketingHub />
+                )}
             </main>
 
             {/* Navigation (Sticky Bottom) */}
