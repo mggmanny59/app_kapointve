@@ -24,10 +24,6 @@ const Login = () => {
         return () => clearTimeout(timer);
     }, []);
 
-    // The app will stay on Login screen because we removed the automatic useEffect redirection
-    // that happened on mount if 'user' was present. This ensures it "always starts on login".
-
-
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);

@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
                 // Fetch Profile and Business Status
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('*, business_members(business_id, businesses(is_active, registration_status, subscription_expiry))')
+                    .select('*, business_members(role, business_id, businesses(is_active, registration_status, subscription_expiry))')
                     .eq('id', session.user.id)
                     .maybeSingle();
 

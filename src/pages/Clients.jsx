@@ -288,7 +288,6 @@ const Clients = () => {
                     </div>
 
                     <div className="p-6 space-y-8 pb-32">
-                        {/* Orange Profile Card */}
                         {/* Compact Orange Profile Card */}
                         <div className="relative overflow-hidden bg-[rgb(255,101,14)] p-5 rounded-[1.5rem] shadow-xl shadow-orange-500/10 text-white">
                             <div className="relative z-10 flex items-center justify-between">

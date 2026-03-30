@@ -143,14 +143,16 @@ export async function unsubscribeUserFromPush() {
 /**
  * Llama a la Edge Function para enviar una notificación push a un perfil específico
  */
-export async function sendPushToProfile({ profileId, title, message, url = '/dashboard' }) {
+export async function sendPushToProfile({ profileId, title, message, url = '/dashboard', icon = null, image = null }) {
     try {
         const { data, error } = await supabase.functions.invoke('send-push', {
             body: {
                 profile_id: profileId,
                 title,
                 message,
-                url
+                url,
+                icon,
+                image
             }
         });
 

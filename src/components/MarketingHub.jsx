@@ -18,6 +18,7 @@ const MarketingHub = () => {
     const [loading, setLoading] = useState(false);
     const [selectedTemplate, setSelectedTemplate] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
     useEffect(() => {
         fetchTemplates(activeCategory);
@@ -106,10 +107,14 @@ const MarketingHub = () => {
 
     return (
         <div className="space-y-6">
-            <div className="bg-primary/10 rounded-3xl p-6 border-2 border-primary/20 text-center">
-                <span className="material-symbols-outlined text-primary text-4xl mb-2">campaign</span>
-                <h2 className="text-xl font-black text-slate-900 mb-1">Centro de Marketing</h2>
-                <p className="text-xs text-slate-500 font-bold">Plantillas listas para imprimir y atraer pings de fidelidad a tu negocio.</p>
+            <div className="bg-primary/10 rounded-[1.5rem] p-4 border-2 border-primary/20 flex items-center gap-4">
+                <div className="bg-white/60 p-3 rounded-2xl flex-shrink-0 shadow-sm">
+                    <span className="material-symbols-outlined text-primary !text-[28px]">campaign</span>
+                </div>
+                <div>
+                    <h2 className="text-sm font-black text-slate-900 mb-0.5 whitespace-nowrap">Centro de Marketing</h2>
+                    <p className="text-[10px] leading-snug text-slate-600 font-bold pr-2">Imprime plantillas para promover tu negocio en KPoint.</p>
+                </div>
             </div>
 
             {/* Categorías */}
@@ -149,62 +154,81 @@ const MarketingHub = () => {
                         <p className="text-slate-500 font-black uppercase tracking-widest text-[10px]">Sin plantillas en esta categoría</p>
                     </div>
                 ) : (
-                    <div className="flex overflow-x-auto gap-4 pb-4 snap-x">
+                    <div className="flex overflow-x-auto gap-4 pb-4 snap-x pr-4">
                         {templates.map((template, index) => (
                             <button
                                 key={index}
                                 type="button"
-                                onClick={() => setSelectedTemplate(template)}
-                                className={`snap-center flex-shrink-0 w-56 aspect-[11/8.5] rounded-2xl overflow-hidden border-4 transition-all relative flex items-center justify-center bg-slate-50 ${
-                                    selectedTemplate?.name === template.name 
-                                    ? 'border-primary shadow-xl shadow-primary/20 scale-100' 
-                                    : 'border-slate-200 hover:border-slate-400 scale-95 opacity-80'
-                                }`}
+                                onClick={() => {
+                                    setSelectedTemplate(template);
+                                    setIsPreviewModalOpen(true);
+                                }}
+                                className="snap-center flex-shrink-0 w-[85vw] sm:w-[340px] aspect-[16/9] sm:aspect-[4/3] rounded-3xl overflow-hidden border-2 border-slate-200 transition-all relative flex items-center justify-center bg-slate-50 active:scale-95 hover:border-primary/50 shadow-sm"
                             >
                                 <img 
                                     src={template.url} 
                                     alt={template.name} 
-                                    className="max-w-full max-h-full object-contain" 
+                                    className="w-full h-full object-contain p-2" 
                                 />
-                                {selectedTemplate?.name === template.name && (
-                                    <div className="absolute inset-0 bg-primary/10 flex items-center justify-center backdrop-blur-[2px]">
-                                        <div className="bg-white size-10 rounded-full flex items-center justify-center shadow-lg">
-                                            <span className="material-symbols-outlined text-primary font-black">check</span>
-                                        </div>
-                                    </div>
-                                )}
                             </button>
                         ))}
                     </div>
                 )}
 
-                {/* Zona de Descarga Activa */}
-                {selectedTemplate && (
-                    <div className="mt-6 pt-6 border-t-2 border-slate-100 animate-in fade-in slide-in-from-bottom-4">
-                        <h4 className="font-black text-slate-900 uppercase tracking-widest text-[10px] mb-4 text-center">Exportar para Imprimir</h4>
+                {/* Modal de Vista Previa y Exportación */}
+                {isPreviewModalOpen && selectedTemplate && (
+                    <div className="fixed inset-0 bg-slate-900/95 z-[100] flex flex-col backdrop-blur-md animate-in fade-in duration-300">
+                        {/* Header Modal */}
+                        <div className="flex items-center justify-between p-5 bg-gradient-to-b from-black/50 to-transparent">
+                            <h3 className="text-white font-black uppercase tracking-widest text-xs flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary !text-lg">visibility</span>
+                                Vista Previa
+                            </h3>
+                            <button 
+                                onClick={() => setIsPreviewModalOpen(false)}
+                                className="size-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/30 transition-colors active:scale-90"
+                            >
+                                <span className="material-symbols-outlined font-black">close</span>
+                            </button>
+                        </div>
                         
-                        <div className="grid grid-cols-2 gap-3">
-                            <button
-                                type="button"
-                                disabled={isGenerating}
-                                onClick={() => handleDownload('carta')}
-                                className="flex flex-col items-center justify-center p-4 rounded-3xl border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 active:scale-95 transition-all gap-2 disabled:opacity-50"
-                            >
-                                <span className="material-symbols-outlined text-primary text-3xl">description</span>
-                                <span className="font-black text-slate-900 text-xs">Formato Carta</span>
-                                <span className="text-[9px] text-slate-500 uppercase tracking-widest font-bold text-center">1 volante grande<br/>por hoja (8.5"x11")</span>
-                            </button>
+                        {/* Imagen Grande Central */}
+                        <div className="flex-1 p-4 flex items-center justify-center overflow-hidden">
+                            <img 
+                                src={selectedTemplate.url} 
+                                alt="Vista Previa" 
+                                className="max-w-full max-h-[90%] object-contain drop-shadow-2xl rounded-lg"
+                            />
+                        </div>
 
-                            <button
-                                type="button"
-                                disabled={isGenerating}
-                                onClick={() => handleDownload('media-carta')}
-                                className="flex flex-col items-center justify-center p-4 rounded-3xl border-2 border-primary bg-primary hover:bg-orange-600 active:scale-95 transition-all gap-2 disabled:opacity-50 shadow-lg shadow-primary/30"
-                            >
-                                <span className="material-symbols-outlined text-white text-3xl">file_copy</span>
-                                <span className="font-black text-white text-xs">Media Carta</span>
-                                <span className="text-[9px] text-white/80 uppercase tracking-widest font-bold text-center">2 volantes medianos<br/>por hoja (ahorra papel)</span>
-                            </button>
+                        {/* Botones de Exportación (Bottom Sheet) */}
+                        <div className="bg-white rounded-t-[2rem] p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.3)] pb-8 animate-in slide-in-from-bottom-8 duration-500">
+                            <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
+                            <h4 className="font-black text-slate-900 uppercase tracking-widest text-[10px] mb-4 text-center">Imprimir o Generar PDF</h4>
+                            
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    disabled={isGenerating}
+                                    onClick={() => handleDownload('carta')}
+                                    className="flex flex-col items-center justify-center p-4 rounded-3xl border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 active:scale-95 transition-all gap-2 disabled:opacity-50"
+                                >
+                                    <span className="material-symbols-outlined text-primary text-3xl">description</span>
+                                    <span className="font-black text-slate-900 text-[11px] text-center uppercase tracking-widest">Formato<br/>Carta</span>
+                                    <span className="text-[9px] text-slate-500 font-bold text-center mt-1">1 imagen grande<br/>alta resolución</span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    disabled={isGenerating}
+                                    onClick={() => handleDownload('media-carta')}
+                                    className="flex flex-col items-center justify-center p-4 rounded-3xl border-2 border-primary bg-primary hover:bg-orange-600 active:scale-95 transition-all gap-2 disabled:opacity-50 shadow-lg shadow-primary/30"
+                                >
+                                    <span className="material-symbols-outlined text-white text-3xl">file_copy</span>
+                                    <span className="font-black text-white text-[11px] text-center uppercase tracking-widest">Media<br/>Carta</span>
+                                    <span className="text-[9px] text-white/80 font-bold text-center mt-1">2 medianos<br/>(ahorra papel)</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}

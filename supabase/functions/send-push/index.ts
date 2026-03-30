@@ -13,7 +13,7 @@ serve(async (req) => {
     }
 
     try {
-        const { profile_id, title, message, url } = await req.json()
+        const { profile_id, title, message, url, icon, image, badge } = await req.json()
         console.log(`[send-push] Iniciando para profile_id: ${profile_id}`)
 
         if (!profile_id) throw new Error('profile_id is required')
@@ -58,7 +58,10 @@ serve(async (req) => {
         const payload = JSON.stringify({
             title: title || 'KPoint',
             message: message || '¡Tienes una nueva actualización!',
-            url: url || '/dashboard'
+            url: url || '/dashboard',
+            icon: icon || null,
+            image: image || null,
+            badge: badge || '/pwa-192x192.png'
         })
 
         console.log(`[send-push] Payload: ${payload}`)

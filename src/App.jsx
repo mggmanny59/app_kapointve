@@ -43,13 +43,13 @@ const AdminRoute = ({ children }) => {
   
   // Special case: allow access to subscription page for admins even if expired
   if (window.location.pathname === '/subscription') {
-    if (role === 'admin') return children;
+    if (role === 'admin' || role === 'owner' || role === 'manager') return children;
     // For cashiers, we allow them to enter the page so ProtectedRoute doesn't loop them,
     // but the Subscription page itself should handle the limited view.
     return children; 
   }
 
-  if (role !== 'admin') {
+  if (role !== 'admin' && role !== 'owner' && role !== 'manager') {
     return <Navigate to="/dashboard" replace />;
   }
 
