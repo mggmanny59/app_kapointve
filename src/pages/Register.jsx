@@ -187,10 +187,10 @@ const Register = () => {
                     </div>
 
                     {/* Register Card (Stitch Inspired) */}
-                    <div className="max-w-[440px] w-full mx-auto bg-white/95 backdrop-blur-sm rounded-[32px] shadow-2xl shadow-slate-200/50 p-6 border border-white flex flex-col overflow-hidden">
-                        <div className="text-center mb-4 shrink-0">
-                            <h2 className="text-lg font-bold text-slate-900 leading-tight">¡Únete ahora!</h2>
-                            <p className="text-xs text-slate-500 font-medium">Crea tu cuenta en segundos</p>
+                    <div className="max-w-[440px] w-full mx-auto bg-white/95 backdrop-blur-sm rounded-[40px] shadow-[0_25px_70px_-15px_rgba(0,0,0,0.45)] p-10 border border-white flex flex-col overflow-hidden">
+                        <div className="text-center mb-6 shrink-0">
+                            <h2 className="text-xl font-bold text-slate-900 leading-tight">¡Únete ahora!</h2>
+                            <p className="text-sm text-slate-500 font-medium mt-1">Crea tu cuenta en segundos</p>
                         </div>
 
                         {/* Role Tabs */}
@@ -405,7 +405,7 @@ const Register = () => {
 
                 {/* Footer Credits */}
                 <div className="max-w-[440px] w-full mx-auto pb-2 text-center shrink-0 flex flex-col gap-4">
-                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest opacity-60">
+                    <p className="text-black text-[10px] font-bold uppercase tracking-widest">
                         Desarrollado por CloudNets 2026 - Venezuela
                     </p>
                     

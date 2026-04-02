@@ -57,10 +57,10 @@ const ForgotPassword = () => {
                         </div>
                     </div>
 
-                    <div className="max-w-[440px] w-full mx-auto bg-white/95 backdrop-blur-sm rounded-[32px] shadow-2xl shadow-slate-200/50 p-8 border border-white">
-                        <div className="text-center mb-6">
-                            <h2 className="text-xl font-black text-slate-900 leading-tight">¿Olvidaste tu contraseña?</h2>
-                            <p className="text-xs text-slate-500 font-medium mt-2">Ingresa tu correo electrónico y te enviaremos un enlace para restablecerla.</p>
+                    <div className="max-w-[440px] w-full mx-auto bg-white/95 backdrop-blur-sm rounded-[40px] shadow-[0_25px_70px_-15px_rgba(0,0,0,0.45)] p-12 border border-white">
+                        <div className="text-center mb-10">
+                            <h2 className="text-2xl font-black text-slate-900 leading-tight">¿Olvidaste tu contraseña?</h2>
+                            <p className="text-sm text-slate-500 font-medium mt-3">Ingresa tu correo electrónico y te enviaremos un enlace para restablecerla.</p>
                         </div>
 
                         <form onSubmit={handleResetRequest} className="space-y-5">
@@ -105,7 +105,7 @@ const ForgotPassword = () => {
                 </div>
 
                 <div className="max-w-[440px] w-full mx-auto mt-auto pb-2 text-center flex flex-col gap-4">
-                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest opacity-60">
+                    <p className="text-black text-[10px] font-bold uppercase tracking-widest">
                         Desarrollado por CloudNets 2026 - Venezuela
                     </p>
                     

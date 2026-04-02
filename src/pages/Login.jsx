@@ -159,18 +159,18 @@ const Login = () => {
                     </div>
 
                     {/* Login Card (Stitch Inspired) */}
-                    <div className="max-w-[440px] w-full mx-auto bg-white/95 backdrop-blur-sm rounded-[32px] shadow-2xl shadow-slate-200/50 p-6 border border-white">
-                        <div className="text-center mb-5">
-                            <h2 className="text-lg font-bold text-slate-900 leading-tight">¡Bienvenido de nuevo!</h2>
-                            <p className="text-xs text-slate-500 font-medium">Ingresa para acceder a tus beneficios</p>
+                    <div className="max-w-[440px] w-full mx-auto bg-white/95 backdrop-blur-sm rounded-[40px] shadow-[0_25px_70px_-15px_rgba(0,0,0,0.45)] p-10 border border-white">
+                        <div className="text-center mb-8">
+                            <h2 className="text-xl font-bold text-slate-900 leading-tight">¡Bienvenido de nuevo!</h2>
+                            <p className="text-sm text-slate-500 font-medium mt-1">Ingresa para acceder a tus beneficios</p>
                         </div>
 
                         {/* Role Tabs */}
-                        <div className="flex bg-slate-50 p-1 rounded-2xl border-2 border-[#595A5B] mb-5 text-xs">
+                        <div className="flex bg-slate-50 p-1.5 rounded-2xl border-2 border-[#595A5B] mb-10 text-xs">
                             <button
                                 type="button"
                                 onClick={() => setActiveTab('client')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold transition-all ${activeTab === 'client'
+                                className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold transition-all ${activeTab === 'client'
                                     ? 'bg-[#ff6a00] text-white shadow-lg'
                                     : 'text-slate-500 hover:text-slate-900'
                                     }`}
@@ -181,7 +181,7 @@ const Login = () => {
                             <button
                                 type="button"
                                 onClick={() => setActiveTab('admin')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold transition-all ${activeTab === 'admin'
+                                className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold transition-all ${activeTab === 'admin'
                                     ? 'bg-[#ff6a00] text-white shadow-lg'
                                     : 'text-slate-500 hover:text-slate-900'
                                     }`}
@@ -192,7 +192,7 @@ const Login = () => {
                         </div>
 
                         {/* Formulario */}
-                        <form onSubmit={handleLogin} className="space-y-3.5" autoComplete="off">
+                        <form onSubmit={handleLogin} className="space-y-6" autoComplete="off">
                             <div className="flex flex-col gap-1">
                                 <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">Correo Electrónico</label>
                                 <div className="relative group text-sm">
@@ -262,7 +262,7 @@ const Login = () => {
 
                 {/* Footer Credits */}
                 <div className="max-w-[440px] w-full mx-auto mt-auto text-center flex flex-col gap-4">
-                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest opacity-60">
+                    <p className="text-black text-[10px] font-bold uppercase tracking-widest">
                         Desarrollado por CloudNets 2026 - Venezuela
                     </p>
                     
