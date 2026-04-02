@@ -104,10 +104,13 @@ const ForgotPassword = () => {
                     </div>
                 </div>
 
-                <div className="max-w-[440px] w-full mx-auto mt-auto pb-2 text-center">
+                <div className="max-w-[440px] w-full mx-auto mt-auto pb-2 text-center flex flex-col gap-4">
                     <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest opacity-60">
                         Desarrollado por CloudNets 2026 - Venezuela
                     </p>
+                    
+                    {/* Banner Naranja */}
+                    <div className="bg-[#ff6a00] h-3 w-full rounded-full shadow-lg shadow-[#ff6a00]/30"></div>
                 </div>
             </div>
         </div>
