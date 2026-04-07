@@ -479,35 +479,56 @@ const MyPoints = () => {
             {selectedBusiness && (
                 <div className="fixed inset-0 z-[60] bg-white overflow-y-auto pb-32">
                     {/* Header */}
-                    <div className="sticky top-0 px-6 pt-8 pb-4 bg-white/90 backdrop-blur-xl z-50 flex items-center justify-between border-b border-slate-100">
-                        <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-amber-500 font-black text-2xl">card_giftcard</span>
-                                <h1 className="text-xl font-black text-slate-900 uppercase tracking-tighter leading-none">Canje de Premios</h1>
-                            </div>
+                    <div className="sticky top-0 bg-white z-50">
+                        <div className="px-6 pt-8 pb-4 flex items-center justify-between">
+                            <div className="flex flex-col">
+                                <div className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary font-black text-3xl">card_giftcard</span>
+                                    <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter leading-none">Canje de Premios</h1>
+                                </div>
 
-                            <div className="flex items-center gap-2 mt-2.5 bg-slate-50 border border-slate-200 pl-3 pr-4 py-1.5 rounded-2xl w-fit shadow-sm">
-                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Tu Saldo:</span>
-                                <div className="flex items-center gap-1.5">
-                                    <span className="material-symbols-outlined text-lg text-amber-500 font-black">stars</span>
-                                    <span className="text-base font-black text-amber-600 leading-none">
-                                        {loyaltyCards.find(c => c.business_id === selectedBusiness.id)?.current_points || 0}
-                                        <span className="text-[10px] ml-0.5 text-amber-500/80">PTS</span>
-                                    </span>
+                                <div className="flex items-center gap-3 mt-3 bg-slate-50 border-2 border-slate-200 pl-4 pr-5 py-2.5 rounded-[1.5rem] w-fit shadow-md">
+                                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Tu Saldo:</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-2xl text-amber-500 font-black">stars</span>
+                                        <span className="text-2xl font-black text-amber-600 leading-none tracking-tight">
+                                            {loyaltyCards.find(c => c.business_id === selectedBusiness.id)?.current_points || 0}
+                                            <span className="text-xs ml-1 font-black text-amber-500/80">PTS</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setSelectedBusiness(null)}
+                                className="size-12 rounded-full bg-slate-50 border border-slate-200 text-slate-900 flex items-center justify-center active:scale-90 transition-all shadow-sm"
+                            >
+                                <span className="material-symbols-outlined !text-2xl">close</span>
+                            </button>
+                        </div>
+
+                        {/* Orange Banner Section */}
+                        <div className="relative mb-14 px-6">
+                            <div className="w-full h-24 bg-primary rounded-b-[2.5rem] shadow-xl shadow-primary/30"></div>
+                            
+                            {/* Logo Circle with defined border */}
+                            <div className="absolute left-1/2 -bottom-14 -translate-x-1/2">
+                                <div className="size-28 rounded-full border-2 border-[#595A5B] bg-white shadow-xl flex items-center justify-center overflow-hidden">
+                                    {selectedBusiness?.logo_url ? (
+                                        <img src={selectedBusiness.logo_url} alt={selectedBusiness.name} className="w-full h-full object-contain p-2" />
+                                    ) : (
+                                        <div className="flex flex-col items-center">
+                                            <span className="material-symbols-outlined text-primary !text-4xl font-black">store</span>
+                                            <span className="text-[8px] font-black text-slate-400 uppercase">Logo</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
-                        <button
-                            onClick={() => setSelectedBusiness(null)}
-                            className="size-10 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 flex items-center justify-center active:scale-90 transition-all"
-                        >
-                            <span className="material-symbols-outlined">close</span>
-                        </button>
                     </div>
 
-                    <div className="p-6">
+                    <div className="px-6 py-2 mb-20">
                         {businessPrizes.length > 0 ? (
-                            <div className="grid grid-cols-1 gap-5">
+                            <div className="grid grid-cols-1 gap-3">
                                 {businessPrizes.map(p => {
                                     const userPoints = loyaltyCards.find(c => c.business_id === selectedBusiness.id)?.current_points || 0;
                                     const isAffordable = userPoints >= p.cost_points;
