@@ -186,7 +186,19 @@ const MyPoints = () => {
             .on('broadcast', { event: 'points_earned' }, (payload) => {
                 console.log('¡Broadcast de puntos recibido!', payload);
                 showNotification('success', '¡Puntos Recibidos!', `Acabas de ganar ${payload.payload.points} nuevos puntos en ${payload.payload.businessName}.`);
-                fetchUserData();
+                
+                // Actualización optimista del estado local
+                setLoyaltyCards(prev => prev.map(card => {
+                    if (card.businesses?.name === payload.payload.businessName) {
+                        return { 
+                            ...card, 
+                            current_points: Number(card.current_points) + Number(payload.payload.points) 
+                        };
+                    }
+                    return card;
+                }));
+
+                setTimeout(() => fetchUserData(), 1000);
 
                 // Opción: Cerrar cualquier modal abierto (como el del código QR) para que vean el saldo
                 setShowMainQRModal(false);
@@ -194,7 +206,19 @@ const MyPoints = () => {
             .on('broadcast', { event: 'reward_redeemed' }, (payload) => {
                 console.log('¡Broadcast de CANJE recibido!', payload);
                 showNotification('success', '¡BRUTAL! ¡YA ES TUYO! 🎁✨', `¡Woooow! Acabas de canjear "${payload.payload.prizeName}" en ${payload.payload.businessName}. ¡Te lo mereces! Disfrútalo al máximo. 🥳🔥`);
-                fetchUserData();
+                
+                // Actualización optimista del estado local
+                setLoyaltyCards(prev => prev.map(card => {
+                    if (card.businesses?.name === payload.payload.businessName) {
+                        return { 
+                            ...card, 
+                            current_points: Math.max(0, Number(card.current_points) - Number(payload.payload.pointsSpent)) 
+                        };
+                    }
+                    return card;
+                }));
+
+                setTimeout(() => fetchUserData(), 1000);
                 
                 // Cerrar modales de canje
                 setShowRedemptionQR(null);
@@ -207,7 +231,7 @@ const MyPoints = () => {
                 filter: `profile_id=eq.${user.id}`
             }, (payload) => {
                 console.log('Cambio en base de datos detectado:', payload.new);
-                fetchUserData();
+                setTimeout(() => fetchUserData(), 1000);
                 if (payload.new.type === 'EARN') {
                     // Solo mostramos si no hemos mostrado el broadcast ya
                     showNotification('success', '¡Saldo Actualizado!', `Has acumulado ${payload.new.points_amount} puntos.`);
@@ -222,7 +246,7 @@ const MyPoints = () => {
                 table: 'loyalty_cards',
                 filter: `profile_id=eq.${user.id}`
             }, () => {
-                fetchUserData();
+                setTimeout(() => fetchUserData(), 1000);
             })
             .subscribe((status) => {
                 console.log('Estado canal Realtime Cliente:', status);

@@ -101,7 +101,52 @@ const Clients = () => {
             }
         };
 
-        if (user) fetchClients();
+        if (user) {
+            fetchClients();
+            
+            // Set up Realtime listener for this business transactions to keep clients updated
+            const setupRealtime = async () => {
+                const { data: profileData } = await supabase
+                    .from('profiles')
+                    .select('business_members(business_id)')
+                    .eq('id', user.id)
+                    .single();
+                
+                const bId = profileData?.business_members?.[0]?.business_id;
+                if (bId) {
+                    const channel = supabase.channel(`business-clients-${bId}`)
+                        .on('postgres_changes', {
+                            event: 'INSERT',
+                            schema: 'public',
+                            table: 'transactions',
+                            filter: `business_id=eq.${bId}`
+                        }, () => {
+                            setTimeout(() => fetchClients(), 1000); // 1s delay for trigger processing
+                        })
+                        .on('postgres_changes', {
+                            event: 'UPDATE',
+                            schema: 'public',
+                            table: 'loyalty_cards',
+                            filter: `business_id=eq.${bId}`
+                        }, () => {
+                            fetchClients();
+                        })
+                        .subscribe();
+                        
+                    return channel;
+                }
+                return null;
+            };
+            
+            let currentChannel = null;
+            setupRealtime().then(channel => {
+                if (channel) currentChannel = channel;
+            });
+            
+            return () => {
+                if (currentChannel) supabase.removeChannel(currentChannel);
+            };
+        }
     }, [user]);
 
     const [filterType, setFilterType] = useState('all'); // 'all', 'vip', 'new', 'active'
