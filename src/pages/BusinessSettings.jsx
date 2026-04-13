@@ -15,7 +15,20 @@ const BusinessSettings = () => {
     const [business, setBusiness] = useState(null);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [activeTab, setActiveTab] = useState('info'); // 'info' | 'marketing'
+    const [activeTab, setActiveTab] = useState('info'); // 'info' | 'promos' | 'marketing'
+    
+    // Promotions states
+    const [promoView, setPromoView] = useState('list'); // 'list', 'create', 'edit'
+    const [promotions, setPromotions] = useState([]);
+    const [promoForm, setPromoForm] = useState({
+        title: '',
+        description: '',
+        start_date: '',
+        end_date: '',
+        image_url: 'Promo_Kpoint.png'
+    });
+    const [isSavingPromo, setIsSavingPromo] = useState(false);
+    const [promoToEdit, setPromoToEdit] = useState(null);
 
     useEffect(() => {
         const fetchBusiness = async () => {
@@ -38,6 +51,132 @@ const BusinessSettings = () => {
         if (user) fetchBusiness();
     }, [user]);
 
+    useEffect(() => {
+        if (activeTab === 'promos') {
+            fetchPromotions();
+        }
+    }, [activeTab]);
+
+    const fetchPromotions = async () => {
+        if (!business) return;
+        try {
+            const { data, error } = await supabase
+                .from('promotions')
+                .select('*')
+                .eq('business_id', business.id)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setPromotions(data || []);
+        } catch (err) {
+            console.error('Error fetching promotions:', err);
+            showNotification('error', 'Error', 'No se pudieron cargar las promociones.');
+        }
+    };
+
+    const handlePromoImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${business.id}_promo_${Math.random()}.${fileExt}`;
+            const filePath = `promotions/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('business-assets')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('business-assets')
+                .getPublicUrl(filePath);
+
+            setPromoForm(prev => ({ ...prev, image_url: publicUrl }));
+            showNotification('success', '¡Imagen Cargada!', 'La imagen de la promoción se ha actualizado correctamente.');
+        } catch (err) {
+            console.error('Error uploading promo image:', err);
+            showNotification('error', 'Error', 'No se pudo cargar la imagen.');
+        }
+    };
+
+    const handleSavePromo = async () => {
+        if (!promoForm.title || !promoForm.start_date || !promoForm.end_date) {
+            showNotification('warning', 'Campos requeridos', 'Por favor completa el nombre y el rango de fechas.');
+            return;
+        }
+
+        setIsSavingPromo(true);
+        try {
+            const promoData = {
+                title: promoForm.title,
+                description: promoForm.description,
+                start_date: promoForm.start_date,
+                end_date: promoForm.end_date,
+                image_url: promoForm.image_url,
+                business_id: business.id,
+                is_active: true
+            };
+
+            let error;
+            if (promoView === 'edit' && promoToEdit) {
+                const { error: updateError } = await supabase
+                    .from('promotions')
+                    .update(promoData)
+                    .eq('id', promoToEdit.id);
+                error = updateError;
+            } else {
+                const { error: insertError } = await supabase
+                    .from('promotions')
+                    .insert([promoData]);
+                error = insertError;
+            }
+
+            if (error) throw error;
+
+            showNotification('success', '¡Éxito!', promoView === 'edit' ? 'Promoción actualizada.' : 'Promoción creada con éxito.');
+            setPromoView('list');
+            fetchPromotions();
+            setPromoForm({ title: '', description: '', start_date: '', end_date: '', image_url: 'Promo_Kpoint.png' });
+        } catch (err) {
+            console.error('Error saving promo:', err);
+            showNotification('error', 'Error', 'No se pudo guardar la promoción.');
+        } finally {
+            setIsSavingPromo(false);
+        }
+    };
+
+    const handleDeletePromo = async (id) => {
+        if (!confirm('¿Estás seguro de que deseas eliminar esta promoción?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('promotions')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            showNotification('success', '¡Eliminada!', 'La promoción ha sido borrada.');
+            fetchPromotions();
+        } catch (err) {
+            console.error('Error deleting promo:', err);
+            showNotification('error', 'Error', 'No se pudo eliminar la promoción.');
+        }
+    };
+
+    const handleEditPromo = (promo) => {
+        setPromoToEdit(promo);
+        setPromoForm({
+            title: promo.title,
+            description: promo.description || '',
+            start_date: promo.start_date ? new Date(promo.start_date).toISOString().split('T')[0] : '',
+            end_date: promo.end_date ? new Date(promo.end_date).toISOString().split('T')[0] : '',
+            image_url: promo.image_url || 'Promo_Kpoint.png'
+        });
+        setPromoView('edit');
+    };
+
     const handleLogoUpload = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -48,14 +187,12 @@ const BusinessSettings = () => {
             const fileName = `${business.id}-${Math.random()}.${fileExt}`;
             const filePath = `logos/${fileName}`;
 
-            // Upload to Supabase Storage
             const { error: uploadError } = await supabase.storage
                 .from('business-assets')
                 .upload(filePath, file);
 
             if (uploadError) throw uploadError;
 
-            // Get Public URL
             const { data: { publicUrl } } = supabase.storage
                 .from('business-assets')
                 .getPublicUrl(filePath);
@@ -85,15 +222,13 @@ const BusinessSettings = () => {
                     phone: business.phone,
                     city: business.city,
                     points_per_dollar: business.points_per_dollar,
-                    logo_url: business.logo_url,
-                    registration_data: true // Set to true since all fields are required for submission
+                    logo_url: business.logo_url
                 })
                 .eq('id', business.id);
 
             if (error) throw error;
             showNotification('success', '¡Ajustes Guardados!', 'La configuración de tu negocio se ha actualizado correctamente.');
 
-            // Redirect to dashboard after a short delay
             setTimeout(() => {
                 navigate('/dashboard');
             }, 1500);
@@ -115,9 +250,9 @@ const BusinessSettings = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-24">
+        <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-24 font-display antialiased">
             {/* Header */}
-            <header className="px-6 pt-10 pb-6 sticky top-0 bg-[#f8fafc]/80 backdrop-blur-xl z-50 border-b border-[#595A5B]">
+            <header className="px-6 pt-10 pb-6 sticky top-0 bg-[#f8fafc]/80 backdrop-blur-xl z-50 border-b border-slate-200">
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex flex-col w-full">
                         <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
@@ -129,13 +264,13 @@ const BusinessSettings = () => {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex mt-6 bg-slate-200/50 p-1 rounded-2xl">
+                <div className="flex mt-6 bg-slate-200/50 p-1 rounded-2xl overflow-x-auto no-scrollbar">
                     <button
                         type="button"
                         onClick={() => setActiveTab('info')}
-                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all ${
+                        className={`flex-1 min-w-[100px] py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all ${
                             activeTab === 'info' 
-                            ? 'bg-white text-slate-900 shadow-sm' 
+                            ? 'bg-primary text-white shadow-sm shadow-primary/30' 
                             : 'text-slate-500 hover:text-slate-700'
                         }`}
                     >
@@ -143,8 +278,20 @@ const BusinessSettings = () => {
                     </button>
                     <button
                         type="button"
+                        onClick={() => setActiveTab('promos')}
+                        className={`flex-1 min-w-[100px] py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all flex items-center justify-center gap-1 ${
+                            activeTab === 'promos' 
+                            ? 'bg-primary text-white shadow-sm shadow-primary/30' 
+                            : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                    >
+                        <span className="material-symbols-outlined !text-sm">redeem</span>
+                        Promociones
+                    </button>
+                    <button
+                        type="button"
                         onClick={() => setActiveTab('marketing')}
-                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all flex items-center justify-center gap-1 ${
+                        className={`flex-1 min-w-[100px] py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all flex items-center justify-center gap-1 ${
                             activeTab === 'marketing' 
                             ? 'bg-primary text-white shadow-sm shadow-primary/30' 
                             : 'text-slate-500 hover:text-slate-700'
@@ -157,231 +304,269 @@ const BusinessSettings = () => {
             </header>
 
             <main className="px-6 space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500 pt-6">
-                {activeTab === 'info' ? (
-                    <form onSubmit={handleSave} className="space-y-3">
-
-                    <div className="space-y-2 px-1">
-                        {/* Section Header */}
-                        <div className="flex items-center gap-3 pb-2 border-b-2 border-slate-100">
-                            <span className="material-symbols-outlined text-primary !text-xl font-black">info</span>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Identidad del Negocio</span>
-                        </div>
-
-                        {/* Logo Upload */}
-                        <div className="flex flex-col items-center mb-1">
-                            <div className="relative group w-full flex justify-center">
-                                <div className="size-56 rounded-[1.5rem] bg-white border-2 border-dashed border-[#595A5B] overflow-hidden flex items-center justify-center group-hover:border-primary transition-all relative">
-                                    {business?.logo_url ? (
-                                        <img src={business.logo_url} alt="Logo" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="text-center p-4">
-                                            <span className="material-symbols-outlined text-slate-300 text-6xl">add_a_photo</span>
-                                        </div>
-                                    )}
-                                    {uploading && (
-                                        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-20">
-                                            <span className="material-symbols-outlined animate-spin text-primary text-4xl">sync</span>
-                                        </div>
-                                    )}
-                                </div>
-                                <label className="absolute bottom-2 translate-x-28 size-14 rounded-2xl bg-white border-2 border-[#595A5B] shadow-xl flex items-center justify-center cursor-pointer hover:bg-slate-50 active:scale-90 transition-all z-30">
-                                    <span className="material-symbols-outlined text-primary text-3xl font-black">upload</span>
-                                    <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} disabled={uploading} />
-                                </label>
+                {activeTab === 'info' && (
+                    <form onSubmit={handleSave} className="space-y-6">
+                        <div className="space-y-4 px-1">
+                            {/* Section Header */}
+                            <div className="flex items-center gap-3 pb-2 border-b-2 border-slate-100">
+                                <span className="material-symbols-outlined text-primary !text-xl font-black">info</span>
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Identidad del Negocio</span>
                             </div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Logo comercial</p>
-                        </div>
 
-                        <div className="space-y-0.5">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Nombre Comercial</label>
-                            <div className="relative group">
+                            {/* Logo Upload */}
+                            <div className="flex flex-col items-center mb-1">
+                                <div className="relative group w-full flex justify-center">
+                                    <div className="size-56 rounded-[1.5rem] bg-white border-2 border-dashed border-slate-200 overflow-hidden flex items-center justify-center group-hover:border-primary transition-all relative">
+                                        {business?.logo_url ? (
+                                            <img src={business.logo_url} alt="Logo" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="text-center p-4">
+                                                <span className="material-symbols-outlined text-slate-300 text-6xl">add_a_photo</span>
+                                            </div>
+                                        )}
+                                        {uploading && (
+                                            <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-20">
+                                                <span className="material-symbols-outlined animate-spin text-primary text-4xl">sync</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <label className="absolute bottom-2 translate-x-28 size-14 rounded-2xl bg-white border-2 border-slate-200 shadow-xl flex items-center justify-center cursor-pointer hover:bg-slate-50 active:scale-90 transition-all z-30">
+                                        <span className="material-symbols-outlined text-primary text-3xl font-black">upload</span>
+                                        <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} disabled={uploading} />
+                                    </label>
+                                </div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Logo comercial</p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Nombre Comercial</label>
                                 <input
                                     type="text"
                                     required
                                     value={business?.name || ''}
                                     onChange={(e) => setBusiness({ ...business, name: e.target.value })}
-                                    className="w-full bg-white border-2 border-[#595A5B] h-16 rounded-2xl px-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-bold placeholder:text-slate-300"
+                                    className="w-full bg-white border-2 border-slate-200 h-16 rounded-2xl px-6 text-slate-900 focus:border-primary/40 outline-none transition-all font-bold"
                                     placeholder="Nombre de tu negocio"
                                 />
                             </div>
-                        </div>
 
-                        <div className="space-y-0.5">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Representante Legal</label>
-                            <div className="relative group">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Representante Legal</label>
                                 <input
                                     type="text"
                                     required
                                     value={business?.legal_representative || ''}
                                     onChange={(e) => setBusiness({ ...business, legal_representative: e.target.value })}
-                                    className="w-full bg-white border-2 border-[#595A5B] h-16 rounded-2xl px-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-bold placeholder:text-slate-300"
+                                    className="w-full bg-white border-2 border-slate-200 h-16 rounded-2xl px-6 text-slate-900 focus:border-primary/40 outline-none transition-all font-bold"
                                     placeholder="Nombre del representante"
                                 />
                             </div>
-                        </div>
 
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="space-y-0.5">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">RIF / Registro</label>
-                                <div className="relative group">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">RIF / Registro</label>
                                     <input
                                         type="text"
                                         required
                                         value={business?.rif || ''}
                                         onChange={(e) => setBusiness({ ...business, rif: e.target.value })}
-                                        className="w-full bg-white border-2 border-[#595A5B] h-16 rounded-2xl px-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-bold placeholder:text-slate-300 uppercase"
+                                        className="w-full bg-white border-2 border-slate-200 h-16 rounded-2xl px-6 text-slate-900 focus:border-primary/40 outline-none transition-all font-bold uppercase"
                                         placeholder="J-12345678-9"
                                     />
                                 </div>
-                            </div>
-
-                            <div className="space-y-0.5">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Ciudad</label>
-                                <div className="relative group">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Ciudad</label>
                                     <input
                                         type="text"
                                         required
                                         value={business?.city || ''}
                                         onChange={(e) => setBusiness({ ...business, city: e.target.value })}
-                                        className="w-full bg-white border-2 border-[#595A5B] h-16 rounded-2xl px-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-bold placeholder:text-slate-300"
+                                        className="w-full bg-white border-2 border-slate-200 h-16 rounded-2xl px-6 text-slate-900 focus:border-primary/40 outline-none transition-all font-bold"
                                         placeholder="Caracas"
                                     />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="space-y-0.5">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Número de Teléfono</label>
-                            <div className="relative group">
-                                <input
-                                    type="tel"
-                                    required
-                                    value={business?.phone || ''}
-                                    onChange={(e) => setBusiness({ ...business, phone: e.target.value })}
-                                    className="w-full bg-white border-2 border-[#595A5B] h-16 rounded-2xl px-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-bold placeholder:text-slate-300"
-                                    placeholder="+58 412 0000000"
-                                />
+                        {/* Rules Section */}
+                        <div className="space-y-4 px-1">
+                            <div className="flex items-center gap-3 pb-2 border-b-2 border-slate-100">
+                                <span className="material-symbols-outlined text-primary !text-xl font-black">settings_account_box</span>
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Reglas y Puntos</span>
                             </div>
-                        </div>
-
-                        <div className="space-y-0.5">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Dirección Física</label>
-                            <div className="relative group">
-                                <textarea
-                                    required
-                                    value={business?.address || ''}
-                                    onChange={(e) => setBusiness({ ...business, address: e.target.value })}
-                                    className="w-full bg-white border-2 border-[#595A5B] min-h-[100px] rounded-2xl p-6 text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 outline-none transition-all font-medium placeholder:text-slate-300 resize-none"
-                                    placeholder="Ubicación detallada"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="space-y-2 px-1">
-                        {/* Section Header */}
-                        <div className="flex items-center gap-3 pb-2 border-b-2 border-slate-100">
-                            <span className="material-symbols-outlined text-primary !text-xl font-black">payments</span>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Suscripción KPoint</span>
-                        </div>
-
-                        <div className="flex items-center justify-between gap-4 bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm border-dashed">
-                            <div className="flex-1">
-                                <p className="text-sm font-black text-slate-900 leading-tight">Mi Plan y Pagos</p>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Ver vencimiento y reportar pagos</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => navigate('/subscription')}
-                                className="size-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 active:scale-95 transition-transform"
-                            >
-                                <span className="material-symbols-outlined font-black">credit_card</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="space-y-2 px-1">
-                        {/* Section Header */}
-                        <div className="flex items-center gap-3 pb-2 border-b-2 border-slate-100">
-                            <span className="material-symbols-outlined text-primary !text-xl font-black">group</span>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Equipo de Trabajo</span>
-                        </div>
-
-                        <div className="flex items-center justify-between gap-4 bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm border-dashed">
-                            <div className="flex-1">
-                                <p className="text-sm font-black text-slate-900 leading-tight">Gestionar Empleados</p>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Configura permisos y turnos</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => navigate('/settings/staff')}
-                                className="size-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 active:scale-95 transition-transform"
-                            >
-                                <span className="material-symbols-outlined font-black">badge</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div id="reglas-section" className="space-y-2 px-1">
-                        {/* Section Header */}
-                        <div className="flex items-center gap-3 pb-2 border-b-2 border-slate-100">
-                            <span className="material-symbols-outlined text-primary !text-xl font-black">settings_account_box</span>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Reglas del Juego</span>
-                        </div>
-
-                        {/* Points Config */}
-                        <div className="space-y-0.5">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Puntos por Dólar ($1.00 = pts)</label>
-                            <div className="relative group">
-                                <input
-                                    type="number"
-                                    required
-                                    value={business?.points_per_dollar || 10}
-                                    onChange={(e) => setBusiness({ ...business, points_per_dollar: parseInt(e.target.value) })}
-                                    className="w-full bg-white border-2 border-[#595A5B] h-24 rounded-[2rem] pl-8 pr-28 text-5xl font-black text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/40 outline-none transition-all placeholder:text-slate-200"
-                                />
-                                <div className="absolute right-6 top-1/2 -translate-y-1/2 text-right">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Ptos por</p>
-                                    <p className="text-lg font-black text-primary leading-none">$1 USD</p>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Puntos por Dólar ($1.00 = pts)</label>
+                                <div className="relative group">
+                                    <input
+                                        type="number"
+                                        required
+                                        value={business?.points_per_dollar || 10}
+                                        onChange={(e) => setBusiness({ ...business, points_per_dollar: parseInt(e.target.value) })}
+                                        className="w-full bg-white border-2 border-slate-200 h-24 rounded-[2rem] pl-8 pr-28 text-5xl font-black text-slate-900 focus:border-primary/40 outline-none transition-all"
+                                    />
+                                    <div className="absolute right-6 top-1/2 -translate-y-1/2 text-right">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase leading-none">Ptos x</p>
+                                        <p className="text-xl font-black text-primary">$1 USD</p>
+                                    </div>
                                 </div>
                             </div>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-1 italic opacity-60">* Afecta automáticamente a todos los cálculos del sistema</p>
                         </div>
-                    </div>
 
-                    {/* Action Button */}
-                    <button
-                        type="submit"
-                        disabled={saving}
-                        className="w-full bg-primary text-white h-16 rounded-[2rem] font-black text-sm uppercase shadow-lg shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-                    >
-                        {saving ? (
-                            <>
-                                <span className="material-symbols-outlined animate-spin font-black">sync</span>
-                                ACTUALIZANDO...
-                            </>
-                        ) : (
-                            <>
-                                <span className="material-symbols-outlined font-black">save</span>
-                                GUARDAR CAMBIOS
-                            </>
-                        )}
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={() => navigate('/dashboard')}
-                        className="w-full py-4 text-slate-400 font-black text-[10px] uppercase tracking-[0.4em] hover:text-slate-900 transition-colors"
-                    >
-                        Volver al Panel
-                    </button>
-                </form>
-                ) : (
-                    <MarketingHub />
+                        <button
+                            type="submit"
+                            disabled={saving}
+                            className="w-full bg-primary text-white h-16 rounded-[2rem] font-black text-sm uppercase shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-3"
+                        >
+                            {saving ? <span className="material-symbols-outlined animate-spin">refresh</span> : 'GUARDAR CAMBIOS'}
+                        </button>
+                    </form>
                 )}
+
+                {activeTab === 'promos' && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex flex-col">
+                                <h2 className="text-xl font-black text-slate-900 uppercase">Centro de Promociones</h2>
+                                <p className="text-xs text-slate-500 font-bold uppercase tracking-tight">Gestiona tus campañas flash</p>
+                            </div>
+                            {promoView === 'list' && (
+                                <button 
+                                    onClick={() => {
+                                        setPromoView('create');
+                                        setPromoForm({ title: '', description: '', start_date: '', end_date: '', image_url: 'Promo_Kpoint.png' });
+                                    }}
+                                    className="h-10 px-5 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg"
+                                >
+                                    <span className="material-symbols-outlined !text-sm">add</span>
+                                    Crear Nueva
+                                </button>
+                            )}
+                            {promoView !== 'list' && (
+                                <button 
+                                    onClick={() => setPromoView('list')}
+                                    className="h-10 px-5 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase flex items-center gap-2"
+                                >
+                                    <span className="material-symbols-outlined !text-sm">arrow_back</span>
+                                    Volver
+                                </button>
+                            )}
+                        </div>
+
+                        {promoView === 'list' ? (
+                            <div className="grid grid-cols-1 gap-4">
+                                {promotions.length > 0 ? (
+                                    promotions.map((promo) => (
+                                        <div key={promo.id} className="bg-white border-2 border-slate-200 rounded-[2rem] p-4 flex items-center gap-4">
+                                            <div className="size-28 rounded-[1.5rem] bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden shrink-0">
+                                                <img 
+                                                    src={promo.image_url.startsWith('http') ? promo.image_url : `/${promo.image_url}`} 
+                                                    alt={promo.title} 
+                                                    className="w-full h-full object-contain" 
+                                                />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="font-black text-slate-900 leading-tight truncate uppercase text-sm">{promo.title}</h3>
+                                                <p className="text-[10px] text-slate-500 font-medium line-clamp-1">{promo.description}</p>
+                                                <p className="text-[9px] font-black text-slate-400 mt-1 uppercase">
+                                                    {new Date(promo.start_date).toLocaleDateString()} - {new Date(promo.end_date).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                <button onClick={() => handleEditPromo(promo)} className="size-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center">
+                                                    <span className="material-symbols-outlined !text-sm">edit</span>
+                                                </button>
+                                                <button onClick={() => handleDeletePromo(promo.id)} className="size-8 rounded-lg bg-red-50 text-red-400 flex items-center justify-center">
+                                                    <span className="material-symbols-outlined !text-sm">delete</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="bg-white border-2 border-dashed border-slate-200 rounded-[2.5rem] py-16 flex flex-col items-center justify-center gap-4">
+                                        <span className="material-symbols-outlined text-slate-200 !text-6xl">celebration</span>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No hay promociones activas</p>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="bg-white border-2 border-slate-200 rounded-[2.5rem] p-6 space-y-6">
+                                <div className="flex flex-col items-center gap-4">
+                                    <div className="relative group">
+                                        <div className="w-full h-80 rounded-[2.5rem] bg-slate-50 border-2 border-slate-200 flex items-center justify-center overflow-hidden shadow-2xl relative">
+                                            <img 
+                                                src={promoForm.image_url.startsWith('http') ? promoForm.image_url : `/${promoForm.image_url}`} 
+                                                alt="Promo" 
+                                                className="w-full h-full object-contain" 
+                                            />
+                                        </div>
+                                        <label className="absolute -bottom-2 -right-2 size-10 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg border-2 border-white cursor-pointer active:scale-90 transition-all">
+                                            <span className="material-symbols-outlined !text-xl">add_a_photo</span>
+                                            <input type="file" accept="image/*" onChange={handlePromoImageUpload} className="hidden" />
+                                        </label>
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Imagen de la Promoción</p>
+                                </div>
+
+                                <div className="space-y-4 pt-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nombre de la Promoción</label>
+                                        <input 
+                                            type="text" 
+                                            value={promoForm.title}
+                                            onChange={(e) => setPromoForm({...promoForm, title: e.target.value})}
+                                            className="w-full h-14 bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 text-sm font-bold"
+                                            placeholder="Ej: Promo 2x1"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Descripción</label>
+                                        <textarea 
+                                            rows="3"
+                                            value={promoForm.description}
+                                            onChange={(e) => setPromoForm({...promoForm, description: e.target.value})}
+                                            className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-5 text-sm font-bold resize-none"
+                                            placeholder="Detalles de la oferta..."
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Inicia (Desde)</label>
+                                            <input 
+                                                type="date" 
+                                                value={promoForm.start_date}
+                                                onChange={(e) => setPromoForm({...promoForm, start_date: e.target.value})}
+                                                className="w-full h-14 bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 text-sm font-bold"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Finaliza (Hasta)</label>
+                                            <input 
+                                                type="date" 
+                                                value={promoForm.end_date}
+                                                onChange={(e) => setPromoForm({...promoForm, end_date: e.target.value})}
+                                                className="w-full h-14 bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 text-sm font-bold"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <button 
+                                        onClick={handleSavePromo}
+                                        disabled={isSavingPromo}
+                                        className="w-full h-16 bg-primary text-white rounded-[2rem] font-black uppercase shadow-xl shadow-primary/20 flex items-center justify-center gap-3 transition-all"
+                                    >
+                                        {isSavingPromo ? <span className="material-symbols-outlined animate-spin">refresh</span> : 'GUARDAR PROMOCIÓN'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {activeTab === 'marketing' && <MarketingHub />}
             </main>
 
-            {/* Navigation (Sticky Bottom) */}
             <Navigation />
         </div>
     );

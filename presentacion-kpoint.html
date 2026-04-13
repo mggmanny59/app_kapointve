@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KPoint – Presentación Comercial</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --orange: #FF7043;
+            --orange-dark: #E64A19;
+            --orange-glow: rgba(255,112,67,0.25);
+            --dark: #0D0D12;
+            --dark-2: #15151E;
+            --dark-3: #1C1C28;
+            --dark-4: #252535;
+            --text: #F5F5F8;
+            --text-muted: #8888A8;
+            --white: #ffffff;
+        }
+
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: #000;
+            color: var(--text);
+        }
+
+        /* ===== SLIDE ENGINE — SCALE-TO-FIT (PowerPoint style) ===== */
+        /*
+         * The stage is the visible area of the screen (minus nav bar).
+         * The canvas is always 1280×720. JS scales it to fill the stage.
+         * This means every pixel of every slide looks identical on any device.
+         */
+
+        .stage {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #000;
+        }
+
+        /* Fixed-size canvas — always 1280×720, scaled by JS */
+        .canvas {
+            position: relative;
+            width: 1280px;
+            height: 720px;
+            flex-shrink: 0;
+            transform-origin: center center;
+            /* scale is set by JS */
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            width: 1280px;
+            height: 720px;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 80px;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(80px);
+            transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1; pointer-events: auto; transform: translateX(0);
+        }
+
+        .slide.exit-left {
+            opacity: 0; transform: translateX(-80px);
+        }
+
+        /* ===== NAVIGATION BAR ===== */
+        .nav-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 40px;
+            background: rgba(13,13,18,0.95);
+            border-top: 1px solid rgba(255,112,67,0.12);
+            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+        }
+
+        .nav-logo {
+            font-size: 20px; font-weight: 900;
+            color: var(--orange);
+            letter-spacing: -0.5px;
+        }
+
+        .nav-controls {
+            display: flex; align-items: center; gap: 16px;
+        }
+
+        .nav-btn {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,112,67,0.3);
+            background: rgba(255,112,67,0.08);
+            color: var(--orange);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+            font-size: 20px;
+        }
+        .nav-btn:hover { background: var(--orange); color: white; }
+        .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .nav-btn:disabled:hover { background: rgba(255,112,67,0.08); color: var(--orange); }
+
+        .nav-counter {
+            font-size: 14px; font-weight: 700;
+            color: var(--text-muted);
+            min-width: 60px; text-align: center;
+        }
+
+        .nav-dots {
+            display: flex; gap: 6px; align-items: center;
+        }
+        .nav-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            cursor: pointer; transition: all 0.3s;
+        }
+        .nav-dot.active {
+            background: var(--orange); width: 22px; border-radius: 3px;
+        }
+
+        /* ===== COMMON ELEMENTS ===== */
+        .badge {
+            display: inline-flex; align-items: center; gap-6px;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+        }
+        .badge-orange { background: rgba(255,112,67,0.12); border: 1px solid rgba(255,112,67,0.25); color: var(--orange); }
+        .badge-green  { background: rgba(34,197,94,0.12);  border: 1px solid rgba(34,197,94,0.25);  color: #22c55e; }
+        .badge-blue   { background: rgba(96,165,250,0.12); border: 1px solid rgba(96,165,250,0.25); color: #60a5fa; }
+
+        h1 { font-size: clamp(36px, 4.5vw, 62px); font-weight: 900; line-height: 1.05; letter-spacing: -1.5px; }
+        h2 { font-size: clamp(28px, 3.2vw, 48px); font-weight: 900; line-height: 1.08; letter-spacing: -1px; }
+        h3 { font-size: clamp(18px, 2vw, 26px); font-weight: 800; letter-spacing: -0.5px; }
+        p  { line-height: 1.6; color: var(--text-muted); font-weight: 500; }
+
+        .text-orange { color: var(--orange); }
+        .italic { font-style: italic; }
+
+        .card {
+            background: var(--dark-3);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 20px;
+            padding: 28px;
+        }
+
+        .card-orange {
+            background: linear-gradient(135deg, rgba(255,112,67,0.12), rgba(255,112,67,0.04));
+            border: 1px solid rgba(255,112,67,0.2);
+            border-radius: 20px; padding: 28px;
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+
+        .flex-col { display: flex; flex-direction: column; }
+        .gap-4 { gap: 16px; }
+        .gap-6 { gap: 24px; }
+        .gap-8 { gap: 32px; }
+
+        .orange-line {
+            width: 60px; height: 5px;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--orange), #FF9066);
+            margin-bottom: 20px;
+        }
+
+        .icon-box {
+            width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+        }
+        .icon-orange { background: rgba(255,112,67,0.15); color: var(--orange); }
+        .icon-blue   { background: rgba(96,165,250,0.15); color: #60a5fa; }
+        .icon-green  { background: rgba(34,197,94,0.15);  color: #22c55e; }
+        .icon-purple { background: rgba(167,139,250,0.15); color: #a78bfa; }
+
+        .stat-big { font-size: clamp(32px, 3.8vw, 52px); font-weight: 900; color: var(--orange); line-height: 1; }
+        .stat-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; }
+
+        .step-number {
+            width: 56px; height: 56px; border-radius: 16px; flex-shrink: 0;
+            background: var(--orange);
+            color: white; font-size: 24px; font-weight: 900;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 24px var(--orange-glow);
+        }
+
+        .check-item {
+            display: flex; align-items: flex-start; gap: 12px;
+        }
+        .check-icon {
+            color: var(--orange); font-size: 20px; margin-top: 2px; flex-shrink: 0;
+        }
+
+        /* ===== SLIDE BACKGROUNDS ===== */
+        .bg-hero {
+            background: radial-gradient(ellipse 80% 50% at 80% 50%, rgba(255,112,67,0.10) 0%, transparent 70%),
+                        var(--dark);
+        }
+        .bg-dark2 { background: var(--dark-2); }
+        .bg-dark3 { background: var(--dark-3); }
+
+        /* ===== SLIDE-SPECIFIC ===== */
+
+        /* Slide 1 - Cover */
+        .cover-logo {
+            font-size: 88px; font-weight: 900;
+            background: linear-gradient(135deg, var(--orange) 0%, #FFAB76 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            letter-spacing: -4px; line-height: 1;
+        }
+
+        .cover-tagline {
+            font-size: 22px; font-weight: 600; color: var(--text-muted);
+            margin-top: 16px; letter-spacing: -0.3px;
+        }
+
+        .glow-circle {
+            position: absolute; border-radius: 50%; pointer-events: none;
+        }
+        .glow-1 {
+            width: 600px; height: 600px;
+            top: -200px; right: -200px;
+            background: radial-gradient(circle, rgba(255,112,67,0.12) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        .glow-2 {
+            width: 300px; height: 300px;
+            bottom: 50px; left: -100px;
+            background: radial-gradient(circle, rgba(255,112,67,0.06) 0%, transparent 70%);
+            animation: pulse 6s ease-in-out infinite reverse;
+        }
+
+        @keyframes pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+        /* Pricing Card */
+        .price-card {
+            background: linear-gradient(135deg, var(--dark-3), var(--dark-4));
+            border: 2px solid var(--orange);
+            border-radius: 28px; padding: 40px;
+            box-shadow: 0 0 60px rgba(255,112,67,0.15);
+            position: relative; overflow: hidden;
+        }
+        .price-amount {
+            font-size: 80px; font-weight: 900; color: white; line-height: 1;
+            letter-spacing: -3px;
+        }
+        .price-period { font-size: 18px; color: var(--text-muted); font-weight: 600; margin-left: 8px; }
+
+        /* QR mockup */
+        .qr-box {
+            width: 140px; height: 140px;
+            background: white; border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+        }
+        .qr-inner {
+            width: 110px; height: 110px;
+            background: repeating-linear-gradient(
+                0deg, #000 0px, #000 4px, white 4px, white 8px
+            ),
+            repeating-linear-gradient(
+                90deg, #000 0px, #000 4px, white 4px, white 8px
+            );
+            background-blend-mode: multiply;
+            border-radius: 8px;
+        }
+
+        /* Phone mockup */
+        .phone-mock {
+            width: 180px;
+            background: var(--dark-3);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 32px;
+            padding: 12px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+        }
+        .phone-screen {
+            background: var(--dark-4);
+            border-radius: 22px;
+            height: 320px;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+        .phone-header {
+            padding: 14px 14px 10px;
+            background: var(--orange);
+            color: white; font-size: 11px; font-weight: 800;
+        }
+        .phone-body { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        .phone-row {
+            height: 36px; border-radius: 10px;
+            background: rgba(255,255,255,0.06);
+            display: flex; align-items: center; padding: 0 10px;
+            font-size: 10px; font-weight: 600; color: var(--text-muted);
+        }
+        .phone-points {
+            background: rgba(255,112,67,0.15); border: 1px solid rgba(255,112,67,0.3);
+            padding: 10px; border-radius: 12px; text-align: center;
+            font-size: 22px; font-weight: 900; color: var(--orange);
+        }
+
+        /* Progress bars */
+        .prog-bar {
+            height: 8px; border-radius: 4px;
+            background: rgba(255,255,255,0.08);
+            overflow: hidden; margin-top: 8px;
+        }
+        .prog-fill {
+            height: 100%; border-radius: 4px;
+            background: linear-gradient(90deg, var(--orange), #FF9066);
+        }
+
+        /* Timeline */
+        .timeline { display: flex; flex-direction: column; gap: 0; }
+        .timeline-item {
+            display: flex; gap: 20px; position: relative;
+        }
+        .timeline-line {
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .timeline-dot {
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--orange); flex-shrink: 0; margin-top: 4px;
+            box-shadow: 0 0 12px var(--orange-glow);
+        }
+        .timeline-connector {
+            width: 2px; flex: 1;
+            background: linear-gradient(to bottom, var(--orange), rgba(255,112,67,0.1));
+            min-height: 32px;
+        }
+        .timeline-content { padding-bottom: 28px; flex: 1; }
+
+        /* Highlight box */
+        .hl-box {
+            background: rgba(255,112,67,0.08);
+            border: 1px solid rgba(255,112,67,0.2);
+            border-left: 4px solid var(--orange);
+            border-radius: 0 14px 14px 0; padding: 16px 20px;
+        }
+
+        /* Keyboard shortcut hint */
+        .key-hint {
+            font-size: 12px; color: var(--text-muted); font-weight: 500;
+        }
+        .kbd {
+            display: inline-block;
+            padding: 2px 8px; border-radius: 6px;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+            font-size: 11px; font-weight: 700; color: var(--text);
+        }
+
+        /* Fullscreen overlay help */
+        .fullscreen-hint {
+            position: fixed; bottom: 80px; right: 40px;
+            font-size: 11px; color: rgba(255,255,255,0.3);
+            font-weight: 600; pointer-events: none;
+        }
+
+        /* ===== FIXED ACTION BUTTONS ===== */
+        .fixed-actions {
+            position: fixed; top: 20px; right: 20px; z-index: 9999;
+            display: flex; gap: 10px; align-items: center;
+        }
+
+        .action-btn {
+            padding: 10px 18px;
+            border: none; border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px; font-weight: 800;
+            cursor: pointer; letter-spacing: 0.03em;
+            display: flex; align-items: center; gap: 8px;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .action-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .action-btn:active { transform: scale(0.96); }
+
+        .btn-fullscreen {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+        }
+        .btn-fullscreen:hover { background: rgba(255,255,255,0.18); }
+
+        .btn-pdf {
+            background: var(--orange); color: white;
+            box-shadow: 0 6px 20px rgba(255,112,67,0.4);
+        }
+
+        /* Hide buttons in print */
+        @media print {
+            .fixed-actions { display: none !important; }
+        }
+
+        /* ===== @MEDIA PRINT - CADA SLIDE = 1 PÁGINA PDF ===== */
+        @media print {
+            @page {
+                size: 297mm 167mm landscape;
+                margin: 0;
+            }
+
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+            html, body {
+                width: 297mm; height: 167mm;
+                overflow: visible !important;
+                background: var(--dark) !important;
+            }
+
+            .pdf-btn,
+            .fullscreen-hint,
+            .nav-bar { display: none !important; }
+
+            .slides-wrapper {
+                width: auto; height: auto;
+                display: block;
+            }
+
+            .slides {
+                position: static !important;
+                overflow: visible !important;
+                height: auto !important;
+            }
+
+            .slide {
+                position: relative !important;
+                inset: auto !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+                transform: none !important;
+                width: 297mm;
+                height: 167mm;
+                padding: 32px 52px;
+                page-break-after: always;
+                break-after: page;
+                overflow: hidden;
+                display: flex !important;
+                flex-direction: column;
+                box-sizing: border-box;
+            }
+
+            .slide:last-of-type {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+
+            /* Fix font clamp for print */
+            h1 { font-size: 38px !important; }
+            h2 { font-size: 30px !important; }
+            h3 { font-size: 18px !important; }
+            p  { font-size: 12px !important; }
+
+            .cover-logo { font-size: 72px !important; }
+            .stat-big   { font-size: 36px !important; }
+            .price-amount { font-size: 58px !important; }
+
+            /* Animations paused for clean print */
+            * { animation: none !important; transition: none !important; }
+
+            /* Phone mockup smaller for print */
+            .phone-mock { width: 140px !important; }
+            .phone-screen { height: 240px !important; }
+
+            /* Grid adjustments */
+            .grid-3 { gap: 12px !important; }
+            .grid-4 { gap: 10px !important; }
+
+            .card   { padding: 16px !important; border-radius: 14px !important; }
+            .card-orange { padding: 16px !important; border-radius: 14px !important; }
+
+            .price-card { padding: 24px !important; border-radius: 20px !important; }
+
+            /* Force background colors */
+            .bg-hero  { background: #0D0D12 !important; }
+            .bg-dark2 { background: #15151E !important; }
+            .bg-dark3 { background: #1C1C28 !important; }
+            .card     { background: #1C1C28 !important; }
+
+            /* Gradient text fallback */
+            .cover-logo {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* Glow circles hidden in print */
+            .glow-circle { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Fixed Action Buttons -->
+<div class="fixed-actions">
+    <!-- Fullscreen Button -->
+    <button class="action-btn btn-fullscreen" id="btn-fs" onclick="toggleFullscreen()" title="Pantalla completa">
+        <svg id="fs-icon-expand" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+        </svg>
+        <svg id="fs-icon-exit" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+            <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+        </svg>
+        <span id="fs-label">Pantalla Completa</span>
+    </button>
+    <!-- PDF Button -->
+    <button class="action-btn btn-pdf" onclick="window.print()" title="Exportar como PDF">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+        PDF
+    </button>
+</div>
+
+<div style="width:100vw; height:100vh; display:flex; flex-direction:column; background:#000;">
+
+    <!-- =============================
+         STAGE: scaled presentation area
+    ============================== -->
+    <div class="stage" id="stage">
+        <div class="canvas" id="canvas">
+
+        <!-- ===== SLIDE 1: PORTADA ===== -->
+        <div class="slide bg-hero active" id="slide-1">
+            <div class="glow-circle glow-1"></div>
+            <div class="glow-circle glow-2"></div>
+
+            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; max-width:700px; position:relative; z-index:1;">
+                <div class="badge badge-orange" style="margin-bottom:28px; width:fit-content;">
+                    Presentación Comercial · 2026
+                </div>
+
+                <div class="cover-logo">KPoint</div>
+                <div class="cover-tagline">La plataforma de lealtad inteligente<br>diseñada para tu negocio</div>
+
+                <div style="margin-top:48px; display:flex; gap:40px;">
+                    <div>
+                        <div class="stat-big">+45%</div>
+                        <div class="stat-label">Retención de clientes</div>
+                    </div>
+                    <div style="width:1px; background:rgba(255,255,255,0.08);"></div>
+                    <div>
+                        <div class="stat-big">2.4x</div>
+                        <div class="stat-label">Frecuencia de visitas</div>
+                    </div>
+                    <div style="width:1px; background:rgba(255,255,255,0.08);"></div>
+                    <div>
+                        <div class="stat-big">+33%</div>
+                        <div class="stat-label">Gasto por visita</div>
+                    </div>
+                </div>
+
+                <div style="margin-top:48px;">
+                    <p style="font-size:15px; color:var(--text-muted);">
+                        🌐&nbsp; <strong style="color:var(--text);">kpointve.com</strong>&nbsp; · &nbsp;
+                        📱&nbsp; <strong style="color:var(--text);">app.kpointve.com</strong>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Decorative right side -->
+            <div style="position:absolute; right:80px; top:50%; transform:translateY(-50%); display:flex; gap:20px; align-items:center; opacity:0.7;">
+                <div class="phone-mock" style="animation:float 3s ease-in-out infinite;">
+                    <div class="phone-screen">
+                        <div class="phone-header">🏆 KPoint · Mis Puntos</div>
+                        <div class="phone-body">
+                            <div class="phone-points">1,250 pts</div>
+                            <div class="phone-row">☕ Café + $3.50 → +35 pts</div>
+                            <div class="phone-row">🍔 Almuerzo + $12 → +120 pts</div>
+                            <div class="phone-row">🥤 Refresco · Canje → -500 pts</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 2: EL PROBLEMA ===== -->
+        <div class="slide bg-dark2" id="slide-2">
+            <div class="orange-line"></div>
+            <div class="badge badge-orange" style="margin-bottom:20px; width:fit-content;">El Problema</div>
+            <h1>¿Por qué tus clientes<br><span class="text-orange italic">no vuelven?</span></h1>
+
+            <div style="margin-top:40px;" class="grid-2">
+                <div class="flex-col gap-4">
+                    <div class="card" style="flex:1; border-left:3px solid #ef4444;">
+                        <div style="font-size:42px; margin-bottom:8px;">😞</div>
+                        <h3 style="color:#ef4444; margin-bottom:8px;">Sin fidelización, sin recurrencia</h3>
+                        <p>El cliente nuevo que visitó tu local hoy no tiene ningún incentivo concreto para regresar mañana. Se va y olvida.</p>
+                    </div>
+                    <div class="card" style="flex:1; border-left:3px solid var(--orange);">
+                        <div style="font-size:42px; margin-bottom:8px;">💸</div>
+                        <h3 style="color:var(--orange); margin-bottom:8px;">Adquirir clientes nuevos es caro</h3>
+                        <p>Cuesta hasta 5 veces más atraer a un cliente nuevo que retener a uno existente. La fidelización es la inversión más rentable.</p>
+                    </div>
+                </div>
+
+                <div class="flex-col gap-4">
+                    <div class="card" style="flex:1; border-left:3px solid #a78bfa;">
+                        <div style="font-size:42px; margin-bottom:8px;">🗒️</div>
+                        <h3 style="color:#a78bfa; margin-bottom:8px;">Las tarjetas de papel no funcionan</h3>
+                        <p>Se pierden, se mojan, se falsifican. No ofrecen datos, no generan conexión emocional ni información sobre tus clientes.</p>
+                    </div>
+                    <div class="card" style="flex:1; border-left:3px solid #60a5fa;">
+                        <div style="font-size:42px; margin-bottom:8px;">🔍</div>
+                        <h3 style="color:#60a5fa; margin-bottom:8px;">Cero visibilidad de sus clientes</h3>
+                        <p>¿Cuántos clientes tienes? ¿Cuáles son los más valiosos? ¿Quién no ha visitado en 30 días? Sin KPoint, no tienes la respuesta.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hl-box" style="margin-top:28px;">
+                <p style="color:var(--text); font-size:15px; font-weight:600;">
+                    📊 Dato clave: Un cliente fidelizado gasta un <strong style="color:var(--orange);">33% más</strong> por visita y visita <strong style="color:var(--orange);">2.4 veces más seguido</strong> que uno nuevo.
+                </p>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 3: LA SOLUCIÓN ===== -->
+        <div class="slide bg-hero" id="slide-3">
+            <div class="glow-circle glow-1"></div>
+            <div style="position:relative; z-index:1; height:100%; display:flex; flex-direction:column;">
+                <div class="orange-line"></div>
+                <div class="badge badge-green" style="margin-bottom:20px; width:fit-content;">La Solución</div>
+                <h1>Conoce <span class="text-orange italic">KPoint</span></h1>
+                <p style="font-size:18px; margin-top:16px; max-width:620px;">La plataforma digital de fidelización de clientes, diseñada especialmente para negocios como el tuyo. Sin hardware. Sin complicaciones.</p>
+
+                <div class="grid-3" style="margin-top:36px; flex:1;">
+                    <div class="card-orange" style="display:flex; flex-direction:column; gap:16px;">
+                        <div class="icon-box icon-orange">
+                            <span class="material-symbols-outlined">phone_iphone</span>
+                        </div>
+                        <h3>100% Digital</h3>
+                        <p>Todo funciona desde el teléfono que ya tienes. Tus clientes acceden con un simple escaneo de QR. Sin apps pesadas.</p>
+                    </div>
+                    <div class="card-orange" style="display:flex; flex-direction:column; gap:16px;">
+                        <div class="icon-box icon-green">
+                            <span class="material-symbols-outlined">flash_on</span>
+                        </div>
+                        <h3>Instantáneo</h3>
+                        <p>Los puntos se acreditan en tiempo real. El proceso toma menos de 10 segundos y no interrumpe tu operación.</p>
+                    </div>
+                    <div class="card-orange" style="display:flex; flex-direction:column; gap:16px;">
+                        <div class="icon-box icon-blue">
+                            <span class="material-symbols-outlined">analytics</span>
+                        </div>
+                        <h3>Datos Reales</h3>
+                        <p>Conoce el comportamiento de tus clientes, segméntalos y toma decisiones de negocio basadas en información real.</p>
+                    </div>
+                </div>
+
+                <div style="margin-top:24px; padding:20px 28px; background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); border-radius:16px; display:flex; align-items:center; gap:16px;">
+                    <span class="material-symbols-outlined" style="color:#22c55e; font-size:28px;">verified</span>
+                    <div>
+                        <p style="color:var(--text); font-weight:700; margin-bottom:2px;">Sin inversión en hardware · Sin contratos · Sin costos ocultos</p>
+                        <p style="font-size:13px;">Diseñado para Venezuela: acepta Pago Móvil, Zelle, transferencia bancaria y efectivo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 4: ¿CÓMO FUNCIONA? (COMERCIO) ===== -->
+        <div class="slide bg-dark2" id="slide-4">
+            <div class="orange-line"></div>
+            <div class="badge badge-orange" style="margin-bottom:20px; width:fit-content;">Paso a Paso · Para el Comercio</div>
+            <h2>Cómo empieza el <span class="text-orange italic">Comercio</span></h2>
+
+            <div style="margin-top:36px; display:flex; gap:48px; flex:1; align-items:flex-start;">
+                <div class="timeline" style="flex:1; max-width:520px;">
+                    <div class="timeline-item">
+                        <div class="timeline-line">
+                            <div class="step-number">1</div>
+                            <div class="timeline-connector"></div>
+                        </div>
+                        <div class="timeline-content">
+                            <h3 style="margin-bottom:6px;">Visita <span style="color:var(--orange);">app.kpointve.com</span></h3>
+                            <p>Desde cualquier navegador, sin descargar nada. Disponible en móvil, tablet o computadora.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-line">
+                            <div class="step-number">2</div>
+                            <div class="timeline-connector"></div>
+                        </div>
+                        <div class="timeline-content">
+                            <h3 style="margin-bottom:6px;">Crea tu cuenta gratuita</h3>
+                            <p>Registra el nombre de tu negocio, logo y configura la tasa de conversión: ej. <strong style="color:var(--orange);">10 puntos por cada $1</strong> de compra.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-line">
+                            <div class="step-number">3</div>
+                            <div class="timeline-connector"></div>
+                        </div>
+                        <div class="timeline-content">
+                            <h3 style="margin-bottom:6px;">Carga tu catálogo de premios</h3>
+                            <p>Define qué pueden canjear tus clientes: un café gratis, un descuento, un producto especial...</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-line">
+                            <div class="step-number">4</div>
+                            <div class="timeline-connector" style="min-height:0;"></div>
+                        </div>
+                        <div class="timeline-content" style="padding-bottom:0;">
+                            <h3 style="margin-bottom:6px;">¡Listo para fidelizar!</h3>
+                            <p>En cada venta, ingresa el monto y el cliente acumula puntos automáticamente. El sistema calcula todo.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="flex:1; display:flex; flex-direction:column; gap:16px;">
+                    <div class="card" style="text-align:center;">
+                        <span class="material-symbols-outlined" style="font-size:40px; color:var(--orange);">admin_panel_settings</span>
+                        <h3 style="margin:12px 0 8px;">Panel de Administración</h3>
+                        <p style="font-size:14px;">Dashboard completo para ver ventas, puntos emitidos, clientes activos y canjes realizados.</p>
+                    </div>
+                    <div class="card" style="text-align:center;">
+                        <span class="material-symbols-outlined" style="font-size:40px; color:#60a5fa;">group</span>
+                        <h3 style="margin:12px 0 8px;">Gestión de Empleados</h3>
+                        <p style="font-size:14px;">Crea cuentas para tu cajero o gerente, con permisos específicos. Delega con seguridad.</p>
+                    </div>
+                    <div class="card" style="text-align:center; background:rgba(255,112,67,0.08); border-color:rgba(255,112,67,0.2);">
+                        <p style="font-size:13px; font-weight:700; color:var(--orange);">⏱️ Tiempo de configuración inicial: menos de 15 minutos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 5: ¿CÓMO FUNCIONA? (CLIENTE) ===== -->
+        <div class="slide bg-dark3" id="slide-5">
+            <div class="orange-line"></div>
+            <div class="badge badge-blue" style="margin-bottom:20px; width:fit-content;">Paso a Paso · Para el Cliente</div>
+            <h2>La experiencia del <span class="text-orange italic">Cliente</span></h2>
+
+            <div style="margin-top:32px; display:flex; gap:48px; flex:1; align-items:flex-start;">
+                <div style="flex:1;">
+                    <div class="grid-2" style="gap:16px; margin-bottom:20px;">
+                        <div class="card" style="display:flex; flex-direction:column; gap:12px;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="step-number" style="width:44px; height:44px; font-size:18px; border-radius:12px;">1</div>
+                                <h3>Escanea el QR</h3>
+                            </div>
+                            <p style="font-size:14px;">En el punto de venta, el cliente escanea el código QR de tu negocio con la cámara de su celular. Sin apps que instalar.</p>
+                        </div>
+                        <div class="card" style="display:flex; flex-direction:column; gap:12px;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="step-number" style="width:44px; height:44px; font-size:18px; border-radius:12px;">2</div>
+                                <h3>Se registra en segundos</h3>
+                            </div>
+                            <p style="font-size:14px;">Solo necesita su teléfono. Crea su perfil con nombre y número. ¡En menos de 30 segundos ya es parte del programa!</p>
+                        </div>
+                        <div class="card" style="display:flex; flex-direction:column; gap:12px;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="step-number" style="width:44px; height:44px; font-size:18px; border-radius:12px;">3</div>
+                                <h3>Acumula en cada compra</h3>
+                            </div>
+                            <p style="font-size:14px;">Cada vez que compre, el cajero registra el monto y los puntos se suman automáticamente a su billetera digital.</p>
+                        </div>
+                        <div class="card" style="display:flex; flex-direction:column; gap:12px; background:rgba(255,112,67,0.1); border-color:rgba(255,112,67,0.25);">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="step-number" style="width:44px; height:44px; font-size:18px; border-radius:12px;">4</div>
+                                <h3>Canjea sus premios</h3>
+                            </div>
+                            <p style="font-size:14px;">Cuando acumule suficientes puntos, elige su premio del catálogo y lo canjea directamente en tu local. ¡Sin complicaciones!</p>
+                        </div>
+                    </div>
+
+                    <div class="hl-box">
+                        <p style="font-size:14px; font-weight:600; color:var(--text);">
+                            🎯 <strong>El cliente siempre sabe cuánto le falta</strong> para su próximo premio. Eso es lo que los hace volver una y otra vez.
+                        </p>
+                    </div>
+                </div>
+
+                <div style="flex-shrink:0;">
+                    <div class="phone-mock" style="width:200px; animation:float 4s ease-in-out infinite;">
+                        <div class="phone-screen" style="height:360px;">
+                            <div class="phone-header">
+                                <div style="font-size:13px; font-weight:900;">🏪 Mi Billetera KPoint</div>
+                            </div>
+                            <div style="padding:14px; flex:1; display:flex; flex-direction:column; gap:10px;">
+                                <div style="text-align:center; padding:16px; background:rgba(255,112,67,0.12); border-radius:14px; border:1px solid rgba(255,112,67,0.2);">
+                                    <div style="font-size:10px; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.08em;">Saldo Actual</div>
+                                    <div style="font-size:36px; font-weight:900; color:var(--orange);">1,250</div>
+                                    <div style="font-size:11px; color:var(--text-muted);">puntos</div>
+                                </div>
+                                <div style="font-size:10px; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.08em;">Próximo premio</div>
+                                <div style="background:rgba(255,255,255,0.04); border-radius:10px; padding:10px; display:flex; align-items:center; gap:8px;">
+                                    <div style="font-size:20px;">☕</div>
+                                    <div>
+                                        <div style="font-size:11px; font-weight:700; color:var(--text);">Café Americano Gratis</div>
+                                        <div style="font-size:10px; color:var(--text-muted);">Faltan 250 pts</div>
+                                    </div>
+                                </div>
+                                <div class="prog-bar" style="margin-top:2px;">
+                                    <div class="prog-fill" style="width:83%;"></div>
+                                </div>
+                                <div style="font-size:10px; text-align:right; color:var(--orange); font-weight:700;">83% completado</div>
+                                <div class="phone-row">📅 Última visita: hoy</div>
+                                <div class="phone-row">🏅 Nivel: <span style="color:#f59e0b; margin-left:4px;">ORO</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 6: FEATURES COMERCIO ===== -->
+        <div class="slide bg-dark2" id="slide-6">
+            <div class="orange-line"></div>
+            <div class="badge badge-orange" style="margin-bottom:20px; width:fit-content;">Herramientas del Comercio</div>
+            <h2>Todo lo que necesitas<br>para <span class="text-orange italic">gestionar y crecer</span></h2>
+
+            <div class="grid-3" style="margin-top:32px; flex:1;">
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <div class="card" style="display:flex; align-items:flex-start; gap:14px; flex:0 0 auto;">
+                        <div class="icon-box icon-orange"><span class="material-symbols-outlined">dashboard</span></div>
+                        <div>
+                            <h3 style="margin-bottom:4px;">Dashboard KPI</h3>
+                            <p style="font-size:13px;">Visualiza clientes activos, puntos emitidos, canjes del mes y ventas en tiempo real.</p>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex; align-items:flex-start; gap:14px; flex:0 0 auto;">
+                        <div class="icon-box icon-purple"><span class="material-symbols-outlined">card_giftcard</span></div>
+                        <div>
+                            <h3 style="margin-bottom:4px;">Catálogo de Premios</h3>
+                            <p style="font-size:13px;">Crea, edita y gestiona los premios canjeables. Con imagen, descripción e inventario.</p>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex; align-items:flex-start; gap:14px; flex:0 0 auto;">
+                        <div class="icon-box icon-blue"><span class="material-symbols-outlined">group</span></div>
+                        <div>
+                            <h3 style="margin-bottom:4px;">Gestión de Clientes</h3>
+                            <p style="font-size:13px;">Directorio completo con niveles: Bronce, Oro y VIP basados en consumo acumulado.</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <div class="card" style="display:flex; align-items:flex-start; gap:14px; flex:0 0 auto;">
+                        <div class="icon-box icon-green"><span class="material-symbols-outlined">point_of_sale</span></div>
+                        <div>
+                            <h3 style="margin-bottom:4px;">Registro de Transacciones</h3>
+                            <p style="font-size:13px;">Historial completo de cada compra y canje con fecha, monto y responsable.</p>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex; align-items:flex-start; gap:14px; flex:0 0 auto;">
+                        <div class="icon-box icon-orange"><span class="material-symbols-outlined">campaign</span></div>
+                        <div>
+                            <h3 style="margin-bottom:4px;">Marketing Hub</h3>
+                            <p style="font-size:13px;">Crea promociones de puntos dobles, bonos de bienvenida y envía flyers digitales a tus clientes.</p>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex; align-items:flex-start; gap:14px; flex:0 0 auto;">
+                        <div class="icon-box icon-purple"><span class="material-symbols-outlined">badge</span></div>
+                        <div>
+                            <h3 style="margin-bottom:4px;">Control de Roles</h3>
+                            <p style="font-size:13px;">Asigna permisos específicos por empleado: Dueño, Gerente y Cajero.</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <div class="card" style="display:flex; align-items:flex-start; gap:14px; flex:0 0 auto;">
+                        <div class="icon-box icon-blue"><span class="material-symbols-outlined">settings</span></div>
+                        <div>
+                            <h3 style="margin-bottom:4px;">Configuración Flexible</h3>
+                            <p style="font-size:13px;">Ajusta la tasa de puntos, horarios, métodos de pago aceptados y perfil del negocio.</p>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex; align-items:flex-start; gap:14px; flex:0 0 auto;">
+                        <div class="icon-box icon-green"><span class="material-symbols-outlined">notifications</span></div>
+                        <div>
+                            <h3 style="margin-bottom:4px;">Notificaciones Push</h3>
+                            <p style="font-size:13px;">Alerta a tus clientes when reciben puntos, cuando hay nuevos premios o promociones.</p>
+                        </div>
+                    </div>
+                    <div class="card-orange" style="display:flex; align-items:center; gap:12px; padding:20px;">
+                        <span class="material-symbols-outlined" style="color:var(--orange); font-size:28px;">share</span>
+                        <div>
+                            <p style="font-style:italic; font-weight:700; color:var(--orange); font-size:13px;">Sistema de Referidos</p>
+                            <p style="font-size:12px;">Tus clientes invitan a sus amigos con un código único. Crecimiento viral orgánico.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 7: FEATURES CLIENTE ===== -->
+        <div class="slide bg-hero" id="slide-7">
+            <div class="glow-circle glow-1"></div>
+            <div style="position:relative; z-index:1; height:100%; display:flex; flex-direction:column;">
+                <div class="orange-line"></div>
+                <div class="badge badge-blue" style="margin-bottom:20px; width:fit-content;">Experiencia del Cliente</div>
+                <h2>Lo que vive <span class="text-orange italic">tu cliente</span></h2>
+                <p style="margin-top:12px; max-width:600px;">Una experiencia moderna, motivadora y completamente en su celular. Sin apps que descargar.</p>
+
+                <div class="grid-4" style="margin-top:32px; flex:1;">
+                    <div class="card-orange" style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:12px;">
+                        <span class="material-symbols-outlined" style="font-size:44px; color:var(--orange);">account_balance_wallet</span>
+                        <h3>Billetera Digital</h3>
+                        <p style="font-size:13px;">Ve su saldo de puntos, historial y en cuánto está del próximo premio en tiempo real.</p>
+                    </div>
+                    <div class="card" style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:12px;">
+                        <span class="material-symbols-outlined" style="font-size:44px; color:#60a5fa;">workspace_premium</span>
+                        <h3>Niveles VIP</h3>
+                        <p style="font-size:13px;">Sube de Bronze → Oro → VIP según su fidelidad. Cada nivel desbloquea mejores beneficios.</p>
+                    </div>
+                    <div class="card" style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:12px;">
+                        <span class="material-symbols-outlined" style="font-size:44px; color:#22c55e;">redeem</span>
+                        <h3>Canje de Premios</h3>
+                        <p style="font-size:13px;">Explora el catálogo de premios, ve cuántos puntos necesita y canjea con un clic.</p>
+                    </div>
+                    <div class="card-orange" style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:12px;">
+                        <span class="material-symbols-outlined" style="font-size:44px; color:var(--orange);">person_add</span>
+                        <h3>Sistema Referidos</h3>
+                        <p style="font-size:13px;">Invita amigos con su código único y gana puntos extra cuando ellos realicen su primera compra.</p>
+                    </div>
+                </div>
+
+                <div style="margin-top:24px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
+                    <div style="background:rgba(255,255,255,0.04); border-radius:14px; padding:16px; text-align:center;">
+                        <div style="font-size:28px; font-weight:900; color:var(--orange);">10s</div>
+                        <div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-top:2px;">Tiempo de registro</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.04); border-radius:14px; padding:16px; text-align:center;">
+                        <div style="font-size:28px; font-weight:900; color:var(--orange);">0</div>
+                        <div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-top:2px;">Apps que instalar</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.04); border-radius:14px; padding:16px; text-align:center;">
+                        <div style="font-size:28px; font-weight:900; color:var(--orange);">∞</div>
+                        <div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-top:2px;">Kioskos por cliente</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 8: MARKETING Y DATOS ===== -->
+        <div class="slide bg-dark2" id="slide-8">
+            <div class="orange-line"></div>
+            <div class="badge badge-orange" style="margin-bottom:20px; width:fit-content;">Marketing Inteligente</div>
+            <h2>Convierte datos en<br><span class="text-orange italic">más ventas</span></h2>
+
+            <div style="margin-top:32px; display:grid; grid-template-columns:1.2fr 1fr; gap:36px; flex:1;">
+                <div style="display:flex; flex-direction:column; gap:20px;">
+                    <div class="card" style="display:flex; gap:16px;">
+                        <div class="icon-box icon-orange" style="flex-shrink:0;">
+                            <span class="material-symbols-outlined">local_offer</span>
+                        </div>
+                        <div>
+                            <h3 style="margin-bottom:6px;">Promociones con Multiplicador</h3>
+                            <p style="font-size:14px;">Lanza "puntos dobles los miércoles" o "triple puntos en tu cumpleaños". Dinamiza días de baja venta.</p>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex; gap:16px;">
+                        <div class="icon-box icon-blue" style="flex-shrink:0;">
+                            <span class="material-symbols-outlined">segment</span>
+                        </div>
+                        <div>
+                            <h3 style="margin-bottom:6px;">Segmentación Automática</h3>
+                            <p style="font-size:14px;">El sistema clasifica a tus clientes por nivel de consumo (Bronce, Oro, VIP) sin que hagas nada manual.</p>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex; gap:16px;">
+                        <div class="icon-box icon-purple" style="flex-shrink:0;">
+                            <span class="material-symbols-outlined">design_services</span>
+                        </div>
+                        <div>
+                            <h3 style="margin-bottom:6px;">Marketing Hub · Flyers Digitales</h3>
+                            <p style="font-size:14px;">Genera plantillas de marketing personalizadas con tu marca para compartir en WhatsApp, Instagram y más.</p>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex; gap:16px;">
+                        <div class="icon-box icon-green" style="flex-shrink:0;">
+                            <span class="material-symbols-outlined">share</span>
+                        </div>
+                        <div>
+                            <h3 style="margin-bottom:6px;">Referidos Virales</h3>
+                            <p style="font-size:14px;">Cada cliente tiene un código único. Cuando refiere a alguien, ambos ganan puntos. Crecimiento orgánico.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics mockup -->
+                <div style="background:var(--dark-3); border-radius:24px; padding:24px; border:1px solid rgba(255,255,255,0.06);">
+                    <div style="font-size:13px; font-weight:800; color:var(--text); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:20px;">📊 Panel de Análisis</div>
+                    
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+                        <div style="background:rgba(255,112,67,0.1); border:1px solid rgba(255,112,67,0.2); border-radius:14px; padding:16px;">
+                            <div style="font-size:10px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Retención</div>
+                            <div style="font-size:32px; font-weight:900; color:var(--orange);">+84%</div>
+                            <div class="prog-bar"><div class="prog-fill" style="width:84%;"></div></div>
+                        </div>
+                        <div style="background:rgba(96,165,250,0.1); border:1px solid rgba(96,165,250,0.2); border-radius:14px; padding:16px;">
+                            <div style="font-size:10px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Actividad</div>
+                            <div style="font-size:32px; font-weight:900; color:#60a5fa;">1.2k</div>
+                            <div style="font-size:11px; color:var(--text-muted);">Canjes / mes</div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:13px; font-weight:600; color:var(--text-muted);">🥉 Clientes Bronce</span>
+                            <span style="font-size:13px; font-weight:700; color:var(--text);">342</span>
+                        </div>
+                        <div class="prog-bar"><div class="prog-fill" style="width:60%; background:linear-gradient(90deg,#cd7f32,#e8a87c);"></div></div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                            <span style="font-size:13px; font-weight:600; color:var(--text-muted);">🥇 Clientes Oro</span>
+                            <span style="font-size:13px; font-weight:700; color:var(--text);">98</span>
+                        </div>
+                        <div class="prog-bar"><div class="prog-fill" style="width:35%; background:linear-gradient(90deg,#f59e0b,#fcd34d);"></div></div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                            <span style="font-size:13px; font-weight:600; color:var(--text-muted);">💎 Clientes VIP</span>
+                            <span style="font-size:13px; font-weight:700; color:var(--text);">24</span>
+                        </div>
+                        <div class="prog-bar"><div class="prog-fill" style="width:12%; background:linear-gradient(90deg,#a78bfa,#c4b5fd);"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 9: SEGURIDAD ===== -->
+        <div class="slide bg-dark3" id="slide-9">
+            <div class="orange-line"></div>
+            <div class="badge badge-blue" style="margin-bottom:20px; width:fit-content;">Seguridad y Confianza</div>
+            <h2>Tu información,<br><span class="text-orange italic">100% protegida</span></h2>
+
+            <div class="grid-2" style="margin-top:36px; flex:1;">
+                <div style="display:flex; flex-direction:column; gap:20px;">
+                    <div class="check-item">
+                        <span class="material-symbols-outlined check-icon">verified_user</span>
+                        <div>
+                            <h3 style="margin-bottom:4px;">Arquitectura de Nivel Bancario (RLS)</h3>
+                            <p>Cada negocio opera en un entorno completamente aislado. El Kiosko A jamás podrá ver los clientes ni los datos del Kiosko B.</p>
+                        </div>
+                    </div>
+                    <div class="check-item">
+                        <span class="material-symbols-outlined check-icon">lock</span>
+                        <div>
+                            <h3 style="margin-bottom:4px;">Cálculo de Puntos Anti-Fraude</h3>
+                            <p>Los puntos los calcula el servidor, no el celular. Aunque alguien intente hackear la app, el sistema sólo acepta lo que tu regla de negocio establece.</p>
+                        </div>
+                    </div>
+                    <div class="check-item">
+                        <span class="material-symbols-outlined check-icon">manage_accounts</span>
+                        <div>
+                            <h3 style="margin-bottom:4px;">Control Total de Accesos</h3>
+                            <p>Como dueño, decides qué puede ver y hacer cada empleado. El cajero solo puede registrar ventas, no modificar premios ni ver métricas.</p>
+                        </div>
+                    </div>
+                    <div class="check-item">
+                        <span class="material-symbols-outlined check-icon">history</span>
+                        <div>
+                            <h3 style="margin-bottom:4px;">Auditoría Completa</h3>
+                            <p>Cada transacción queda registrada con el nombre del empleado que la procesó, la fecha y el monto. Cero fraude interno posible.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:16px; justify-content:center; align-items:center; text-align:center;">
+                    <div style="width:140px; height:140px; border-radius:50%; background:rgba(255,112,67,0.08); border:3px solid rgba(255,112,67,0.3); display:flex; align-items:center; justify-content:center; box-shadow:0 0 60px rgba(255,112,67,0.15);">
+                        <span class="material-symbols-outlined" style="font-size:70px; color:var(--orange);">shield</span>
+                    </div>
+                    <h3 style="margin-top:16px;">Infraestructura<br>de Confianza</h3>
+                    <p style="max-width:300px; font-size:14px;">Construido sobre Supabase, la misma tecnología de base de datos usada por Fortune 500 y gobiernos del mundo.</p>
+                    <div style="margin-top:12px; padding:12px 20px; background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); border-radius:12px;">
+                        <p style="font-size:13px; font-weight:700; color:#22c55e;">✅ Copias de seguridad diarias automáticas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 10: PRECIOS ===== -->
+        <div class="slide bg-hero" id="slide-10">
+            <div class="glow-circle glow-1"></div>
+            <div style="position:relative; z-index:1; height:100%; display:flex; flex-direction:column;">
+                <div class="orange-line"></div>
+                <div class="badge badge-orange" style="margin-bottom:20px; width:fit-content;">Plan & Precios</div>
+                <h2>Un solo plan,<br><span class="text-orange italic">todo incluido</span></h2>
+
+                <div style="margin-top:32px; display:grid; grid-template-columns:1.3fr 1fr; gap:36px; flex:1; align-items:start;">
+                    <!-- Price Card -->
+                    <div class="price-card">
+                        <div style="position:absolute; top:0; right:0; background:var(--orange); color:white; font-size:11px; font-weight:900; padding:8px 20px 8px 30px; border-radius:0 28px 0 20px; text-transform:uppercase; letter-spacing:0.1em;">
+                            🚀 60 Días Gratis
+                        </div>
+                        <div style="margin-top:12px;">
+                            <p style="font-size:14px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px;">Plan Emprendedor</p>
+                            <div style="display:flex; align-items:baseline; gap:4px; margin-bottom:8px;">
+                                <span class="price-amount">$15</span>
+                                <span class="price-period">/ mes</span>
+                            </div>
+                            <p style="font-size:13px; color:var(--text-muted);">Después del período gratuito. Sin contratos. Cancela cuando quieras.</p>
+                        </div>
+
+                        <div style="margin:24px 0; height:1px; background:rgba(255,255,255,0.08);"></div>
+
+                        <div style="display:flex; flex-direction:column; gap:14px;">
+                            ${[
+                                'Gestión de fidelización automatizada',
+                                'Catálogo de premios ilimitados',
+                                'Dashboard con analítica en tiempo real',
+                                'Sistema de referidos viral',
+                                'Segmentación por niveles (Bronce/Oro/VIP)',
+                                'Control de roles y empleados',
+                                'Marketing Hub + Flyers Digitales',
+                                'Notificaciones push a clientes',
+                            ].map(f => `
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <span class="material-symbols-outlined" style="color:var(--orange); font-size:20px; flex-shrink:0;">check_circle</span>
+                                <span style="font-size:14px; font-weight:600; color:var(--text);">${f}</span>
+                            </div>`).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Right side: FAQ & Payment methods -->
+                    <div style="display:flex; flex-direction:column; gap:16px;">
+                        <div class="card">
+                            <h3 style="margin-bottom:16px;">❓ Preguntas Frecuentes</h3>
+                            <div style="display:flex; flex-direction:column; gap:12px;">
+                                <div>
+                                    <p style="font-size:13px; font-weight:700; color:var(--text); margin-bottom:2px;">¿Necesito comprar equipos?</p>
+                                    <p style="font-size:12px;">No. Todo funciona desde el teléfono o tablet que ya tienes.</p>
+                                </div>
+                                <div style="height:1px; background:rgba(255,255,255,0.06);"></div>
+                                <div>
+                                    <p style="font-size:13px; font-weight:700; color:var(--text); margin-bottom:2px;">¿Hay contratos de permanencia?</p>
+                                    <p style="font-size:12px;">Cero ataduras. Cancela en cualquier momento sin penalización.</p>
+                                </div>
+                                <div style="height:1px; background:rgba(255,255,255,0.06);"></div>
+                                <div>
+                                    <p style="font-size:13px; font-weight:700; color:var(--text); margin-bottom:2px;">¿Mis clientes descargan una app?</p>
+                                    <p style="font-size:12px;">No. Acceden desde el navegador con un simple QR. Rápido y sin fricciones.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-orange">
+                            <h3 style="margin-bottom:14px;">💳 Métodos de Pago</h3>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                                <div style="background:rgba(255,255,255,0.04); border-radius:10px; padding:10px; text-align:center; font-size:12px; font-weight:700; color:var(--text);">📱 Pago Móvil</div>
+                                <div style="background:rgba(255,255,255,0.04); border-radius:10px; padding:10px; text-align:center; font-size:12px; font-weight:700; color:var(--text);">🏦 Transferencia</div>
+                                <div style="background:rgba(255,255,255,0.04); border-radius:10px; padding:10px; text-align:center; font-size:12px; font-weight:700; color:var(--text);">💚 Zelle</div>
+                                <div style="background:rgba(255,255,255,0.04); border-radius:10px; padding:10px; text-align:center; font-size:12px; font-weight:700; color:var(--text);">💵 Efectivo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 11: CASOS DE ÉXITO ===== -->
+        <div class="slide bg-dark2" id="slide-11">
+            <div class="orange-line"></div>
+            <div class="badge badge-green" style="margin-bottom:20px; width:fit-content;">Resultados Reales</div>
+            <h2>Lo que dicen negocios<br><span class="text-orange italic">que ya usan KPoint</span></h2>
+
+            <div class="grid-2" style="margin-top:36px; flex:1; gap:28px;">
+                <div class="card" style="border:1px solid rgba(255,112,67,0.2); display:flex; flex-direction:column; gap:20px; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:0; right:0; background:var(--orange); padding:6px 16px; font-size:11px; font-weight:800; border-radius:0 20px 0 14px; color:white;">⭐⭐⭐⭐⭐</div>
+                    <div style="display:flex; align-items:center; gap:14px; margin-top:12px;">
+                        <div style="width:52px; height:52px; border-radius:16px; background:rgba(255,112,67,0.15); display:flex; align-items:center; justify-content:center; font-size:24px;">🏪</div>
+                        <div>
+                            <h3 style="margin-bottom:2px;">Kiosko Santa Ana</h3>
+                            <p style="font-size:12px;">Punto de comida rápida · Caracas</p>
+                        </div>
+                    </div>
+                    <p style="font-size:14px; font-style:italic; color:var(--text); border-left:3px solid var(--orange); padding-left:16px; line-height:1.7;">
+                        "Con KPoint nuestros clientes se sienten más motivados a volver. Con solo escanear su código QR, suman y canjean sus puntos... Lo mejor es que en plena hora pico no nos quita ni 10 segundos."
+                    </p>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; padding:16px; background:rgba(255,255,255,0.03); border-radius:14px; margin-top:auto;">
+                        <div style="text-align:center;">
+                            <div style="font-size:22px; font-weight:900; color:var(--orange);">+45%</div>
+                            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:2px;">Recurrencia</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:22px; font-weight:900; color:var(--orange);">10s</div>
+                            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:2px;">Registro</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:22px; font-weight:900; color:var(--orange);">2.1k</div>
+                            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:2px;">Clientes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="border:1px solid rgba(96,165,250,0.2); display:flex; flex-direction:column; gap:20px; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:0; right:0; background:#3b82f6; padding:6px 16px; font-size:11px; font-weight:800; border-radius:0 20px 0 14px; color:white;">⭐⭐⭐⭐⭐</div>
+                    <div style="display:flex; align-items:center; gap:14px; margin-top:12px;">
+                        <div style="width:52px; height:52px; border-radius:16px; background:rgba(96,165,250,0.15); display:flex; align-items:center; justify-content:center; font-size:24px;">🍔</div>
+                        <div>
+                            <h3 style="margin-bottom:2px;">Galaxy Burguers</h3>
+                            <p style="font-size:12px;">Hamburguesería · Valencia</p>
+                        </div>
+                    </div>
+                    <p style="font-size:14px; font-style:italic; color:var(--text); border-left:3px solid #60a5fa; padding-left:16px; line-height:1.7;">
+                        "Nuestros clientes aman sumar puntos con cada hamburguesa. Pasamos de ser un simple puesto de comida rápida a ser su parada obligatoria de todas las semanas."
+                    </p>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; padding:16px; background:rgba(255,255,255,0.03); border-radius:14px; margin-top:auto;">
+                        <div style="text-align:center;">
+                            <div style="font-size:22px; font-weight:900; color:#60a5fa;">x2.8</div>
+                            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:2px;">Visitas</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:22px; font-weight:900; color:#60a5fa;">+30%</div>
+                            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:2px;">Ticket Prom.</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:22px; font-weight:900; color:#60a5fa;">92%</div>
+                            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:2px;">Lealtad</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:20px; padding:16px 24px; background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); border-radius:14px; display:flex; align-items:center; gap:14px;">
+                <span class="material-symbols-outlined" style="color:#22c55e; font-size:24px;">trending_up</span>
+                <p style="color:var(--text); font-size:14px; font-weight:600;">Todos estos resultados fueron logrados en menos de <strong style="color:#22c55e;">90 días</strong> después de implementar KPoint.</p>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 12: CIERRE / CTA ===== -->
+        <div class="slide bg-hero" id="slide-12">
+            <div class="glow-circle glow-1"></div>
+            <div class="glow-circle glow-2"></div>
+
+            <div style="position:relative; z-index:1; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                <div class="badge badge-orange" style="margin-bottom:28px;">¡Empieza Hoy!</div>
+
+                <div class="cover-logo" style="font-size:72px; margin-bottom:12px;">KPoint</div>
+                <h2 style="max-width:700px; margin:0 auto;">Tu programa de lealtad listo<br>en <span class="text-orange italic">menos de 15 minutos</span></h2>
+                <p style="margin-top:20px; font-size:18px; max-width:550px;">Únete a los negocios que ya están construyendo su base de clientes fieles y aumentando sus ventas con KPoint.</p>
+
+                <div style="margin-top:48px; display:grid; grid-template-columns:repeat(3,1fr); gap:24px; max-width:700px;">
+                    <div style="padding:24px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:20px;">
+                        <div style="font-size:40px; margin-bottom:12px;">🚀</div>
+                        <h3 style="margin-bottom:6px; font-size:16px;">60 Días Gratis</h3>
+                        <p style="font-size:13px;">Sin tarjeta de crédito. Prueba sin compromisos.</p>
+                    </div>
+                    <div style="padding:24px; background:rgba(255,112,67,0.08); border:1px solid rgba(255,112,67,0.2); border-radius:20px;">
+                        <div style="font-size:40px; margin-bottom:12px;">⚡</div>
+                        <h3 style="margin-bottom:6px; font-size:16px;">Configuración Rápida</h3>
+                        <p style="font-size:13px;">Listo para fidelizar en menos de 15 minutos.</p>
+                    </div>
+                    <div style="padding:24px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:20px;">
+                        <div style="font-size:40px; margin-bottom:12px;">🤝</div>
+                        <h3 style="margin-bottom:6px; font-size:16px;">Soporte Dedicado</h3>
+                        <p style="font-size:13px;">Te acompañamos desde el primer día.</p>
+                    </div>
+                </div>
+
+                <div style="margin-top:48px; display:flex; flex-direction:column; gap:12px; align-items:center;">
+                    <div style="padding:16px 36px; background:var(--orange); color:white; font-size:20px; font-weight:900; border-radius:16px; letter-spacing:-0.5px; box-shadow:0 20px 50px rgba(255,112,67,0.4);">
+                        🌐 app.kpointve.com
+                    </div>
+                    <p style="font-size:14px; color:var(--text-muted);">O visita <strong style="color:var(--text);">kpointve.com</strong> para más información</p>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end .canvas -->
+    </div><!-- end .stage -->
+
+    <!-- ===== NAV BAR (outside .canvas — never scaled) ===== -->
+    <div class="nav-bar">
+        <div class="nav-logo">K·POINT</div>
+        <div class="nav-dots" id="nav-dots"></div>
+        <div class="nav-controls">
+            <span class="key-hint"><span class="kbd">←</span> <span class="kbd">→</span></span>
+            <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" title="Anterior">&#8592;</button>
+            <span class="nav-counter" id="nav-counter">1 / 12</span>
+            <button class="nav-btn" id="btn-next" onclick="navigate(1)" title="Siguiente">&#8594;</button>
+        </div>
+    </div>
+
+</div><!-- end outer wrapper -->
+
+
+<script>
+    const TOTAL = 12;
+    let current = 1;
+
+    // Build dots
+    const dotsContainer = document.getElementById('nav-dots');
+    for (let i = 1; i <= TOTAL; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'nav-dot' + (i === 1 ? ' active' : '');
+        dot.onclick = () => goTo(i);
+        dotsContainer.appendChild(dot);
+    }
+
+    function navigate(dir) {
+        goTo(current + dir);
+    }
+
+    function goTo(n) {
+        if (n < 1 || n > TOTAL) return;
+
+        const prevSlide = document.getElementById('slide-' + current);
+        const nextSlide = document.getElementById('slide-' + n);
+
+        prevSlide.classList.remove('active');
+        prevSlide.classList.add(n > current ? 'exit-left' : '');
+
+        setTimeout(() => {
+            prevSlide.classList.remove('exit-left');
+        }, 500);
+
+        current = n;
+
+        nextSlide.classList.add('active');
+
+        // Update counter
+        document.getElementById('nav-counter').textContent = current + ' / ' + TOTAL;
+
+        // Update dots
+        document.querySelectorAll('.nav-dot').forEach((dot, idx) => {
+            dot.classList.toggle('active', idx + 1 === current);
+        });
+
+        // Update buttons
+        document.getElementById('btn-prev').disabled = current === 1;
+        document.getElementById('btn-next').disabled = current === TOTAL;
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+            e.preventDefault(); navigate(1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault(); navigate(-1);
+        } else if (e.key === 'Home') {
+            goTo(1);
+        } else if (e.key === 'End') {
+            goTo(TOTAL);
+        }
+    });
+
+    // Initialize button states
+    document.getElementById('btn-prev').disabled = true;
+
+    // ===== SCALE-TO-FIT ENGINE =====
+    // Scales the 1280×720 canvas to fill the stage, preserving aspect ratio
+    const CANVAS_W = 1280;
+    const CANVAS_H = 720;
+
+    function scaleCanvas() {
+        const stage  = document.getElementById('stage');
+        const canvas = document.getElementById('canvas');
+        const sw = stage.clientWidth;
+        const sh = stage.clientHeight;
+        const scale = Math.min(sw / CANVAS_W, sh / CANVAS_H);
+        canvas.style.transform = `scale(${scale})`;
+    }
+
+    scaleCanvas();
+    window.addEventListener('resize', scaleCanvas);
+    // Re-scale after fullscreen change (viewport reflows)
+    document.addEventListener('fullscreenchange',       () => setTimeout(scaleCanvas, 100));
+    document.addEventListener('webkitfullscreenchange', () => setTimeout(scaleCanvas, 100));
+    document.addEventListener('mozfullscreenchange',    () => setTimeout(scaleCanvas, 100));
+
+    // ===== FULLSCREEN API =====
+    function toggleFullscreen() {
+        const isFs = !!(
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement
+        );
+
+        if (!isFs) {
+            // Enter fullscreen
+            const el = document.documentElement;
+            if (el.requestFullscreen)             el.requestFullscreen();
+            else if (el.webkitRequestFullscreen)  el.webkitRequestFullscreen(); // iOS Safari
+            else if (el.mozRequestFullScreen)     el.mozRequestFullScreen();
+        } else {
+            // Exit fullscreen
+            if (document.exitFullscreen)             document.exitFullscreen();
+            else if (document.webkitExitFullscreen)  document.webkitExitFullscreen();
+            else if (document.mozCancelFullScreen)   document.mozCancelFullScreen();
+        }
+    }
+
+    // Update fullscreen button icon & label on state change
+    function onFullscreenChange() {
+        const isFs = !!(
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement
+        );
+        document.getElementById('fs-icon-expand').style.display = isFs ? 'none'  : 'block';
+        document.getElementById('fs-icon-exit').style.display   = isFs ? 'block' : 'none';
+        document.getElementById('fs-label').textContent = isFs ? 'Salir' : 'Pantalla Completa';
+    }
+
+    document.addEventListener('fullscreenchange',       onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+    document.addEventListener('mozfullscreenchange',    onFullscreenChange);
+
+    // ===== SWIPE GESTURE (Tablet support) =====
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        // Only trigger if horizontal swipe > 60px and more horizontal than vertical
+        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+            if (dx < 0) navigate(1);   // swipe left  → next slide
+            else        navigate(-1);  // swipe right → prev slide
+        }
+    }, { passive: true });
+
+</script>
+
+</body>
+</html>

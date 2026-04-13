@@ -23,10 +23,13 @@ const ActivityHistory = () => {
     const [appliedFilters, setAppliedFilters] = useState({ 
         start: '', 
         end: today, 
-        operatorId: '' 
+        operatorId: '',
+        businessId: '' 
     });
 
     const [operators, setOperators] = useState([]);
+    const [affiliatedBusinesses, setAffiliatedBusinesses] = useState([]);
+    const [selectedBusinessFilter, setSelectedBusinessFilter] = useState('');
     const [userBizId, setUserBizId] = useState(null);
 
     useEffect(() => {
@@ -65,6 +68,20 @@ const ActivityHistory = () => {
                 setOperators(ops);
             }
 
+            // 3. Si es cliente, cargar lista de comercios afiliados (solo una vez)
+            if (!isStaff && affiliatedBusinesses.length === 0) {
+                const { data: affiliatedData } = await supabase
+                    .from('loyalty_cards')
+                    .select('business_id, businesses(name)')
+                    .eq('profile_id', user.id);
+                
+                const bizs = affiliatedData?.map(m => ({
+                    id: m.business_id,
+                    name: m.businesses?.name || 'Comercio Desconocido'
+                })) || [];
+                setAffiliatedBusinesses(bizs);
+            }
+
             // 3. Preparar consulta base
             let query;
             if (isStaff) {
@@ -89,6 +106,9 @@ const ActivityHistory = () => {
             if (appliedFilters.operatorId) {
                 query = query.eq('staff_id', appliedFilters.operatorId);
             }
+            if (appliedFilters.businessId) {
+                query = query.eq('business_id', appliedFilters.businessId);
+            }
 
             const { data, error } = await query.order('created_at', { ascending: false });
 
@@ -110,18 +130,20 @@ const ActivityHistory = () => {
         setAppliedFilters({ 
             start: startDate, 
             end: endDate, 
-            operatorId: selectedOperator 
+            operatorId: selectedOperator,
+            businessId: selectedBusinessFilter
         });
     };
 
     const handleClearFilters = () => {
         setStartDate('');
         setEndDate(today);
-        setSelectedOperator('');
+        setSelectedBusinessFilter('');
         setAppliedFilters({ 
             start: '', 
             end: today, 
-            operatorId: '' 
+            operatorId: '',
+            businessId: '' 
         });
     };
 
@@ -168,7 +190,24 @@ const ActivityHistory = () => {
                         </div>
                     </div>
 
-                    {/* Selector de Operador (ListBox) */}
+                    {/* Selector de Comercio para Clientes */}
+                    {affiliatedBusinesses.length > 0 && (
+                        <div className="bg-white border-2 border-[#595A5B] rounded-2xl p-3 shadow-sm flex flex-col gap-1 transition-all focus-within:border-primary">
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Comercio</label>
+                            <select 
+                                className="text-sm font-black text-slate-800 bg-transparent outline-none w-full"
+                                value={selectedBusinessFilter}
+                                onChange={(e) => setSelectedBusinessFilter(e.target.value)}
+                            >
+                                <option value="">Todos los comercios</option>
+                                {affiliatedBusinesses.map(biz => (
+                                    <option key={biz.id} value={biz.id}>{biz.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
+                    {/* Selector de Operador (ListBox) para Staff */}
                     {operators.length > 0 && (
                         <div className="bg-white border-2 border-[#595A5B] rounded-2xl p-3 shadow-sm flex flex-col gap-1 transition-all focus-within:border-primary">
                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Operador</label>

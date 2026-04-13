@@ -265,7 +265,7 @@ const Login = () => {
                     <p className="text-black text-[10px] font-bold uppercase tracking-widest">
                         Desarrollado por CloudNets 2026 - Venezuela
                     </p>
-                    
+
                     {/* Banner Naranja */}
                     <div className="bg-[#ff6a00] h-3 w-full rounded-full shadow-lg shadow-[#ff6a00]/30"></div>
                 </div>

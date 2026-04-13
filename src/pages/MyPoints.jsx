@@ -19,6 +19,7 @@ const MyPoints = () => {
     const [profile, setProfile] = useState(null);
     const [selectedBusiness, setSelectedBusiness] = useState(null);
     const [businessPrizes, setBusinessPrizes] = useState([]);
+    const [businessPromotions, setBusinessPromotions] = useState([]);
     const [loadingPrizes, setLoadingPrizes] = useState(false);
     const [recentTransactions, setRecentTransactions] = useState([]);
     const [showRedemptionQR, setShowRedemptionQR] = useState(null);
@@ -42,17 +43,32 @@ const MyPoints = () => {
         setSelectedBusiness(business);
         setLoadingPrizes(true);
         try {
-            const { data, error } = await supabase
+            // Fetch Rewards
+            const { data: prizes, error: prizesError } = await supabase
                 .from('rewards')
                 .select('*')
                 .eq('business_id', business.id)
                 .eq('is_active', true)
                 .order('cost_points', { ascending: true });
 
-            if (error) throw error;
-            setBusinessPrizes(data || []);
+            if (prizesError) throw prizesError;
+            setBusinessPrizes(prizes || []);
+
+            // Fetch Promotions
+            const { data: promos, error: promosError } = await supabase
+                .from('promotions')
+                .select('*')
+                .eq('business_id', business.id)
+                .eq('is_active', true)
+                .lte('start_date', new Date().toISOString())
+                .gte('end_date', new Date().toISOString())
+                .order('created_at', { ascending: false });
+
+            if (promosError) throw promosError;
+            setBusinessPromotions(promos || []);
+
         } catch (err) {
-            console.error('Error fetching business prizes:', err);
+            console.error('Error fetching business data:', err);
         } finally {
             setLoadingPrizes(false);
         }
@@ -526,9 +542,47 @@ const MyPoints = () => {
                         </div>
                     </div>
 
-                    <div className="px-6 py-2 mb-20">
-                        {businessPrizes.length > 0 ? (
-                            <div className="grid grid-cols-1 gap-3">
+                    <div className="px-6 py-2 mb-20 space-y-8">
+                        {/* Promotions Section */}
+                        {businessPromotions.length > 0 && (
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2 px-1">
+                                    <span className="material-symbols-outlined text-primary font-black">celebration</span>
+                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter">Promociones del Momento</h3>
+                                </div>
+                                <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-6 px-6">
+                                    {businessPromotions.map(promo => (
+                                        <div key={promo.id} className="min-w-[300px] bg-white border-2 border-slate-200 rounded-[2rem] overflow-hidden shadow-lg shadow-slate-100/50 flex flex-col">
+                                            <div className="h-64 w-full relative">
+                                                <img 
+                                                    src={promo.image_url.startsWith('http') ? promo.image_url : `/${promo.image_url}`} 
+                                                    alt={promo.title} 
+                                                    className="w-full h-full object-contain" 
+                                                />
+                                                <div className="absolute top-4 right-4 bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg">
+                                                    ¡ACTIVA!
+                                                </div>
+                                            </div>
+                                            <div className="p-5">
+                                                <h4 className="font-black text-slate-900 uppercase leading-tight mb-1">{promo.title}</h4>
+                                                <p className="text-[11px] text-slate-500 font-medium leading-relaxed mb-3">{promo.description}</p>
+                                                <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
+                                                    <span className="material-symbols-outlined !text-sm text-slate-400">calendar_today</span>
+                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Válido hasta el {new Date(promo.end_date).toLocaleDateString()}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Rewards Section */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 px-1">
+                                <span className="material-symbols-outlined text-primary font-black">card_giftcard</span>
+                                <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter">Premios por Fidelidad</h3>
+                            </div>
                                 {businessPrizes.map(p => {
                                     const userPoints = loyaltyCards.find(c => c.business_id === selectedBusiness.id)?.current_points || 0;
                                     const isAffordable = userPoints >= p.cost_points;
@@ -595,11 +649,12 @@ const MyPoints = () => {
                                         </div>
                                     );
                                 })}
-                            </div>
-                        ) : (
+                        </div>
+
+                        {businessPrizes.length === 0 && businessPromotions.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-20 text-center">
                                 <span className="material-symbols-outlined text-6xl text-slate-100">sentiment_dissatisfied</span>
-                                <p className="mt-4 text-slate-400 font-bold">Aún no hay premios cargados para este negocio.</p>
+                                <p className="mt-4 text-slate-400 font-bold">Aún no hay premios ni promociones cargadas para este negocio.</p>
                             </div>
                         )}
                     </div>
