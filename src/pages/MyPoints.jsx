@@ -55,17 +55,32 @@ const MyPoints = () => {
             setBusinessPrizes(prizes || []);
 
             // Fetch Promotions
+            const now = new Date();
             const { data: promos, error: promosError } = await supabase
                 .from('promotions')
                 .select('*')
                 .eq('business_id', business.id)
                 .eq('is_active', true)
-                .lte('start_date', new Date().toISOString())
-                .gte('end_date', new Date().toISOString())
                 .order('created_at', { ascending: false });
 
             if (promosError) throw promosError;
-            setBusinessPromotions(promos || []);
+
+            // Filter promotions locally to guarantee local timezone accuracy
+            // Start of today locally
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            const activePromos = promos?.filter(p => {
+                const pStartTz = new Date(p.start_date);
+                const pEndTz = new Date(p.end_date);
+                
+                // Extract just the local day/month/year from the converted timestamp
+                const pStart = new Date(pStartTz.getFullYear(), pStartTz.getMonth(), pStartTz.getDate());
+                const pEnd = new Date(pEndTz.getFullYear(), pEndTz.getMonth(), pEndTz.getDate());
+                
+                return startOfToday >= pStart && startOfToday <= pEnd;
+            }) || [];
+
+            setBusinessPromotions(activePromos);
 
         } catch (err) {
             console.error('Error fetching business data:', err);
@@ -546,27 +561,35 @@ const MyPoints = () => {
                         {/* Promotions Section */}
                         {businessPromotions.length > 0 && (
                             <div className="space-y-4">
-                                <div className="flex items-center gap-2 px-1">
-                                    <span className="material-symbols-outlined text-primary font-black">celebration</span>
-                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter">Promociones del Momento</h3>
+                                <div className="flex items-center justify-between px-1 mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-primary font-black">celebration</span>
+                                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter">Promociones del Momento ({businessPromotions.length})</h3>
+                                    </div>
+                                    {businessPromotions.length > 1 && (
+                                        <div className="flex items-center gap-1 text-primary bg-primary/10 px-3 py-1 rounded-full animate-pulse">
+                                            <span className="text-[9px] font-black uppercase tracking-wider">Desliza</span>
+                                            <span className="material-symbols-outlined !text-[14px]">arrow_forward</span>
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-6 px-6">
+                                <div className="flex gap-4 overflow-x-auto pb-6 px-[7.5vw] snap-x snap-mandatory">
                                     {businessPromotions.map(promo => (
-                                        <div key={promo.id} className="min-w-[300px] bg-white border-2 border-slate-200 rounded-[2rem] overflow-hidden shadow-lg shadow-slate-100/50 flex flex-col">
-                                            <div className="h-64 w-full relative">
+                                        <div key={promo.id} className="w-[85vw] min-w-[85vw] max-w-[85vw] lg:w-[320px] lg:min-w-[320px] lg:max-w-[320px] shrink-0 bg-white border-2 border-slate-200 rounded-[2.5rem] overflow-hidden shadow-xl shadow-slate-100/50 flex flex-col snap-center">
+                                            <div className="h-[220px] w-full relative bg-slate-50 border-b border-slate-100">
                                                 <img 
                                                     src={promo.image_url.startsWith('http') ? promo.image_url : `/${promo.image_url}`} 
                                                     alt={promo.title} 
-                                                    className="w-full h-full object-contain" 
+                                                    className="w-full h-full object-contain p-2" 
                                                 />
-                                                <div className="absolute top-4 right-4 bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg">
+                                                <div className="absolute top-4 right-4 bg-primary text-white text-[11px] font-black px-4 py-1.5 rounded-full shadow-lg z-10">
                                                     ¡ACTIVA!
                                                 </div>
                                             </div>
-                                            <div className="p-5">
-                                                <h4 className="font-black text-slate-900 uppercase leading-tight mb-1">{promo.title}</h4>
-                                                <p className="text-[11px] text-slate-500 font-medium leading-relaxed mb-3">{promo.description}</p>
-                                                <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
+                                            <div className="p-5 flex flex-col justify-center flex-1">
+                                                <h4 className="font-black text-slate-900 uppercase leading-tight mb-2 whitespace-normal">{promo.title}</h4>
+                                                <p className="text-[12px] text-slate-500 font-medium leading-relaxed mb-4 whitespace-normal line-clamp-3">{promo.description}</p>
+                                                <div className="flex items-center gap-2 pt-3 border-t border-slate-100 mt-auto">
                                                     <span className="material-symbols-outlined !text-sm text-slate-400">calendar_today</span>
                                                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Válido hasta el {new Date(promo.end_date).toLocaleDateString()}</span>
                                                 </div>
