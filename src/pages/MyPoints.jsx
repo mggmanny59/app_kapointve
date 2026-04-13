@@ -220,9 +220,8 @@ const MyPoints = () => {
 
                 setTimeout(() => fetchUserData(), 1000);
                 
-                // Cerrar modales de canje
+                // Solo cerrar modal del QR de canje (no salir de la vista del comercio)
                 setShowRedemptionQR(null);
-                setSelectedBusiness(null);
             })
             .on('postgres_changes', {
                 event: 'INSERT',
@@ -231,7 +230,22 @@ const MyPoints = () => {
                 filter: `profile_id=eq.${user.id}`
             }, (payload) => {
                 console.log('Cambio en base de datos detectado:', payload.new);
-                setTimeout(() => fetchUserData(), 1000);
+                
+                // Actualización optimista hiper-rápida (en línea)
+                if (payload.new && payload.new.points_amount) {
+                    setLoyaltyCards(prev => prev.map(card => {
+                        if (card.business_id === payload.new.business_id) {
+                            return {
+                                ...card,
+                                current_points: Math.max(0, Number(card.current_points) + Number(payload.new.points_amount))
+                            };
+                        }
+                        return card;
+                    }));
+                }
+
+                setTimeout(() => fetchUserData(), 1500);
+
                 if (payload.new.type === 'EARN') {
                     // Solo mostramos si no hemos mostrado el broadcast ya
                     showNotification('success', '¡Saldo Actualizado!', `Has acumulado ${payload.new.points_amount} puntos.`);

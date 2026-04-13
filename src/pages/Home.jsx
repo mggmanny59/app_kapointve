@@ -528,21 +528,28 @@ const Home = () => {
             const pointsToGain = (parseFloat(amount) * (business?.points_per_dollar || 10)).toFixed(0);
             console.log(`Puntos a ganar calculados: ${pointsToGain} para cliente: ${clientId}`);
             
-            const broadcastChannel = supabase.channel(`client-points-realtime-${clientId}`);
-            broadcastChannel.subscribe(async (status) => {
-                if (status === 'SUBSCRIBED') {
-                    await broadcastChannel.send({
-                        type: 'broadcast',
-                        event: 'points_earned',
-                        payload: {
-                            businessName: business?.name || 'Comercio',
-                            points: pointsToGain,
-                            amountUSD: amount
-                        }
-                    }).then(() => console.log('Broadcast enviado con éxito'))
-                      .catch(err => console.error('Error en broadcast:', err));
+            const topicEarn = `client-points-realtime-${clientId}`;
+            const broadcastChannel = supabase.getChannels().find(c => c.topic === `realtime:${topicEarn}`) || supabase.channel(topicEarn);
+            
+            const payloadEarn = {
+                type: 'broadcast',
+                event: 'points_earned',
+                payload: {
+                    businessName: business?.name || 'Comercio',
+                    points: pointsToGain,
+                    amountUSD: amount
                 }
-            });
+            };
+
+            if (broadcastChannel.state === 'joined') {
+                await broadcastChannel.send(payloadEarn).catch(console.error);
+            } else {
+                broadcastChannel.subscribe(async (status) => {
+                    if (status === 'SUBSCRIBED') {
+                        await broadcastChannel.send(payloadEarn).catch(console.error);
+                    }
+                });
+            }
 
             // 2. NOTIFICACIÓN PUSH PERSONALIZADA
             // Esperamos un poco para que los triggers de DB procesen el saldo antes de buscar premios
@@ -738,20 +745,28 @@ const Home = () => {
             });
 
             // 5. BROADCAST REALTIME: Envío directo al cliente para actualización INSTANTÁNEA (Canje)
-            const broadcastChannel = supabase.channel(`client-points-realtime-${client.profile_id}`);
-            broadcastChannel.subscribe(async (status) => {
-                if (status === 'SUBSCRIBED') {
-                    await broadcastChannel.send({
-                        type: 'broadcast',
-                        event: 'reward_redeemed',
-                        payload: {
-                            businessName: business?.name || 'Comercio',
-                            prizeName: reward.name,
-                            pointsSpent: reward.cost_points
-                        }
-                    });
+            const topicRedeem = `client-points-realtime-${client.profile_id}`;
+            const redeemBroadcastChannel = supabase.getChannels().find(c => c.topic === `realtime:${topicRedeem}`) || supabase.channel(topicRedeem);
+            
+            const payloadRedeem = {
+                type: 'broadcast',
+                event: 'reward_redeemed',
+                payload: {
+                    businessName: business?.name || 'Comercio',
+                    prizeName: reward.name,
+                    pointsSpent: reward.cost_points
                 }
-            });
+            };
+
+            if (redeemBroadcastChannel.state === 'joined') {
+                await redeemBroadcastChannel.send(payloadRedeem).catch(console.error);
+            } else {
+                redeemBroadcastChannel.subscribe(async (status) => {
+                    if (status === 'SUBSCRIBED') {
+                        await redeemBroadcastChannel.send(payloadRedeem).catch(console.error);
+                    }
+                });
+            }
         } catch (err) {
             console.error('Redeem process error:', err);
             showNotification('error', 'Error en Canje', 'No se pudo completar el canje. Verifique la conexión.');
