@@ -274,6 +274,47 @@ const MyPoints = () => {
         };
     }, [user]);
 
+    // Redundancia Activa (Polling) cuando el cliente está esperando que le escaneen un premio
+    useEffect(() => {
+        if (!showRedemptionQR || !selectedBusiness || !user) return;
+
+        const checkBalanceInterval = setInterval(async () => {
+            try {
+                const { data } = await supabase
+                    .from('loyalty_cards')
+                    .select('current_points')
+                    .eq('profile_id', user.id)
+                    .eq('business_id', selectedBusiness.id)
+                    .single();
+                
+                if (data) {
+                    const currentLocalPoints = loyaltyCards.find(c => c.business_id === selectedBusiness.id)?.current_points || 0;
+                    
+                    // Si los puntos bajaron en la DB, ¡el cajero escaneó!
+                    if (data.current_points < currentLocalPoints) {
+                        clearInterval(checkBalanceInterval);
+                        
+                        // Refrescar restando los puntos en TODOS LOS CAMPOS de la App optimísticamente
+                        setLoyaltyCards(prev => prev.map(card => {
+                            if (card.business_id === selectedBusiness.id) {
+                                return { ...card, current_points: data.current_points };
+                            }
+                            return card;
+                        }));
+                        
+                        showNotification('success', '¡Canje Efectuado!', `Tu premio "${showRedemptionQR.name}" ha sido reclamado satisfactoriamente.`);
+                        setShowRedemptionQR(null);
+                        fetchUserData(); // Actualización final
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }, 2000); // 2 segundos
+
+        return () => clearInterval(checkBalanceInterval);
+    }, [showRedemptionQR, selectedBusiness, user, loyaltyCards]);
+
     const startScanner = () => {
         setIsScannerOpen(true);
         setIsProcessingScanner(false);
@@ -738,10 +779,24 @@ const MyPoints = () => {
 
             {showRedemptionQR && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm">
-                    <div className="bg-white w-full max-w-sm rounded-[2.5rem] p-8 flex flex-col items-center gap-6 border-2 border-[#595A5B]">
-                        <h3 className="text-xl font-black uppercase">Canje</h3>
-                        <QRCodeSVG value={JSON.stringify({ type: 'REDEEM_REQUEST', clientId: user?.id, prizeId: showRedemptionQR.id })} size={200} level="H" />
-                        <button onClick={() => setShowRedemptionQR(null)} className="w-full h-14 bg-slate-100 rounded-full font-black">CERRAR</button>
+                    <div className="bg-white w-full max-w-sm rounded-[3rem] p-8 flex flex-col items-center gap-6 border-4 border-primary/20 shadow-2xl relative overflow-hidden">
+                        
+                        <div className="text-center w-full">
+                            <h3 className="text-2xl font-black text-slate-800 uppercase tracking-tight">{showRedemptionQR.name}</h3>
+                            <p className="text-[13px] font-medium text-slate-500 py-2 leading-tight">
+                                {showRedemptionQR.description || 'Pide en la caja que escaneen tu código.'}
+                            </p>
+                            <div className="flex items-center justify-center gap-1.5 mt-2 bg-amber-50 mx-auto w-max px-4 py-1.5 rounded-full border border-amber-100">
+                                <span className="material-symbols-outlined text-amber-500 font-black">stars</span>
+                                <span className="font-black text-amber-600 text-[15px]">{showRedemptionQR.cost_points} Pts Requeridos</span>
+                            </div>
+                        </div>
+
+                        <div className="p-4 bg-white border-2 border-slate-100 rounded-[2rem] shadow-sm">
+                            <QRCodeSVG value={JSON.stringify({ type: 'REDEEM_REQUEST', clientId: user?.id, prizeId: showRedemptionQR.id })} size={190} level="H" />
+                        </div>
+                        
+                        <button onClick={() => setShowRedemptionQR(null)} className="w-full h-14 bg-slate-100 hover:bg-slate-200 transition-colors rounded-full font-black text-slate-700 tracking-wider">CERRAR CÓDIGO</button>
                     </div>
                 </div>
             )}
