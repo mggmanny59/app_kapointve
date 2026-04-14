@@ -17,14 +17,14 @@ const Login = () => {
     const { showNotification } = useNotification();
     const { checkBlocked, recordFailure, recordSuccess, remainingAttempts } = useRateLimit({ maxAttempts: 5, lockoutDuration: 60000 });
 
-    // Aggressively clearing fields on startup to prevent browser autofill
+    // Aggressively clearing fields on startup and tab change to prevent mixed data
     useEffect(() => {
         const timer = setTimeout(() => {
             setEmail('');
             setPassword('');
         }, 100);
         return () => clearTimeout(timer);
-    }, []);
+    }, [activeTab]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -208,8 +208,13 @@ const Login = () => {
                             </button>
                         </div>
 
-                        {/* Formulario */}
-                        <form onSubmit={handleLogin} className="space-y-6" autoComplete="off">
+                        {/* Formulario con key para forzar reinicio total al cambiar de pestaña */}
+                        <form 
+                            key={activeTab}
+                            onSubmit={handleLogin} 
+                            className="space-y-6" 
+                            autoComplete="off"
+                        >
                             <div className="flex flex-col gap-1">
                                 <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">Correo Electrónico</label>
                                 <div className="relative group text-sm">
@@ -220,6 +225,7 @@ const Login = () => {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
+                                        autoComplete="off"
                                     />
                                     <span className="material-symbols-outlined absolute left-3.5 top-3 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors text-xl">mail</span>
                                 </div>
@@ -238,6 +244,7 @@ const Login = () => {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
+                                        autoComplete="current-password"
                                     />
                                     <span className="material-symbols-outlined absolute left-3.5 top-3 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors text-xl">lock</span>
                                     <button

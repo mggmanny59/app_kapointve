@@ -905,21 +905,22 @@ const PlatformControl = () => {
                                 </div>
                             </div>
 
-                            {/* SECTION: RAW_METADATA */}
-                            {selectedBiz.registration_data && Object.keys(selectedBiz.registration_data).length > 0 && (
-                                <div className="mb-8">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <span className="text-[10px] font-black text-slate-400 font-mono tracking-[0.3em] uppercase opacity-50">0x03 // CORE_BLOB_STRUCTURE</span>
-                                        <div className="h-px flex-1 bg-slate-100"></div>
-                                    </div>
-                                    <div className="bg-[#0f172a] p-5 rounded-2xl border border-white/5 relative group overflow-hidden">
-                                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
-                                        <pre className="font-mono text-[9px] text-slate-500 leading-normal uppercase whitespace-pre-wrap">
-                                            {JSON.stringify(selectedBiz.registration_data, null, 2)}
-                                        </pre>
+                            {/* SECTION: REGISTRATION_STATUS */}
+                            <div className="mb-8">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="text-[10px] font-black text-slate-400 font-mono tracking-[0.3em] uppercase opacity-50">0x03 // REGISTRATION_CHECK</span>
+                                    <div className="h-px flex-1 bg-slate-100"></div>
+                                </div>
+                                <div className={`p-4 rounded-2xl border flex items-center gap-3 ${selectedBiz.registration_data ? 'bg-green-50 border-green-100 text-green-700' : 'bg-amber-50 border-amber-100 text-amber-700'}`}>
+                                    <span className="material-symbols-outlined !text-xl">
+                                        {selectedBiz.registration_data ? 'check_circle' : 'pending'}
+                                    </span>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-black uppercase tracking-widest leading-none">Formulario Ajustes</span>
+                                        <span className="text-xs font-bold">{selectedBiz.registration_data ? 'Completado y Verificado' : 'Pendiente por completar'}</span>
                                     </div>
                                 </div>
-                            )}
+                            </div>
 
                             {/* CORE ACTIONS */}
                             <div className="flex flex-col md:flex-row gap-3 pt-6 border-t border-slate-100 pb-12">

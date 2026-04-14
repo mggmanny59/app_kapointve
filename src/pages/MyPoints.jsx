@@ -31,6 +31,8 @@ const MyPoints = () => {
     const [isProcessingScanner, setIsProcessingScanner] = useState(false);
     const [showPushBanner, setShowPushBanner] = useState(false);
     const [isSubscribed, setIsSubscribed] = useState(false);
+    const [showAllBusinesses, setShowAllBusinesses] = useState(false);
+
 
     useEffect(() => {
         const handleOpenMessages = () => setIsMessageCenterOpen(true);
@@ -521,6 +523,12 @@ const MyPoints = () => {
                 <div className="space-y-4">
                     <div className="flex justify-between items-center px-1">
                         <h2 className="text-[11px] font-black text-slate-500 uppercase">Mis Comercios</h2>
+                        <button 
+                            onClick={() => setShowAllBusinesses(true)}
+                            className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline active:scale-95 transition-all"
+                        >
+                            Ver Todos
+                        </button>
                     </div>
                     <div className="flex gap-4 overflow-x-auto pb-4 snap-x">
                         {loyaltyCards.map((card) => (
@@ -789,6 +797,92 @@ const MyPoints = () => {
                         </div>
                         <span className="material-symbols-outlined text-white/40 text-xl">chevron_right</span>
                     </div>
+                </div>
+            )}
+
+            {/* View All Businesses Modal */}
+            {showAllBusinesses && (
+                <div className="fixed inset-0 z-[65] bg-[#F0F2F5] overflow-y-auto pb-24 animate-in fade-in slide-in-from-bottom duration-300">
+                    <header className="pt-8 pb-4 px-6 sticky top-0 bg-[#F0F2F5]/80 backdrop-blur-md z-50 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="size-10 bg-white p-1.5 rounded-xl flex items-center justify-center overflow-hidden border-2 border-[#595A5B] shadow-sm">
+                                <img src="/Logo KPoint Solo K (sin Fondo).png" alt="Logo" className="w-full h-full object-contain" />
+                            </div>
+                            <div>
+                                <h1 className="text-lg font-black tracking-tight text-slate-900 leading-tight uppercase">Mis Comercios</h1>
+                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Lista Completa</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setShowAllBusinesses(false)}
+                            className="size-10 rounded-full bg-white border-2 border-[#595A5B] text-slate-900 flex items-center justify-center active:scale-90 transition-all shadow-sm"
+                        >
+                            <span className="material-symbols-outlined !text-xl font-black">close</span>
+                        </button>
+                    </header>
+
+                    <main className="px-6 py-4 space-y-4">
+                        <div className="bg-white/50 border-2 border-[#595A5B]/10 rounded-2xl p-4 mb-2">
+                            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest text-center">
+                                Ordenados por mayor puntaje acumulado
+                            </p>
+                        </div>
+                        
+                        {[...loyaltyCards]
+                            .sort((a, b) => (b.current_points || 0) - (a.current_points || 0))
+                            .map((card, idx) => (
+                                <div 
+                                    key={card.id} 
+                                    onClick={() => {
+                                        setShowAllBusinesses(false);
+                                        fetchBusinessPrizes(card.businesses);
+                                    }}
+                                    className="group relative bg-white p-4 rounded-[2rem] border-2 border-[#595A5B] cursor-pointer shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 active:scale-[0.98]"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        {/* Rank Badge */}
+                                        <div className="absolute -top-2 -left-2 size-7 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center border-2 border-white shadow-lg">
+                                            #{idx + 1}
+                                        </div>
+
+                                        {/* Logo Container */}
+                                        <div className="size-16 min-w-[64px] rounded-2xl bg-white border-2 border-[#595A5B] p-2 flex items-center justify-center overflow-hidden shadow-sm group-hover:scale-105 transition-transform">
+                                            {card.businesses?.logo_url ? (
+                                                <img src={card.businesses.logo_url} className="w-full h-full object-contain" />
+                                            ) : (
+                                                <span className="material-symbols-outlined text-primary text-3xl">store</span>
+                                            )}
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-black text-slate-900 text-base leading-tight truncate group-hover:text-primary transition-colors">
+                                                {card.businesses?.name}
+                                            </h3>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <div className="flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">
+                                                    <span className="material-symbols-outlined text-amber-500 text-xs font-black">stars</span>
+                                                    <span className="text-xs font-black text-amber-600">{card.current_points || 0} PTS</span>
+                                                </div>
+                                                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Acumulados</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="size-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                                            <span className="material-symbols-outlined !text-xl">chevron_right</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+
+                        {loyaltyCards.length === 0 && (
+                            <div className="py-20 text-center flex flex-col items-center gap-4">
+                                <div className="size-20 rounded-full bg-slate-100 flex items-center justify-center text-slate-300 border-2 border-dashed border-slate-200">
+                                    <span className="material-symbols-outlined !text-4xl">storefront</span>
+                                </div>
+                                <p className="font-bold text-slate-400">Aún no estás afiliado a ningún comercio.</p>
+                            </div>
+                        )}
+                    </main>
                 </div>
             )}
 

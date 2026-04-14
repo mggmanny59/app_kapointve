@@ -16,6 +16,7 @@ import ActivityHistory from './pages/ActivityHistory';
 import Subscription from './pages/Subscription';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
+import Profile from './pages/Profile';
 import { useAuth } from './context/AuthContext';
 import BackNavigationHandler from './components/BackNavigationHandler';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
@@ -111,6 +112,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ActivityHistory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />

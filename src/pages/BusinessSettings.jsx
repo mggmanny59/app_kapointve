@@ -222,7 +222,8 @@ const BusinessSettings = () => {
                     phone: business.phone,
                     city: business.city,
                     points_per_dollar: business.points_per_dollar,
-                    logo_url: business.logo_url
+                    logo_url: business.logo_url,
+                    registration_data: true
                 })
                 .eq('id', business.id);
 

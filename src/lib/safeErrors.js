@@ -28,12 +28,19 @@ const ERROR_MAP = [
  * @returns {string} Mensaje seguro para mostrar al usuario
  */
 export function getSafeErrorMessage(err) {
-    const rawMessage = (err?.message || err?.error || String(err || '')).toLowerCase();
+    // Manejar objetos de error de Supabase que pueden venir anidados
+    const errorSource = err?.error?.message || err?.message || err?.error || String(err || '');
+    const rawMessage = String(errorSource).toLowerCase();
 
     for (const { match, message } of ERROR_MAP) {
         if (rawMessage.includes(match)) {
             return message;
         }
+    }
+
+    // Caso específico para teléfonos duplicados
+    if (rawMessage.includes('profiles_phone_key')) {
+        return 'Este número de teléfono ya está registrado o en uso por otro usuario. Por favor, intenta con uno diferente.';
     }
 
     return 'Ocurrió un error inesperado. Intenta de nuevo.';

@@ -18,7 +18,8 @@ export const AuthProvider = ({ children }) => {
                     .maybeSingle();
 
                 const isSuperAdmin = !!profile?.is_super_admin;
-                const businessInfo = profile?.business_members?.[0]?.businesses;
+                const businessRaw = profile?.business_members?.[0]?.businesses;
+                const businessInfo = Array.isArray(businessRaw) ? businessRaw[0] : businessRaw;
                 let businessStatus = null;
 
                 // Enforce Business Rules for non-Super Admins

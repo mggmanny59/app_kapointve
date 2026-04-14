@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useNotification } from '../context/NotificationContext';
 import { useRateLimit } from '../hooks/useRateLimit';
 import { getSafeErrorMessage } from '../lib/safeErrors';
+import { supabase } from '../lib/supabase';
 
 const Register = () => {
     const [activeTab, setActiveTab] = useState('client');
@@ -16,7 +17,8 @@ const Register = () => {
         password: '',
         birthDate: '', // New field for both roles
         shopCode: '', // businessName for owners
-        rif: '' // New field for owners
+        rif: '', // New field for owners
+        confirmEmail: '' // New validation field
     });
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -37,11 +39,12 @@ const Register = () => {
                 password: '',
                 birthDate: '',
                 shopCode: '',
-                rif: ''
+                rif: '',
+                confirmEmail: ''
             });
-        }, 100);
+        }, 300); // Aumentado a 300ms para mayor seguridad
         return () => clearTimeout(timer);
-    }, []);
+    }, [activeTab]);
 
     const handleChange = (e) => {
         setFormData({
@@ -72,17 +75,41 @@ const Register = () => {
             return;
         }
 
+        if (formData.email.trim().toLowerCase() !== formData.confirmEmail.trim().toLowerCase()) {
+            showNotification('error', 'Correos no coinciden', 'Los correos electrónicos ingresados no son iguales.');
+            return;
+        }
+
         setLoading(true);
 
         const fullPhone = `${formData.phonePrefix}${formData.phoneSuffix}`;
 
         try {
+            // --- VALIDACIÓN PREVENTIVA ---
+            // 1. Verificar si el teléfono ya existe en la base de datos
+            const { data: phoneCheck, error: phoneCheckError } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('phone', fullPhone)
+                .maybeSingle();
+
+            if (phoneCheckError) throw phoneCheckError;
+            
+            if (phoneCheck) {
+                recordFailure();
+                showNotification('error', 'Teléfono en Uso', 'Este número de teléfono ya está registrado o en uso por otro usuario.');
+                setLoading(false);
+                return;
+            }
+
             const metadata = {
                 full_name: formData.name,
                 role: activeTab,
             };
+            
+            const cleanEmail = formData.email.trim();
 
-            const data = await signUp(formData.email, formData.password, metadata);
+            const data = await signUp(cleanEmail, formData.password, metadata);
 
             if (data?.user?.identities?.length === 0) {
                 recordFailure();
@@ -100,7 +127,7 @@ const Register = () => {
                 .update({
                     phone: fullPhone,
                     full_name: formData.name,
-                    email: formData.email,
+                    email: cleanEmail,
                     birth_date: formData.birthDate || null,
                 })
                 .eq('id', userId);
@@ -233,8 +260,13 @@ const Register = () => {
                             </button>
                         </div>
 
-                        {/* Formulario con scroll si es necesario */}
-                        <form onSubmit={handleRegister} className="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar" autoComplete="off">
+                        {/* Formulario con scroll y key para reinicio total */}
+                        <form 
+                            key={activeTab}
+                            onSubmit={handleRegister} 
+                            className="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar" 
+                            autoComplete="off"
+                        >
                             {/* Nombre Completo */}
                             <div className="flex flex-col gap-1">
                                 <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">
@@ -306,8 +338,29 @@ const Register = () => {
                                         value={formData.email}
                                         onChange={handleChange}
                                         required
+                                        onCopy={(e) => e.preventDefault()}
+                                        onPaste={(e) => e.preventDefault()}
                                     />
                                     <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-xl">mail</span>
+                                </div>
+                            </div>
+
+                            {/* Confirmar Email */}
+                            <div className="flex flex-col gap-1">
+                                <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">Confirmar Correo Electrónico</label>
+                                <div className="relative group text-sm">
+                                    <input
+                                        name="confirmEmail"
+                                        className="w-full rounded-2xl border-[#595A5B] bg-slate-50/50 text-slate-900 h-11 px-4 pl-11 focus:outline-none focus:border-[#ff6a00] transition-all"
+                                        placeholder="correo@ejemplo.com"
+                                        type="email"
+                                        value={formData.confirmEmail}
+                                        onChange={handleChange}
+                                        required
+                                        onCopy={(e) => e.preventDefault()}
+                                        onPaste={(e) => e.preventDefault()}
+                                    />
+                                    <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-xl">mark_email_read</span>
                                 </div>
                             </div>
 

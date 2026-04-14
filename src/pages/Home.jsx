@@ -242,7 +242,10 @@ const Home = () => {
 
             setProfile(profileData);
             const memberInfo = profileData.business_members?.[0];
-            setBusiness(memberInfo?.businesses || null);
+            const bizRaw = memberInfo?.businesses;
+            const bizObj = Array.isArray(bizRaw) ? bizRaw[0] : bizRaw;
+            
+            setBusiness(bizObj || null);
             setUserRole(memberInfo?.role || 'client');
             setUserPermissions(memberInfo?.permissions || {
                 can_earn: true,
@@ -1098,7 +1101,11 @@ const Home = () => {
                     {userPermissions?.can_earn && (
                         <button
                             onClick={() => {
-                                if (profile?.business_members?.[0]?.businesses?.registration_data === false) {
+                                const currentBiz = Array.isArray(profile?.business_members?.[0]?.businesses) 
+                                    ? profile.business_members[0].businesses[0] 
+                                    : profile?.business_members?.[0]?.businesses;
+
+                                if (currentBiz?.registration_data === false) {
                                     showNotification('warning', 'Datos Incompletos', 'Debe completar los datos del formulario "Ajustes del Negocio" para realizar esta acción.');
                                     return;
                                 }
