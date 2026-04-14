@@ -6,6 +6,7 @@ import { useNotification } from '../context/NotificationContext';
 import Navigation from '../components/Navigation';
 import MarketingHub from '../components/MarketingHub';
 import SupportSection from '../components/SupportSection';
+import StaffSection from '../components/StaffSection';
 
 const BusinessSettings = () => {
     const { user, signOut } = useAuth();
@@ -16,7 +17,7 @@ const BusinessSettings = () => {
     const [business, setBusiness] = useState(null);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [activeTab, setActiveTab] = useState('info'); // 'info' | 'promos' | 'marketing' | 'support'
+    const [activeTab, setActiveTab] = useState(null); // null = menu, 'info' | 'promos' | 'marketing' | 'staff' | 'support'
     
     // Promotions states
     const [promoView, setPromoView] = useState('list'); // 'list', 'create', 'edit'
@@ -258,66 +259,96 @@ const BusinessSettings = () => {
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex flex-col w-full">
                         <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+                            {activeTab && (
+                                <button 
+                                    onClick={() => setActiveTab(null)}
+                                    className="size-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-primary transition-all mr-1"
+                                >
+                                    <span className="material-symbols-outlined !text-xl">arrow_back</span>
+                                </button>
+                            )}
                             <span className="material-symbols-outlined text-primary !text-3xl font-black">storefront</span>
-                            Ajustes del Negocio
+                            {activeTab ? (
+                                <span>
+                                    {activeTab === 'info' && 'Identidad'}
+                                    {activeTab === 'promos' && 'Promociones'}
+                                    {activeTab === 'marketing' && 'Marketing Hub'}
+                                    {activeTab === 'staff' && 'Equipo'}
+                                    {activeTab === 'support' && 'Soporte'}
+                                </span>
+                            ) : (
+                                'Ajustes del Negocio'
+                            )}
                         </h1>
-                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">Identidad y Reglas</p>
+                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">
+                            {activeTab ? 'Configuración de Sección' : 'Identidad y Reglas'}
+                        </p>
                     </div>
-                </div>
-
-                {/* Tabs */}
-                <div className="flex mt-6 bg-slate-200/50 p-1 rounded-2xl overflow-x-auto no-scrollbar">
-                    <button
-                        type="button"
-                        onClick={() => setActiveTab('info')}
-                        className={`flex-1 min-w-[100px] py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all ${
-                            activeTab === 'info' 
-                            ? 'bg-primary text-white shadow-sm shadow-primary/30' 
-                            : 'text-slate-500 hover:text-slate-700'
-                        }`}
-                    >
-                        Info Básica
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setActiveTab('promos')}
-                        className={`flex-1 min-w-[100px] py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all flex items-center justify-center gap-1 ${
-                            activeTab === 'promos' 
-                            ? 'bg-primary text-white shadow-sm shadow-primary/30' 
-                            : 'text-slate-500 hover:text-slate-700'
-                        }`}
-                    >
-                        <span className="material-symbols-outlined !text-sm">redeem</span>
-                        Promociones
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setActiveTab('marketing')}
-                        className={`flex-1 min-w-[100px] py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all flex items-center justify-center gap-1 ${
-                            activeTab === 'marketing' 
-                            ? 'bg-primary text-white shadow-sm shadow-primary/30' 
-                            : 'text-slate-500 hover:text-slate-700'
-                        }`}
-                    >
-                        <span className="material-symbols-outlined !text-sm">campaign</span>
-                        Marketing Hub
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setActiveTab('support')}
-                        className={`flex-1 min-w-[100px] py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all flex items-center justify-center gap-1 ${
-                            activeTab === 'support' 
-                            ? 'bg-primary text-white shadow-sm shadow-primary/30' 
-                            : 'text-slate-500 hover:text-slate-700'
-                        }`}
-                    >
-                        <span className="material-symbols-outlined !text-sm">support_agent</span>
-                        Soporte
-                    </button>
                 </div>
             </header>
 
-            <main className="px-6 space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500 pt-6">
+            <main className="px-6 py-6 space-y-6">
+                {!activeTab && (
+                    <>
+                        {/* Instructional Header Card - High Impact Expanded */}
+                        <div className="bg-gradient-to-br from-[#1E293B] to-[#0F172A] rounded-[2.5rem] p-10 border-2 border-[#595A5B] shadow-2xl relative overflow-hidden group">
+                            <div className="relative z-10 flex flex-col gap-3">
+                                <div className="flex items-center gap-4">
+                                    <div className="size-12 rounded-2xl bg-primary/20 flex items-center justify-center border border-primary/30">
+                                        <span className="material-symbols-outlined text-primary !text-3xl font-black">rocket_launch</span>
+                                    </div>
+                                    <h3 className="text-2xl font-black text-white tracking-tight">Centro de Control</h3>
+                                </div>
+                                <p className="text-slate-400 text-sm font-bold leading-relaxed pr-10">
+                                    Configura los parámetros de tu negocio para maximizar la fidelización. Selecciona un módulo para comenzar la personalización.
+                                </p>
+                            </div>
+                            
+                            {/* Decorative Elements */}
+                            <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 blur-[80px] rounded-full -translate-x-10 -translate-y-10 group-hover:bg-primary/20 transition-all duration-700"></div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <SettingCard 
+                            icon="info" 
+                            label="Info Básica" 
+                            color="blue"
+                            onClick={() => setActiveTab('info')} 
+                        />
+                        <SettingCard 
+                            icon="redeem" 
+                            label="Promociones" 
+                            color="purple"
+                            onClick={() => setActiveTab('promos')} 
+                        />
+                        <SettingCard 
+                            icon="campaign" 
+                            label="Marketing" 
+                            color="orange"
+                            onClick={() => setActiveTab('marketing')} 
+                        />
+                        <SettingCard 
+                            icon="badge" 
+                            label="Equipo" 
+                            color="emerald"
+                            onClick={() => setActiveTab('staff')} 
+                        />
+                        <SettingCard 
+                            icon="support_agent" 
+                            label="Soporte" 
+                            color="cyan"
+                            onClick={() => setActiveTab('support')} 
+                        />
+                        <SettingCard 
+                            icon="payments" 
+                            label="Mi Plan" 
+                            color="indigo"
+                            onClick={() => navigate('/subscription')} 
+                        />
+                    </div>
+                </>
+            )}
+
                 {activeTab === 'info' && (
                     <form onSubmit={handleSave} className="space-y-6">
                         <div className="space-y-4 px-1">
@@ -330,24 +361,26 @@ const BusinessSettings = () => {
                             {/* Logo Upload */}
                             <div className="flex flex-col items-center mb-1">
                                 <div className="relative group w-full flex justify-center">
-                                    <div className="size-56 rounded-[1.5rem] bg-white border-2 border-dashed border-slate-200 overflow-hidden flex items-center justify-center group-hover:border-primary transition-all relative">
-                                        {business?.logo_url ? (
-                                            <img src={business.logo_url} alt="Logo" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="text-center p-4">
-                                                <span className="material-symbols-outlined text-slate-300 text-6xl">add_a_photo</span>
-                                            </div>
-                                        )}
-                                        {uploading && (
-                                            <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-20">
-                                                <span className="material-symbols-outlined animate-spin text-primary text-4xl">sync</span>
-                                            </div>
-                                        )}
+                                    <div className="p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[3rem] shadow-inner relative group">
+                                        <div className="size-56 rounded-[2.5rem] bg-white border-2 border-[#595A5B] overflow-hidden flex items-center justify-center group-hover:border-primary transition-all relative shadow-xl">
+                                            {business?.logo_url ? (
+                                                <img src={business.logo_url} alt="Logo" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="text-center p-4">
+                                                    <span className="material-symbols-outlined text-slate-300 text-6xl">add_a_photo</span>
+                                                </div>
+                                            )}
+                                            {uploading && (
+                                                <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-20">
+                                                    <span className="material-symbols-outlined animate-spin text-primary text-4xl">sync</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <label className="absolute -bottom-2 right-2 size-14 rounded-2xl bg-white border-2 border-[#595A5B] shadow-2xl flex items-center justify-center cursor-pointer hover:bg-slate-50 active:scale-90 transition-all z-30">
+                                            <span className="material-symbols-outlined text-primary text-3xl font-black">upload</span>
+                                            <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} disabled={uploading} />
+                                        </label>
                                     </div>
-                                    <label className="absolute bottom-2 translate-x-28 size-14 rounded-2xl bg-white border-2 border-slate-200 shadow-xl flex items-center justify-center cursor-pointer hover:bg-slate-50 active:scale-90 transition-all z-30">
-                                        <span className="material-symbols-outlined text-primary text-3xl font-black">upload</span>
-                                        <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} disabled={uploading} />
-                                    </label>
                                 </div>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Logo comercial</p>
                             </div>
@@ -591,6 +624,12 @@ const BusinessSettings = () => {
 
                 {activeTab === 'marketing' && <MarketingHub />}
 
+                {activeTab === 'staff' && (
+                    <div className="pb-8">
+                        <StaffSection />
+                    </div>
+                )}
+
                 {activeTab === 'support' && (
                     <div className="pb-8">
                         <SupportSection userType="owner" />
@@ -600,6 +639,23 @@ const BusinessSettings = () => {
 
             <Navigation />
         </div>
+    );
+};
+
+const SettingCard = ({ icon, label, onClick }) => {
+    return (
+        <button
+            onClick={onClick}
+            className="bg-primary border border-slate-200 rounded-[2rem] p-5 flex flex-col items-center justify-center gap-3 shadow-md hover:shadow-xl hover:-translate-y-1 active:scale-95 transition-all group overflow-hidden relative min-h-[130px]"
+        >
+            <div className="size-14 rounded-2xl bg-white/20 flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110 shadow-inner">
+                <span className="material-symbols-outlined !text-4xl font-black">{icon}</span>
+            </div>
+            <span className="text-[12px] font-black text-white uppercase tracking-widest text-center leading-tight px-1 drop-shadow-sm">{label}</span>
+            
+            {/* Subtle Shine */}
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-tr from-white/10 to-transparent pointer-events-none"></div>
+        </button>
     );
 };
 
