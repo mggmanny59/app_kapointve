@@ -50,7 +50,6 @@ const Terms = () => {
                         <li>La vigencia de los puntos dependerá de la política de inactividad de cada comercio afiliado.</li>
                     </ul>
                 </section>
-
                 <section className="space-y-3">
                     <div className="flex items-center gap-3 text-[#ff6a00]">
                         <span className="material-symbols-outlined font-bold">store</span>
@@ -59,6 +58,22 @@ const Terms = () => {
                     <p className="text-sm leading-relaxed text-slate-600">
                         KPoint actúa únicamente como la plataforma tecnológica que registra las transacciones. El comercio afiliado es el único responsable de la calidad, existencia y entrega física de los premios ofrecidos en su catálogo de fidelización.
                     </p>
+                </section>
+
+                <section className="space-y-3">
+                    <div className="flex items-center gap-3 text-[#ff6a00]">
+                        <span className="material-symbols-outlined font-bold">bolt</span>
+                        <h2 className="text-lg font-black uppercase tracking-tight">Exclusión de Responsabilidad</h2>
+                    </div>
+                    <p className="text-sm leading-relaxed text-slate-600">
+                        Dada la naturaleza tecnológica de la PWA y el entorno de operación en Venezuela, KPoint no se hace responsable por:
+                    </p>
+                    <ul className="list-disc pl-5 space-y-2 text-sm text-slate-600">
+                        <li><strong>Fallas en Servicios Públicos:</strong> Interrupciones en el servicio eléctrico, caídas de conectividad a internet de banda ancha o redes móviles que impidan el acceso a la plataforma o el registro de transacciones en tiempo real.</li>
+                        <li><strong>Mantenimiento y Actualizaciones:</strong> Breves suspensiones del servicio para optimización técnica.</li>
+                        <li><strong>Uso Indebido:</strong> El acceso no autorizado a la cuenta del Usuario por descuido en la custodia de sus credenciales de acceso.</li>
+                        <li><strong>Decisiones del Comercio:</strong> KPoint es el proveedor de la tecnología; la disponibilidad de premios o productos para canje es responsabilidad exclusiva del comercio aliado.</li>
+                    </ul>
                 </section>
 
                 <section className="space-y-3">

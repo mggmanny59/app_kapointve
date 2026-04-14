@@ -68,7 +68,6 @@ const Privacy = () => {
                         Tus datos solo son visibles para ti y para los comercios donde te has registrado como cliente. **Nunca vendemos tus datos a terceros.** La información se procesa con el único fin de gestionar tus puntos y enviarte promociones legítimas de tus negocios favoritos.
                     </p>
                 </section>
-
                 <section className="space-y-4">
                     <div className="flex items-center gap-3 text-slate-900 border-b pb-2">
                         <span className="material-symbols-outlined font-bold text-[#ff6a00]">settings_accessibility</span>
@@ -77,6 +76,18 @@ const Privacy = () => {
                     <p className="text-sm leading-relaxed text-slate-600">
                         Tienes derecho al **Acceso, Rectificación, Cancelación y Oposición** de tus datos. Si deseas cerrar tu cuenta y eliminar permanentemente tu historial de puntos de todos los comercios, puedes hacerlo desde la configuración de tu perfil.
                     </p>
+                </section>
+
+                <section className="bg-red-50 p-6 rounded-[32px] border border-red-100 relative overflow-hidden">
+                    <div className="absolute top-[-20px] right-[-20px] text-red-600 opacity-10">
+                        <span className="material-symbols-outlined text-[120px]">policy</span>
+                    </div>
+                    <div className="relative z-10">
+                        <h2 className="text-sm font-black text-red-600 uppercase tracking-[0.2em] mb-2">Ley Contra Delitos Informáticos</h2>
+                        <p className="text-xs leading-relaxed text-red-900 font-medium italic">
+                            Cualquier intento de manipulación de saldos, alteración del código de la PWA o acceso no autorizado a bases de datos será denunciado ante el Cuerpo de Investigaciones Científicas, Penales y Criminalísticas (CICPC) bajo el amparo de la Ley Especial contra los Delitos Informáticos vigente en Venezuela.
+                        </p>
+                    </div>
                 </section>
 
                 <div className="pt-8 border-t border-slate-100 flex flex-col items-center gap-4">
