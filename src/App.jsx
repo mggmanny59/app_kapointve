@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
@@ -14,6 +14,8 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import ActivityHistory from './pages/ActivityHistory';
 import Subscription from './pages/Subscription';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 import { useAuth } from './context/AuthContext';
 import BackNavigationHandler from './components/BackNavigationHandler';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
@@ -22,12 +24,13 @@ import PWAInstallPrompt from './components/PWAInstallPrompt';
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
+  const location = useLocation();
   if (!user) return <Navigate to="/login" replace />;
   
   const isExpired = user.businessStatus?.is_expired && !user.is_super_admin;
   
   // If expired, and NOT on subscription page, redirect to subscription
-  if (isExpired && window.location.pathname !== '/subscription') {
+  if (isExpired && location.pathname !== '/subscription') {
     return <Navigate to="/subscription" replace />;
   }
   
@@ -36,17 +39,16 @@ const ProtectedRoute = ({ children }) => {
 
 const AdminRoute = ({ children }) => {
   const { user } = useAuth();
+  const location = useLocation();
   if (!user) return <Navigate to="/login" replace />;
 
   const isExpired = user.businessStatus?.is_expired && !user.is_super_admin;
   const role = user.role;
   
-  // Special case: allow access to subscription page for admins even if expired
-  if (window.location.pathname === '/subscription') {
+  // Special case: allow admin/owner/manager access to subscription page even if expired
+  if (location.pathname === '/subscription') {
     if (role === 'admin' || role === 'owner' || role === 'manager') return children;
-    // For cashiers, we allow them to enter the page so ProtectedRoute doesn't loop them,
-    // but the Subscription page itself should handle the limited view.
-    return children; 
+    return <Navigate to="/dashboard" replace />;
   }
 
   if (role !== 'admin' && role !== 'owner' && role !== 'manager') {
@@ -78,6 +80,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
         <Route
           path="/dashboard"
           element={

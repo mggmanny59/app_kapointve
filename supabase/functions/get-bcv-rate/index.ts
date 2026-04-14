@@ -1,11 +1,24 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const ALLOWED_ORIGINS = [
+    'https://app.kpointve.com',
+    'https://kpointve.com',
+    'http://localhost:5173'
+];
+
+function getCorsHeaders(req: Request) {
+    const origin = req.headers.get('Origin') || '';
+    const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+    return {
+        'Access-Control-Allow-Origin': allowedOrigin,
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    };
 }
 
 serve(async (req) => {
+    const corsHeaders = getCorsHeaders(req);
+
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
     }
@@ -15,7 +28,6 @@ serve(async (req) => {
     const BCV_URL = 'https://www.bcv.org.ve/';
 
     try {
-        console.log("Attempting to fetch rate from DolarAPI...");
         const apiResponse = await fetch(API_URL, {
             headers: { 'Accept': 'application/json' }
         });
@@ -23,14 +35,11 @@ serve(async (req) => {
         if (apiResponse.ok) {
             const data = await apiResponse.json();
             if (data && data.promedio) {
-                console.log("Success with DolarAPI:", data.promedio);
                 return new Response(JSON.stringify({ rate: data.promedio, source: 'DolarAPI' }), {
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
                 });
             }
         }
-
-        console.warn("DolarAPI failed, falling back to BCV Scrape...");
 
         // Fallback to BCV Scrape
         const bcvResponse = await fetch(BCV_URL, {
@@ -63,9 +72,8 @@ serve(async (req) => {
         throw new Error("No se pudo obtener la tasa de ninguna fuente.");
 
     } catch (error) {
-        console.error('Exchange Rate Error:', error);
         return new Response(JSON.stringify({ error: error.message }), {
-            status: 200,
+            status: 502,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
     }

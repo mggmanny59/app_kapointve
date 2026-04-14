@@ -2,15 +2,27 @@ import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate, Link } from 'react-router-dom';
 import { useNotification } from '../context/NotificationContext';
+import { useRateLimit } from '../hooks/useRateLimit';
+import { getSafeErrorMessage } from '../lib/safeErrors';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const { showNotification } = useNotification();
+    const { checkBlocked, recordFailure, recordSuccess, remainingAttempts } = useRateLimit({ maxAttempts: 3, lockoutDuration: 120000 });
 
     const handleResetRequest = async (e) => {
         e.preventDefault();
+
+        // Rate limiting check
+        const { blocked, secondsLeft } = checkBlocked();
+        if (blocked) {
+            showNotification('error', 'Acceso Bloqueado', 
+                `Demasiados intentos. Espera ${secondsLeft} segundos antes de intentar de nuevo.`);
+            return;
+        }
+
         setLoading(true);
         try {
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -19,11 +31,17 @@ const ForgotPassword = () => {
 
             if (error) throw error;
 
-            showNotification('success', 'Correo enviado', 'Por favor revisa tu bandeja de entrada para restablecer tu contraseña.');
+            recordSuccess();
+            showNotification('success', 'Correo enviado', 'Por favor revisa tu bandeja de entrada para restablecer tu contraseña. Si no lo encuentras, revisa tu carpeta de spam.');
             // Optionally redirect to login after a delay
             setTimeout(() => navigate('/login'), 5000);
         } catch (err) {
-            showNotification('error', 'Error', err.message);
+            recordFailure();
+            let friendlyMessage = getSafeErrorMessage(err);
+            if (remainingAttempts <= 2 && remainingAttempts > 0) {
+                friendlyMessage += ` (${remainingAttempts} intentos restantes)`;
+            }
+            showNotification('error', 'Error', friendlyMessage);
         } finally {
             setLoading(false);
         }

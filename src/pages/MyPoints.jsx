@@ -581,6 +581,16 @@ const MyPoints = () => {
                         </div>
                     </div>
                 )}
+
+                {/* Legal Links Footer */}
+                <div className="pt-8 pb-4 flex flex-col items-center gap-2">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">KPoint Loyalty Platform</p>
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => navigate('/terms')} className="text-[11px] font-black text-primary uppercase tracking-widest hover:underline">Términos</button>
+                        <div className="w-1.5 h-1.5 rounded-full bg-slate-200"></div>
+                        <button onClick={() => navigate('/privacy')} className="text-[11px] font-black text-primary uppercase tracking-widest hover:underline">Privacidad</button>
+                    </div>
+                </div>
             </main>
 
             {/* Modals */}

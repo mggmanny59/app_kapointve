@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useNotification } from '../context/NotificationContext';
+import { useRateLimit } from '../hooks/useRateLimit';
 
 const Login = () => {
     const [activeTab, setActiveTab] = useState('client');
@@ -14,6 +15,7 @@ const Login = () => {
     const { signIn, signOut, user } = useAuth(); // Added signOut
     const navigate = useNavigate();
     const { showNotification } = useNotification();
+    const { checkBlocked, recordFailure, recordSuccess, remainingAttempts } = useRateLimit({ maxAttempts: 5, lockoutDuration: 60000 });
 
     // Aggressively clearing fields on startup to prevent browser autofill
     useEffect(() => {
@@ -26,6 +28,15 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+
+        // Rate limiting check
+        const { blocked, secondsLeft } = checkBlocked();
+        if (blocked) {
+            showNotification('error', 'Acceso Bloqueado', 
+                `Demasiados intentos fallidos. Espera ${secondsLeft} segundos antes de intentar de nuevo.`);
+            return;
+        }
+
         setLoading(true);
         try {
             const result = await signIn(email, password);
@@ -89,6 +100,7 @@ const Login = () => {
                     }
                 }
                 // If validation passes, navigate manually
+                recordSuccess();
                 navigate(isSuperAdmin ? '/platform-admin' : '/dashboard');
             } else {
                 // CLIENT VALIDATION: Strict separation
@@ -116,12 +128,17 @@ const Login = () => {
                 // We no longer force a loyalty card creation on login.
 
                 // If validation passes, navigate manually
+                recordSuccess();
                 navigate('/my-points');
             }
         } catch (err) {
+            recordFailure();
             // Friendly error message for users
             let message = err.message;
             if (message === 'Invalid login credentials') message = '¡Ups! Correo o contraseña incorrectos.';
+            if (remainingAttempts <= 2 && remainingAttempts > 0) {
+                message += ` (${remainingAttempts} intentos restantes)`;
+            }
             showNotification('error', 'Error de Acceso', message);
         } finally {
             setLoading(false);

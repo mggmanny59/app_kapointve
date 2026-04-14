@@ -44,8 +44,11 @@ export async function subscribeUserToPush() {
             throw new Error('Permiso denegado por el usuario.');
         }
 
-        // 4. Suscribir al usuario con la nueva llave pública VAPID fija
-        const publicVapidKey = 'BIoF916LzTZ5Wb_keed4lC0-8QlIHoU9p-w5VX2fvgl4iyia8XwR_EZ1fsm6BsEzHeeeAaI8C_qwXUJ197d3gSg';
+        // 4. Suscribir al usuario con la llave pública VAPID desde variables de entorno
+        const publicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+        if (!publicVapidKey) {
+            throw new Error('VAPID key no configurada en el entorno.');
+        }
 
 
         let subscription;

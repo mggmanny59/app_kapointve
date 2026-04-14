@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
 import { useNotification } from '../context/NotificationContext';
+import { useRateLimit } from '../hooks/useRateLimit';
+import { getSafeErrorMessage } from '../lib/safeErrors';
 
 const Register = () => {
     const [activeTab, setActiveTab] = useState('client');
@@ -22,6 +23,8 @@ const Register = () => {
     const { signUp } = useAuth();
     const navigate = useNavigate();
     const { showNotification } = useNotification();
+    const { checkBlocked, recordFailure, recordSuccess, remainingAttempts } = useRateLimit({ maxAttempts: 5, lockoutDuration: 60000 });
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
 
     // Aggressively clearing fields on startup to prevent browser autofill
     React.useEffect(() => {
@@ -50,9 +53,22 @@ const Register = () => {
     const handleRegister = async (e) => {
         e.preventDefault();
 
+        // Rate limiting check
+        const { blocked, secondsLeft } = checkBlocked();
+        if (blocked) {
+            showNotification('error', 'Registro Bloqueado', 
+                `Demasiados intentos. Espera ${secondsLeft} segundos antes de intentar de nuevo.`);
+            return;
+        }
+
         // Validate Phone Suffix (7 digits)
         if (formData.phoneSuffix.length !== 7 || !/^\d+$/.test(formData.phoneSuffix)) {
             showNotification('error', 'Teléfono Inválido', 'El número de teléfono debe tener exactamente 7 dígitos.');
+            return;
+        }
+
+        if (!acceptedTerms) {
+            showNotification('error', 'Aceptación Requerida', 'Debes aceptar los Términos y Condiciones para continuar.');
             return;
         }
 
@@ -69,6 +85,7 @@ const Register = () => {
             const data = await signUp(formData.email, formData.password, metadata);
 
             if (data?.user?.identities?.length === 0) {
+                recordFailure();
                 showNotification('error', 'Cuenta Existente', 'Este correo electrónico ya está registrado. Intenta iniciar sesión.');
                 setLoading(false);
                 return;
@@ -76,10 +93,8 @@ const Register = () => {
 
             const userId = data.user.id;
 
-            // Check if this is the Platform Owner email
-            const isPlatformOwner = formData.email.toLowerCase().trim() === 'mgeducation.ia2@gmail.com';
-
-            // 1. Update profile with phone number and optional super_admin flag
+            // 1. Update profile with phone number
+            // NOTE: is_super_admin is handled server-side via DB trigger (security best practice)
             await supabase
                 .from('profiles')
                 .update({
@@ -87,7 +102,6 @@ const Register = () => {
                     full_name: formData.name,
                     email: formData.email,
                     birth_date: formData.birthDate || null,
-                    is_super_admin: isPlatformOwner // Auto-elevate the owner
                 })
                 .eq('id', userId);
 
@@ -110,7 +124,7 @@ const Register = () => {
                         rif: formData.rif,
                         owner_id: userId,
                         is_active: true,
-                        registration_status: isPlatformOwner ? 'OK' : 'PENDING', // Auto-approve the owner
+                        registration_status: 'PENDING', // All new businesses require admin approval
                         subscription_plan: 'BASIC', // Consistent with user request
                         subscription_expiry: initialExpiry.toISOString()
                     })
@@ -142,13 +156,13 @@ const Register = () => {
                 showNotification('success', '¡Cuenta Creada!', 'Tu cuenta ha sido creada exitosamente. Escanea el código QR de un comercio para unirte a su programa de fidelidad.');
             }
 
+            recordSuccess();
             navigate('/login');
         } catch (err) {
-            let friendlyMessage = err.message;
-            if (err.message.includes('User already registered')) {
-                friendlyMessage = 'Este correo electrónico ya está registrado.';
-            } else if (err.message.includes('Password should be')) {
-                friendlyMessage = 'La contraseña debe tener al menos 6 caracteres.';
+            recordFailure();
+            let friendlyMessage = getSafeErrorMessage(err);
+            if (remainingAttempts <= 2 && remainingAttempts > 0) {
+                friendlyMessage += ` (${remainingAttempts} intentos restantes)`;
             }
             showNotification('error', 'Error en Registro', friendlyMessage);
         } finally {
@@ -377,6 +391,23 @@ const Register = () => {
                                     </div>
                                 </>
                             )}
+
+                            {/* Legal Accept Checkbox */}
+                            <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-100 flex items-start gap-3 mt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setAcceptedTerms(!acceptedTerms)}
+                                    className={`mt-0.5 shrink-0 w-6 h-6 rounded-lg border-2 transition-all flex items-center justify-center ${acceptedTerms
+                                        ? 'bg-[#ff6a00] border-[#ff6a00] text-white shadow-lg shadow-[#ff6a00]/20'
+                                        : 'border-[#595A5B] bg-white'
+                                        }`}
+                                >
+                                    {acceptedTerms && <span className="material-symbols-outlined text-base font-bold">check</span>}
+                                </button>
+                                <div className="text-[11px] leading-relaxed text-slate-600 font-medium">
+                                    Acepto los <Link to="/terms" className="text-[#ff6a00] font-bold hover:underline">Términos y Condiciones</Link> y reconozco que mis datos serán tratados según la <Link to="/privacy" className="text-[#ff6a00] font-bold hover:underline">Política de Privacidad</Link> ajustada al marco legal venezolano.
+                                </div>
+                            </div>
 
                             <button
                                 type="submit"

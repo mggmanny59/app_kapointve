@@ -412,6 +412,17 @@ const BusinessSettings = () => {
                             </div>
                         </div>
 
+                        {/* Legal Section for Owners */}
+                        <div className="bg-slate-100 rounded-[2rem] p-6 border-2 border-slate-200 space-y-3">
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="material-symbols-outlined text-slate-400 font-bold text-lg">gavel</span>
+                                <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Compromiso Legal</p>
+                            </div>
+                            <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                                Como dueño de negocio, te comprometes a cumplir con nuestros <button type="button" onClick={() => navigate('/terms')} className="text-primary font-black hover:underline">Términos de Servicio</button> y la <button type="button" onClick={() => navigate('/privacy')} className="text-primary font-black hover:underline">Política de Privacidad</button> en el tratamiento de los datos de tus clientes.
+                            </p>
+                        </div>
+
                         <button
                             type="submit"
                             disabled={saving}

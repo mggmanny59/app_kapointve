@@ -167,18 +167,27 @@ const StaffManagement = () => {
         if (!window.confirm(`¿Estás seguro de eliminar a ${name}? Esta acción revocará su acceso de inmediato.`)) return;
 
         try {
-            // Note: This only removes from business_members, ideally we'd disable the auth user too
-            const { error } = await supabase
-                .from('business_members')
-                .delete()
-                .eq('id', memberId);
+            const { data: { session } } = await supabase.auth.getSession();
+
+            // ✅ SECURITY FIX A-05: Invoke edge function to completely revoke auth access and cascade delete
+            const { data, error } = await supabase.functions.invoke('disable-employee', {
+                body: {
+                    profile_id: memberId,
+                    business_id: business.id
+                },
+                headers: {
+                    Authorization: `Bearer ${session?.access_token}`,
+                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+                }
+            });
 
             if (error) throw error;
 
-            showNotification('success', 'Equipo Actualizado', 'El miembro ha sido removido del equipo.');
+            showNotification('success', 'Equipo Actualizado', 'El acceso del miembro ha sido revocado completamente.');
             fetchStaffList(business.id);
         } catch (err) {
-            showNotification('error', 'Error', 'No se pudo eliminar al miembro.');
+            console.error("Error deleting staff:", err);
+            showNotification('error', 'Error', err.message || 'No se pudo eliminar al miembro.');
         }
     };
 
