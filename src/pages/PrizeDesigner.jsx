@@ -210,7 +210,7 @@ const PrizeDesigner = () => {
     return (
         <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-32 antialiased">
             {/* Header */}
-            <header className="px-6 pt-8 pb-6 sticky top-0 bg-[#f8fafc]/95 backdrop-blur-md z-50 transition-all border-b border-slate-100/50">
+            <header className="px-6 pt-8 pb-4 sticky top-0 bg-[#f8fafc]/95 backdrop-blur-md z-50 transition-all border-b border-slate-100/50">
                 <div className="flex flex-col mb-6">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-4">
@@ -233,10 +233,23 @@ const PrizeDesigner = () => {
 
                     </div>
 
-                    <div className="flex gap-2 mb-4">
+                    {view === 'list' && (
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                            <div className="bg-[#1f150f] rounded-[1.5rem] flex flex-col items-center justify-center h-[105px] shadow-md">
+                                <p className="text-white font-bold text-[14px] leading-tight text-center">Premios<br/>Activos</p>
+                                <p className="text-primary font-black text-[38px] mt-1 leading-none">{prizes.filter(p => p.is_active).length}</p>
+                            </div>
+                            <div className="bg-white rounded-[1.5rem] border border-[#595A5B] flex flex-col items-center justify-center h-[105px] shadow-sm">
+                                <p className="text-[#101828] font-bold text-[14px] leading-tight text-center mb-[2px]">Premios<br/>Ocultos</p>
+                                <p className="text-primary font-black text-[38px] mt-1 leading-none">{prizes.filter(p => !p.is_active).length}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex gap-2">
                         <button
                             onClick={() => setShowCalculator(true)}
-                            className="flex-1 h-12 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center gap-2 text-slate-600 active:scale-95 transition-all shadow-sm hover:border-primary/20"
+                            className="flex-1 h-12 rounded-full bg-white border border-[#595A5B] flex items-center justify-center gap-2 text-slate-600 active:scale-95 transition-all shadow-sm hover:border-primary/20"
                         >
                             <span className="material-symbols-outlined font-black !text-xl text-primary">calculate</span>
                             <span className="text-[10px] font-black uppercase tracking-widest text-center leading-tight">Motor Puntos</span>
@@ -297,7 +310,7 @@ const PrizeDesigner = () => {
                 )}
             </header>
 
-            <main className="px-6 py-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <main className="px-6 pt-0 pb-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {view === 'create' ? (
                     <form onSubmit={handleSave} className="space-y-1">
 
@@ -438,79 +451,80 @@ const PrizeDesigner = () => {
                         </div>
                     </form>
                 ) : (
-                    <div className="space-y-4">
-                        {isLoadingPrizes ? (
-                            <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                                <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#595A5B] border-t-primary"></div>
-                                <p className="text-slate-600 font-black uppercase tracking-[0.2em] text-[10px]">Actualizando catálogo...</p>
-                            </div>
-                        ) : prizes.length > 0 ? (
-                            prizes.map((prize) => (
-                                <div key={prize.id} className="bg-white rounded-[2rem] border-2 border-[#595A5B] flex items-center p-4 gap-4 active:scale-[0.98] transition-all hover:bg-slate-50/50 group relative shadow-sm">
-                                    {/* Medium Image Area */}
-                                    <div className="size-20 rounded-2xl bg-slate-50 flex items-center justify-center p-3 shrink-0 border-2 border-[#595A5B] shadow-inner relative overflow-hidden">
-                                        <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent"></div>
-                                        <img
-                                            src={prize.image_url}
-                                            alt={prize.name}
-                                            className="w-full h-full object-contain relative z-10"
-                                        />
-                                    </div>
-
-                                    {/* Info Area - Points Capsule Scale +25% */}
-                                    <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                        <div className="mb-2">
-                                            <span className="inline-flex items-center bg-green-50 text-[#22C55E] px-3.5 py-1 rounded-full text-[14px] font-black tracking-tight border border-green-100/50 shadow-sm shadow-green-100/20">
-                                                + {prize.cost_points} PTS
-                                            </span>
+                    <div className="bg-[#f0f4f8] rounded-[2.5rem] p-4 border border-[#595A5B]/20 shadow-inner min-h-[400px]">
+                        <div className="space-y-4">
+                            {isLoadingPrizes ? (
+                                <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#595A5B] border-t-primary"></div>
+                                    <p className="text-slate-600 font-black uppercase tracking-[0.2em] text-[10px]">Actualizando catálogo...</p>
+                                </div>
+                            ) : prizes.length > 0 ? (
+                                prizes.map((prize) => (
+                                    <div key={prize.id} className="bg-white rounded-[2rem] border border-[#595A5B] flex items-center p-4 gap-4 active:scale-[0.98] transition-all hover:bg-slate-50 group relative shadow-sm">
+                                        {/* Medium Image Area */}
+                                        <div className="size-20 rounded-2xl bg-white flex items-center justify-center p-3 shrink-0 border border-[#595A5B] shadow-sm relative overflow-hidden">
+                                            <img
+                                                src={prize.image_url}
+                                                alt={prize.name}
+                                                className="w-full h-full object-contain relative z-10"
+                                            />
                                         </div>
 
-                                        <h3 className="text-[14px] font-black text-slate-800 tracking-tight leading-tight mb-0.5 truncate uppercase">
-                                            {prize.name}
-                                        </h3>
-                                        <p className="text-[11px] text-slate-500 font-bold leading-snug line-clamp-1 italic opacity-80">
-                                            {prize.description || 'Sin descripción'}
-                                        </p>
-                                    </div>
+                                        {/* Info Area - Points Capsule Scale +25% */}
+                                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                            <div className="mb-2">
+                                                <span className="inline-flex items-center bg-[#E5F7ED] text-[#00C853] px-3.5 py-1 rounded-full text-[13px] font-black tracking-tight">
+                                                    + {prize.cost_points} PTS
+                                                </span>
+                                            </div>
 
-                                    {/* Discrete Actions */}
-                                    <div className="flex flex-col gap-1.5 ml-1 border-l border-[#595A5B] pl-3">
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleEdit(prize);
-                                            }}
-                                            className="size-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-primary active:scale-90 transition-all border-2 border-[#595A5B]"
-                                        >
-                                            <span className="material-symbols-outlined !text-base font-black">edit</span>
-                                        </button>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDelete(prize.id);
-                                            }}
-                                            className="size-8 rounded-xl bg-red-50/50 flex items-center justify-center text-red-300 hover:text-red-500 active:scale-90 transition-all border border-red-50/50"
-                                        >
-                                            <span className="material-symbols-outlined !text-base font-black">delete</span>
-                                        </button>
+                                            <h3 className="text-[14px] font-black text-slate-900 tracking-tight leading-tight mb-0.5 truncate uppercase">
+                                                {prize.name}
+                                            </h3>
+                                            <p className="text-[11px] text-slate-500 font-bold leading-snug line-clamp-1 italic opacity-80 decoration-slate-400">
+                                                {prize.description || 'Sin descripción'}
+                                            </p>
+                                        </div>
+
+                                        {/* Discrete Actions */}
+                                        <div className="flex flex-col gap-1.5 ml-1 border-l border-[#595A5B]/30 pl-3">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleEdit(prize);
+                                                }}
+                                                className="size-8 rounded-full bg-white flex items-center justify-center text-[#595A5B] hover:text-primary active:scale-90 transition-all border border-[#595A5B]"
+                                            >
+                                                <span className="material-symbols-outlined !text-[17px] font-black">edit</span>
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(prize.id);
+                                                }}
+                                                className="size-8 rounded-full bg-[#FFF0F0] flex items-center justify-center text-[#FF5252] hover:bg-red-100 active:scale-90 transition-all"
+                                            >
+                                                <span className="material-symbols-outlined !text-[17px] font-black">delete</span>
+                                            </button>
+                                        </div>
                                     </div>
+                                ))
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[3rem] border border-dashed border-[#595A5B] mx-4">
+                                    <div className="size-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6 border-2 border-[#595A5B]">
+                                        <span className="material-symbols-outlined text-slate-300 !text-5xl">inventory</span>
+                                    </div>
+                                    <h3 className="text-lg font-black text-slate-900 mb-2">Catálogo Vacío</h3>
+                                    <p className="text-slate-600 font-bold text-xs mb-8 text-center px-10 leading-relaxed">Aún no has registrado beneficios para tus clientes.</p>
+                                    <button
+                                        onClick={() => setView('create')}
+                                        className="px-8 h-12 bg-primary text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 active:scale-95 transition-all"
+                                    >
+                                        ¡EMPEZAMOS AQUÍ!
+                                    </button>
                                 </div>
-                            ))
-                        ) : (
-                            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[3rem] border border-dashed border-[#595A5B] mx-4">
-                                <div className="size-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6 border-2 border-[#595A5B]">
-                                    <span className="material-symbols-outlined text-slate-300 !text-5xl">inventory</span>
-                                </div>
-                                <h3 className="text-lg font-black text-slate-900 mb-2">Catálogo Vacío</h3>
-                                <p className="text-slate-600 font-bold text-xs mb-8 text-center px-10 leading-relaxed">Aún no has registrado beneficios para tus clientes.</p>
-                                <button
-                                    onClick={() => setView('create')}
-                                    className="px-8 h-12 bg-primary text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 active:scale-95 transition-all"
-                                >
-                                    ¡EMPEZAMOS AQUÍ!
-                                </button>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
                 )}
             </main>

@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { useNotification } from '../context/NotificationContext';
 import Navigation from '../components/Navigation';
 import MarketingHub from '../components/MarketingHub';
+import SupportSection from '../components/SupportSection';
 
 const BusinessSettings = () => {
     const { user, signOut } = useAuth();
@@ -15,7 +16,7 @@ const BusinessSettings = () => {
     const [business, setBusiness] = useState(null);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [activeTab, setActiveTab] = useState('info'); // 'info' | 'promos' | 'marketing'
+    const [activeTab, setActiveTab] = useState('info'); // 'info' | 'promos' | 'marketing' | 'support'
     
     // Promotions states
     const [promoView, setPromoView] = useState('list'); // 'list', 'create', 'edit'
@@ -301,6 +302,18 @@ const BusinessSettings = () => {
                         <span className="material-symbols-outlined !text-sm">campaign</span>
                         Marketing Hub
                     </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('support')}
+                        className={`flex-1 min-w-[100px] py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all flex items-center justify-center gap-1 ${
+                            activeTab === 'support' 
+                            ? 'bg-primary text-white shadow-sm shadow-primary/30' 
+                            : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                    >
+                        <span className="material-symbols-outlined !text-sm">support_agent</span>
+                        Soporte
+                    </button>
                 </div>
             </header>
 
@@ -577,6 +590,12 @@ const BusinessSettings = () => {
                 )}
 
                 {activeTab === 'marketing' && <MarketingHub />}
+
+                {activeTab === 'support' && (
+                    <div className="pb-8">
+                        <SupportSection userType="owner" />
+                    </div>
+                )}
             </main>
 
             <Navigation />

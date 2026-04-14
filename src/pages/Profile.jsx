@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useNotification } from '../context/NotificationContext';
 import Navigation from '../components/Navigation';
+import SupportSection from '../components/SupportSection';
 
 const Profile = () => {
     const { user } = useAuth();
@@ -11,6 +12,7 @@ const Profile = () => {
     const [saving, setSaving] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [userRole, setUserRole] = useState('client');
     const [profile, setProfile] = useState({
         full_name: '',
         phone: '',
@@ -41,7 +43,19 @@ const Profile = () => {
             }
         };
 
+        const fetchRole = async () => {
+            if (!user) return;
+            const { data } = await supabase
+                .from('business_members')
+                .select('role')
+                .eq('profile_id', user.id)
+                .maybeSingle();
+            
+            if (data?.role) setUserRole(data.role);
+        };
+
         fetchProfile();
+        fetchRole();
     }, [user]);
 
     const handleSave = async (e) => {
@@ -191,6 +205,9 @@ const Profile = () => {
                         )}
                     </button>
                 </form>
+
+                {/* Support Section */}
+                <SupportSection userType={userRole === 'client' ? 'client' : 'owner'} />
 
                 {/* Account Info Footer */}
                 <div className="p-6 bg-slate-100 rounded-[2rem] border-2 border-dashed border-slate-300 flex items-center gap-4">
