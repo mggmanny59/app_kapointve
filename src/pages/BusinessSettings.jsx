@@ -290,22 +290,24 @@ const BusinessSettings = () => {
             <main className="px-6 py-6 space-y-6">
                 {!activeTab && (
                     <>
-                        {/* Instructional Header Card - High Impact Expanded */}
-                        <div className="bg-gradient-to-br from-[#1E293B] to-[#0F172A] rounded-[2.5rem] p-10 border-2 border-[#595A5B] shadow-2xl relative overflow-hidden group">
+                        {/* Instructional Header Card - Compact & Balanced */}
+                        <div className="bg-gradient-to-br from-[#1E293B] to-[#0F172A] rounded-[2rem] p-6 border-2 border-[#595A5B] shadow-xl relative overflow-hidden group">
                             <div className="relative z-10 flex flex-col gap-3">
-                                <div className="flex items-center gap-4">
-                                    <div className="size-12 rounded-2xl bg-primary/20 flex items-center justify-center border border-primary/30">
-                                        <span className="material-symbols-outlined text-primary !text-3xl font-black">rocket_launch</span>
+                                <div className="flex items-center gap-3">
+                                    <div className="size-10 rounded-xl bg-primary/20 flex items-center justify-center border border-primary/30 shadow-inner">
+                                        <span className="material-symbols-outlined text-primary !text-xl font-black">rocket_launch</span>
                                     </div>
-                                    <h3 className="text-2xl font-black text-white tracking-tight">Centro de Control</h3>
+                                    <h3 className="text-xl font-black text-white tracking-tight">Centro de Control</h3>
                                 </div>
-                                <p className="text-slate-400 text-sm font-bold leading-relaxed pr-10">
-                                    Configura los parámetros de tu negocio para maximizar la fidelización. Selecciona un módulo para comenzar la personalización.
-                                </p>
+                                <div className="pl-1">
+                                    <p className="text-slate-400 text-[11px] font-bold leading-relaxed max-w-[280px]">
+                                        Optimiza la fidelización de tu negocio configurando cada módulo según tus necesidades comerciales.
+                                    </p>
+                                </div>
                             </div>
                             
-                            {/* Decorative Elements */}
-                            <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 blur-[80px] rounded-full -translate-x-10 -translate-y-10 group-hover:bg-primary/20 transition-all duration-700"></div>
+                            {/* Decorative Spotlight */}
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[60px] rounded-full -translate-x-4 -translate-y-4"></div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
