@@ -499,17 +499,22 @@ const MyPoints = () => {
                 </div>
 
                 {/* Affiliation CTA */}
-                <div onClick={startScanner} className="bg-white border-2 border-[#595A5B] p-6 rounded-[2.5rem] flex items-center justify-between cursor-pointer">
-                    <div className="flex items-center gap-5">
-                        <div className="size-16 rounded-[1.25rem] bg-[rgb(255,101,14)]/10 flex items-center justify-center text-[rgb(255,101,14)] border border-[rgb(255,101,14)]/20">
+                <div onClick={startScanner} className="group relative overflow-hidden bg-white border-2 border-[#595A5B] p-6 rounded-[2.5rem] flex items-center justify-between cursor-pointer transition-all duration-300 hover:shadow-[0_20px_40px_rgba(255,101,14,0.15)] hover:-translate-y-1 active:scale-[0.98]">
+                    {/* Background highlight pattern */}
+                    <div className="absolute top-0 right-0 -mr-16 -mt-16 size-48 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors" />
+                    
+                    <div className="flex items-center gap-5 relative z-10">
+                        <div className="size-16 rounded-[1.25rem] bg-gradient-to-br from-primary to-[#e65a0c] flex items-center justify-center text-white border-2 border-white/20 shadow-lg shadow-primary/30 group-hover:scale-110 transition-transform duration-500">
                             <span className="material-symbols-outlined !text-4xl font-black">add_business</span>
                         </div>
                         <div>
-                            <h4 className="font-black text-slate-900 uppercase">AFILIARME</h4>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase">Escanea el código del local</p>
+                            <h4 className="font-black text-slate-900 uppercase tracking-tight text-lg leading-tight group-hover:text-primary transition-colors">AFILIARME A COMERCIOS</h4>
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Escanea el código del local</p>
                         </div>
                     </div>
-                    <span className="material-symbols-outlined text-slate-300">chevron_right</span>
+                    <div className="size-10 rounded-full bg-slate-50 border-2 border-slate-100 flex items-center justify-center group-hover:bg-primary group-hover:border-primary group-hover:text-white transition-all duration-300">
+                        <span className="material-symbols-outlined font-black !text-xl">chevron_right</span>
+                    </div>
                 </div>
 
                 {/* Businesses List */}
@@ -584,7 +589,7 @@ const MyPoints = () => {
 
                 {/* Legal Links Footer */}
                 <div className="pt-8 pb-4 flex flex-col items-center gap-2">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">KPoint Loyalty Platform</p>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">KPoint Plataforma de Fidelización</p>
                     <div className="flex items-center gap-4">
                         <button onClick={() => navigate('/terms')} className="text-[11px] font-black text-primary uppercase tracking-widest hover:underline">Términos</button>
                         <div className="w-1.5 h-1.5 rounded-full bg-slate-200"></div>
