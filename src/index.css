@@ -49,16 +49,26 @@ body {
     text-transform: none;
     letter-spacing: normal;
     word-wrap: normal;
-    /* Evita que se vea el nombre del ícono mientras carga la fuente */
-    font-display: block;
+    
+    /* Configuración de renderizado */
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     -moz-osx-font-smoothing: grayscale;
-    /* Ligatures activas para que los nombres se conviertan en íconos */
     font-feature-settings: 'liga';
     overflow: hidden;
     vertical-align: middle;
     user-select: none;
+
+    /* REGLA CRÍTICA: Ocular inicialmente para evitar ver el texto fallback */
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Mostrar solo cuando la fuente esté lista */
+.fonts-active .material-symbols-outlined {
+    visibility: visible;
+    opacity: 1;
 }
 
 .custom-scrollbar-hide::-webkit-scrollbar {
