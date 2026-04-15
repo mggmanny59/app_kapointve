@@ -34,10 +34,17 @@ const PWAInstallPrompt = () => {
             return;
         }
 
-        // Manejo de Android/Desktop (beforeinstallprompt)
+        // Recuperar el evento si ya fue capturado globalmente por el index.html
+        if (window.deferredPWA) {
+            setDeferredPrompt(window.deferredPWA);
+            setStep('ask');
+        }
+
+        // Seguir escuchando por si acaso
         const handler = (e) => {
             e.preventDefault();
             setDeferredPrompt(e);
+            window.deferredPWA = e;
             setStep('ask');
         };
 
@@ -82,16 +89,20 @@ const PWAInstallPrompt = () => {
     };
 
     const handleInstallClick = async () => {
-        if (!deferredPrompt) {
+        // Intentar usar tanto el estado local como el global por redundancia
+        const promptToUse = deferredPrompt || window.deferredPWA;
+
+        if (!promptToUse) {
             // Si no hay prompt (ej. Chrome en algunos casos), informamos al usuario
             alert('Por favor, usa el menú de tu navegador y selecciona "Instalar Aplicación" o "Añadir a pantalla de inicio".');
             return;
         }
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
+        promptToUse.prompt();
+        const { outcome } = await promptToUse.userChoice;
         if (outcome === 'accepted') {
             await runInstallationSequence();
             setDeferredPrompt(null);
+            window.deferredPWA = null;
         }
     };
 
