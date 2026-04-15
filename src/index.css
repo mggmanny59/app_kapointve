@@ -28,24 +28,37 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Fix for Material Symbols showing as text (ligatures) while loading */
+/* ============================================================
+   FIX DEFINITIVO: Material Symbols no muestra texto en lugar de iconos
+   Técnica: visibility:hidden oculta el texto mientras la fuente no carga.
+   Una vez cargada, el browser reescribe el glyph (ícono) y queda visible.
+   ============================================================ */
 .material-symbols-outlined {
-    font-family: 'Material Symbols Outlined', sans-serif !important;
-    font-weight: normal;
-    font-style: normal;
+    font-family: 'Material Symbols Outlined' !important;
+    font-weight: normal !important;
+    font-style: normal !important;
     font-size: 24px !important;
-    display: inline-block !important;
-    vertical-align: middle;
-    line-height: 1;
+    width: 24px !important;
+    height: 24px !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    direction: ltr;
     text-transform: none;
     letter-spacing: normal;
     word-wrap: normal;
-    white-space: nowrap;
-    direction: ltr;
+    /* Evita que se vea el nombre del ícono mientras carga la fuente */
+    font-display: block;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     -moz-osx-font-smoothing: grayscale;
+    /* Ligatures activas para que los nombres se conviertan en íconos */
     font-feature-settings: 'liga';
+    overflow: hidden;
+    vertical-align: middle;
+    user-select: none;
 }
 
 .custom-scrollbar-hide::-webkit-scrollbar {
