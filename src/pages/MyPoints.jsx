@@ -10,6 +10,7 @@ import MessageCenter from '../components/MessageCenter';
 import Navigation from '../components/Navigation';
 import { subscribeUserToPush, sendPushToProfile, unsubscribeUserFromPush } from '../lib/pushNotifications';
 import { forceAppUpdate } from '../utils/appUpdate';
+import Icon from '../components/Icon';
 
 const MyPoints = () => {
     const { user, signOut } = useAuth();
@@ -408,7 +409,7 @@ const MyPoints = () => {
                         className="h-10 pl-2 pr-5 rounded-full bg-red-500/10 border-2 border-red-500/30 flex items-center gap-2 hover:bg-red-500 hover:border-red-500 hover:text-white transition-all shadow-sm active:scale-95 group shrink-0"
                     >
                         <div className="size-7 rounded-full bg-red-500/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                            <span className="material-symbols-outlined !text-base font-black text-red-500 group-hover:text-white">logout</span>
+                            <Icon name="logout" className="!w-4 !h-4 font-black text-red-500 group-hover:text-white" />
                         </div>
                         <span className="text-[9px] font-black text-red-500 uppercase tracking-[0.2em] mt-0.5 group-hover:text-white">Cerrar Sesión</span>
                     </button>
@@ -420,7 +421,7 @@ const MyPoints = () => {
                 <div className="mx-6 mb-6 p-5 bg-navy-card rounded-[2rem] border-2 border-[#F59E0B] shadow-xl animate-in slide-in-from-top duration-500">
                     <div className="flex items-center gap-4 mb-4">
                         <div className="size-14 rounded-2xl bg-[#F59E0B]/10 flex items-center justify-center text-[#F59E0B] border border-[#F59E0B]/20">
-                            <span className="material-symbols-outlined !text-3xl">notifications_active</span>
+                            <Icon name="notifications_active" className="!w-7 !h-7" />
                         </div>
                         <div className="flex-1">
                             <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter">¡Deseas recibir avisos!</h3>
@@ -451,7 +452,7 @@ const MyPoints = () => {
                     <h2 className="text-3xl font-black mt-1 tracking-tight animate-slide-left-custom delay-300-custom fill-mode-both">{profile?.full_name?.split(' ')[0] || 'Cliente'}</h2>
                     
                     <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-2xl border border-white/30 animate-slide-bottom-custom delay-500-custom fill-mode-both shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                        <span className="material-symbols-outlined text-white text-base font-black animate-pulse">stars</span>
+                        <Icon name="stars" className="text-white !w-4 !h-4 font-black animate-pulse" />
                         <p className="text-white text-[9px] font-black uppercase tracking-[0.15em]">¡TODO LISTO PARA GANAR!</p>
                     </div>
 
@@ -481,7 +482,7 @@ const MyPoints = () => {
                     </div>
 
                     {/* Icono decorativo con animación flotante */}
-                    <span className="material-symbols-outlined absolute -right-6 -bottom-6 text-white/[0.07] !text-[140px] font-black rotate-12 pointer-events-none select-none animate-bounce [animation-duration:3s]">account_balance_wallet</span>
+                    <Icon name="account_balance_wallet" className="absolute -right-6 -bottom-6 text-white/[0.07] !w-[140px] !h-[140px] font-black rotate-12 pointer-events-none select-none animate-bounce" />
                 </div>
 
                 {/* QR Section */}
@@ -496,7 +497,7 @@ const MyPoints = () => {
                         </div>
                     </div>
                     <button onClick={() => setShowMainQRModal(true)} className="w-full bg-[rgb(255,101,14)] text-white h-16 rounded-3xl font-black uppercase shadow-xl flex items-center justify-center gap-3">
-                        ESCANEO EN CAJA <span className="material-symbols-outlined">qr_code_2</span>
+                        ESCANEO EN CAJA <Icon name="qr_code_2" className="!w-6 !h-6" />
                     </button>
                 </div>
 
@@ -507,7 +508,7 @@ const MyPoints = () => {
                     
                     <div className="flex items-center gap-5 relative z-10">
                         <div className="size-16 rounded-[1.25rem] bg-gradient-to-br from-primary to-[#e65a0c] flex items-center justify-center text-white border-2 border-white/20 shadow-lg shadow-primary/30 group-hover:scale-110 transition-transform duration-500">
-                            <span className="material-symbols-outlined !text-4xl font-black">add_business</span>
+                            <Icon name="add_business" className="!w-9 !h-9 font-black" />
                         </div>
                         <div>
                             <h4 className="font-black text-slate-900 uppercase tracking-tight text-lg leading-tight group-hover:text-primary transition-colors">AFILIARME A COMERCIOS</h4>
@@ -515,7 +516,7 @@ const MyPoints = () => {
                         </div>
                     </div>
                     <div className="size-10 rounded-full bg-slate-50 border-2 border-slate-100 flex items-center justify-center group-hover:bg-primary group-hover:border-primary group-hover:text-white transition-all duration-300">
-                        <span className="material-symbols-outlined font-black !text-xl">chevron_right</span>
+                        <Icon name="chevron_right" className="font-black !w-5 !h-5" />
                     </div>
                 </div>
 
@@ -537,7 +538,7 @@ const MyPoints = () => {
                                 <div className="flex items-center gap-3 mb-3">
                                     {/* Logo Container */}
                                     <div className="size-20 min-w-[80px] rounded-[1.5rem] bg-white border-2 border-[#595A5B] p-2.5 flex items-center justify-center overflow-hidden shadow-sm">
-                                        {card.businesses?.logo_url ? <img src={card.businesses.logo_url} className="w-full h-full object-contain" /> : <span className="material-symbols-outlined text-primary text-4xl">store</span>}
+                                        {card.businesses?.logo_url ? <img src={card.businesses.logo_url} className="w-full h-full object-contain" /> : <Icon name="store" className="text-primary !w-9 !h-9" />}
                                     </div>
 
                                     {/* Points Box */}
@@ -545,12 +546,12 @@ const MyPoints = () => {
                                         <div>
                                             <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter leading-none">Saldo</span>
                                             <div className="flex items-center gap-1 mt-0.5">
-                                                <span className="material-symbols-outlined text-amber-500 text-base font-black">stars</span>
+                                                <Icon name="stars" className="text-amber-500 !w-4 !h-4 font-black" />
                                                 <span className="text-lg font-black text-slate-900 leading-none">{card.current_points}</span>
                                             </div>
                                         </div>
                                         <div className="size-6 min-w-[24px] rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center">
-                                            <span className="material-symbols-outlined text-slate-400 text-xs">chevron_right</span>
+                                            <Icon name="chevron_right" className="text-slate-400 !w-3 !h-3" />
                                         </div>
                                     </div>
                                 </div>
@@ -578,7 +579,7 @@ const MyPoints = () => {
                                 <div key={tx.id} className={`py-2 px-4 flex items-center justify-between ${idx !== recentTransactions.slice(0, 3).length - 1 ? 'border-b border-slate-50' : ''}`}>
                                     <div className="flex items-center gap-4">
                                         <div className={`size-10 rounded-xl flex items-center justify-center border ${tx.type === 'EARN' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-warning/10 text-warning border-warning/20'}`}>
-                                            <span className="material-symbols-outlined text-xl">{tx.type === 'EARN' ? 'add_task' : 'redeem'}</span>
+                                            <Icon name={tx.type === 'EARN' ? 'add_task' : 'redeem'} className="!w-5 !h-5" />
                                         </div>
                                         <div>
                                             <p className="text-sm font-bold text-slate-900 leading-tight">{tx.businesses?.name}</p>
@@ -616,14 +617,14 @@ const MyPoints = () => {
                         <div className="px-6 pt-8 pb-4 flex items-center justify-between">
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-primary font-black text-3xl">card_giftcard</span>
+                                    <Icon name="card_giftcard" className="text-primary font-black !w-8 !h-8" />
                                     <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter leading-none">Canje de Premios</h1>
                                 </div>
 
                                 <div className="flex items-center gap-3 mt-3 bg-slate-50 border-2 border-slate-200 pl-4 pr-5 py-2.5 rounded-[1.5rem] w-fit shadow-md">
                                     <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Tu Saldo:</span>
                                     <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-2xl text-amber-500 font-black">stars</span>
+                                        <Icon name="stars" className="!w-6 !h-6 text-amber-500 font-black" />
                                         <span className="text-2xl font-black text-amber-600 leading-none tracking-tight">
                                             {loyaltyCards.find(c => c.business_id === selectedBusiness.id)?.current_points || 0}
                                             <span className="text-xs ml-1 font-black text-amber-500/80">PTS</span>
@@ -635,7 +636,7 @@ const MyPoints = () => {
                                 onClick={() => setSelectedBusiness(null)}
                                 className="size-12 rounded-full bg-slate-50 border border-slate-200 text-slate-900 flex items-center justify-center active:scale-90 transition-all shadow-sm"
                             >
-                                <span className="material-symbols-outlined !text-2xl">close</span>
+                                <Icon name="close" className="!w-6 !h-6" />
                             </button>
                         </div>
 
@@ -650,7 +651,7 @@ const MyPoints = () => {
                                         <img src={selectedBusiness.logo_url} alt={selectedBusiness.name} className="w-full h-full object-contain p-2" />
                                     ) : (
                                         <div className="flex flex-col items-center">
-                                            <span className="material-symbols-outlined text-primary !text-4xl font-black">store</span>
+                                            <Icon name="store" className="text-primary !w-9 !h-9 font-black" />
                                             <span className="text-[8px] font-black text-slate-400 uppercase">Logo</span>
                                         </div>
                                     )}
@@ -665,13 +666,13 @@ const MyPoints = () => {
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between px-1 mb-2">
                                     <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-primary font-black">celebration</span>
+                                        <Icon name="celebration" className="text-primary font-black !w-5 !h-5" />
                                         <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter">Promociones del Momento ({businessPromotions.length})</h3>
                                     </div>
                                     {businessPromotions.length > 1 && (
                                         <div className="flex items-center gap-1 text-primary bg-primary/10 px-3 py-1 rounded-full animate-pulse">
                                             <span className="text-[9px] font-black uppercase tracking-wider">Desliza</span>
-                                            <span className="material-symbols-outlined !text-[14px]">arrow_forward</span>
+                                            <Icon name="arrow_forward" className="!w-3 !h-3" />
                                         </div>
                                     )}
                                 </div>
@@ -692,7 +693,7 @@ const MyPoints = () => {
                                                 <h4 className="font-black text-slate-900 uppercase leading-tight mb-2 whitespace-normal">{promo.title}</h4>
                                                 <p className="text-[12px] text-slate-500 font-medium leading-relaxed mb-4 whitespace-normal line-clamp-3">{promo.description}</p>
                                                 <div className="flex items-center gap-2 pt-3 border-t border-slate-100 mt-auto">
-                                                    <span className="material-symbols-outlined !text-sm text-slate-400">calendar_today</span>
+                                                    <Icon name="calendar_today" className="!w-3 !h-3 text-slate-400" />
                                                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Válido hasta el {new Date(promo.end_date).toLocaleDateString()}</span>
                                                 </div>
                                             </div>
@@ -705,7 +706,7 @@ const MyPoints = () => {
                         {/* Rewards Section */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 px-1">
-                                <span className="material-symbols-outlined text-primary font-black">card_giftcard</span>
+                                <Icon name="card_giftcard" className="text-primary font-black !w-5 !h-5" />
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter">Premios por Fidelidad</h3>
                             </div>
                                 {businessPrizes.map(p => {
@@ -725,7 +726,7 @@ const MyPoints = () => {
                                                     {p.image_url ? (
                                                         <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <span className="material-symbols-outlined text-slate-300 !text-4xl">inventory_2</span>
+                                                        <Icon name="inventory_2" className="text-slate-300 !w-9 !h-9" />
                                                     )}
                                                 </div>
 
@@ -745,13 +746,13 @@ const MyPoints = () => {
 
                                                     <div className="flex items-center justify-between mt-auto">
                                                         <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-xl border border-slate-100">
-                                                            <span className="material-symbols-outlined text-amber-500 text-sm font-black">stars</span>
+                                                            <Icon name="stars" className="text-amber-500 !w-3 !h-3 font-black" />
                                                             <span className="text-xs font-black text-amber-600">{p.cost_points} PTS</span>
                                                         </div>
 
                                                         {isAffordable ? (
                                                             <div className="size-8 rounded-full bg-[#22C55E] flex items-center justify-center text-white shadow-lg shadow-[#22C55E]/20">
-                                                                <span className="material-symbols-outlined font-black text-lg">check</span>
+                                                                <Icon name="check" className="font-black !w-4 !h-4" />
                                                             </div>
                                                         ) : (
                                                             <div className="text-right">
@@ -778,7 +779,7 @@ const MyPoints = () => {
 
                         {businessPrizes.length === 0 && businessPromotions.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-20 text-center">
-                                <span className="material-symbols-outlined text-6xl text-slate-100">sentiment_dissatisfied</span>
+                                <Icon name="sentiment_dissatisfied" className="!w-[60px] !h-[60px] text-slate-100" />
                                 <p className="mt-4 text-slate-400 font-bold">Aún no hay premios ni promociones cargadas para este negocio.</p>
                             </div>
                         )}
@@ -787,7 +788,7 @@ const MyPoints = () => {
                     {/* Persuasive Bottom Banner - Solid & Fixed */}
                     <div className="fixed bottom-0 left-0 right-0 p-5 pb-8 bg-primary shadow-[0_-10px_40px_rgba(34,197,94,0.2)] flex items-center gap-4 border-t border-white/10 z-[70] rounded-t-[2.5rem]">
                         <div className="size-12 min-w-[48px] bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
-                            <span className="material-symbols-outlined text-white font-black text-2xl">rocket_launch</span>
+                            <Icon name="rocket_launch" className="text-white font-black text-2xl" />
                         </div>
                         <div className="flex-1">
                             <h4 className="text-[14px] font-black text-white leading-tight uppercase tracking-tight">¡Llega más lejos!</h4>
@@ -795,7 +796,7 @@ const MyPoints = () => {
                                 Cada visita te acerca a tu próximo premio. ¡Sigue sumando y desbloquea beneficios hoy!
                             </p>
                         </div>
-                        <span className="material-symbols-outlined text-white/40 text-xl">chevron_right</span>
+                        <Icon name="chevron_right" className="text-white/40 !w-5 !h-5" />
                     </div>
                 </div>
             )}
@@ -817,7 +818,7 @@ const MyPoints = () => {
                             onClick={() => setShowAllBusinesses(false)}
                             className="size-10 rounded-full bg-white border-2 border-[#595A5B] text-slate-900 flex items-center justify-center active:scale-90 transition-all shadow-sm"
                         >
-                            <span className="material-symbols-outlined !text-xl font-black">close</span>
+                            <Icon name="close" className="!w-6 !h-6 font-black" />
                         </button>
                     </header>
 
@@ -850,7 +851,7 @@ const MyPoints = () => {
                                             {card.businesses?.logo_url ? (
                                                 <img src={card.businesses.logo_url} className="w-full h-full object-contain" />
                                             ) : (
-                                                <span className="material-symbols-outlined text-primary text-3xl">store</span>
+                                                <Icon name="store" className="text-primary !w-8 !h-8" />
                                             )}
                                         </div>
 
@@ -860,7 +861,7 @@ const MyPoints = () => {
                                             </h3>
                                             <div className="flex items-center gap-2 mt-1">
                                                 <div className="flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">
-                                                    <span className="material-symbols-outlined text-amber-500 text-xs font-black">stars</span>
+                                                    <Icon name="stars" className="text-amber-500 !w-3 !h-3 font-black" />
                                                     <span className="text-xs font-black text-amber-600">{card.current_points || 0} PTS</span>
                                                 </div>
                                                 <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Acumulados</span>
@@ -868,7 +869,7 @@ const MyPoints = () => {
                                         </div>
 
                                         <div className="size-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
-                                            <span className="material-symbols-outlined !text-xl">chevron_right</span>
+                                            <Icon name="chevron_right" className="!w-6 !h-6" />
                                         </div>
                                     </div>
                                 </div>
@@ -877,7 +878,7 @@ const MyPoints = () => {
                         {loyaltyCards.length === 0 && (
                             <div className="py-20 text-center flex flex-col items-center gap-4">
                                 <div className="size-20 rounded-full bg-slate-100 flex items-center justify-center text-slate-300 border-2 border-dashed border-slate-200">
-                                    <span className="material-symbols-outlined !text-4xl">storefront</span>
+                                    <Icon name="storefront" className="!w-10 !h-10" />
                                 </div>
                                 <p className="font-bold text-slate-400">Aún no estás afiliado a ningún comercio.</p>
                             </div>
@@ -896,7 +897,7 @@ const MyPoints = () => {
                                 {showRedemptionQR.description || 'Pide en la caja que escaneen tu código.'}
                             </p>
                             <div className="flex items-center justify-center gap-1.5 mt-2 bg-amber-50 mx-auto w-max px-4 py-1.5 rounded-full border border-amber-100">
-                                <span className="material-symbols-outlined text-amber-500 font-black">stars</span>
+                                <Icon name="stars" className="text-amber-500 font-black" />
                                 <span className="font-black text-amber-600 text-[15px]">{showRedemptionQR.cost_points} Pts Requeridos</span>
                             </div>
                         </div>

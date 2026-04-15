@@ -11,6 +11,8 @@ import MessageCenter from '../components/MessageCenter';
 import SendNotificationModal from '../components/SendNotificationModal';
 import { subscribeUserToPush, sendPushToProfile } from '../lib/pushNotifications';
 import { forceAppUpdate } from '../utils/appUpdate';
+import Icon from '../components/Icon';
+
 
 const Home = () => {
     const { user, signOut } = useAuth();
@@ -1157,7 +1159,7 @@ const Home = () => {
 
                     <div className="bg-white p-3.5 rounded-3xl border-2 border-[#595A5B] shadow-sm relative overflow-hidden group">
                         <div className="absolute -right-2 -top-2 bg-yellow-500/5 size-12 rounded-full blur-2xl group-hover:bg-yellow-500/10 transition-all"></div>
-                        <span className="material-symbols-outlined text-warning mb-1 block !text-[20px]">stars</span>
+                        <Icon name="stars" className="text-warning mb-1 block !w-[20px] !h-[20px]" />
                         <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-0.5">Puntos Dados</p>
                         <p className="text-lg font-black text-slate-900">
                             {stats.points >= 1000 ? (stats.points / 1000).toFixed(1) + 'k' : stats.points}
@@ -1169,7 +1171,7 @@ const Home = () => {
                             <div className="absolute -right-4 -top-4 bg-primary/5 size-20 rounded-full blur-3xl group-hover:bg-primary/10 transition-all"></div>
                             <div className="flex justify-between items-center">
                                 <div>
-                                    <span className="material-symbols-outlined text-primary/80 mb-0.5 block !text-[20px]">group</span>
+                                    <Icon name="group" className="text-primary/80 mb-0.5 block !w-[20px] !h-[20px]" />
                                     <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-0.5">Clientes Activos Hoy</p>
                                     <p className="text-lg font-black text-slate-900">{stats.newClients}</p>
                                 </div>
@@ -1328,7 +1330,7 @@ const Home = () => {
                             </div>
                             <button onClick={() => navigate('/kpi')} className="text-[9px] font-black text-primary hover:text-primary/80 uppercase tracking-[0.2em] flex items-center gap-2 transition-all group">
                                 ANALIZAR DATOS
-                                <span className="material-symbols-outlined !text-xs group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                <Icon name="arrow_forward" className="!w-3 !h-3 group-hover:translate-x-1 transition-transform" />
                             </button>
                         </div>
                     </div>
@@ -1344,13 +1346,11 @@ const Home = () => {
                         >
                             <div className="flex items-center gap-3">
                                 <div className="size-10 rounded-full bg-[#1E293B] flex items-center justify-center text-white border border-[#334155] shadow-inner">
-                                    <span className="material-symbols-outlined !text-xl">insights</span>
+                                    <Icon name="insights" className="!w-5 !h-5" />
                                 </div>
                                 <span className="font-black text-slate-800 tracking-tight text-lg">Indicadores de Gestión (KPI)</span>
                             </div>
-                            <span className="material-symbols-outlined text-slate-400">
-                                chevron_right
-                            </span>
+                            <Icon name="chevron_right" className="text-slate-400 !w-5 !h-5" />
                         </button>
                     </div>
                 )}
@@ -1363,7 +1363,7 @@ const Home = () => {
                             onClick={() => setIsNotificationModalOpen(true)}
                             className="w-full bg-[#1E293B] hover:bg-slate-800 hover:scale-[1.01] border-2 border-[#334155] text-white h-16 rounded-2xl flex items-center justify-start px-6 gap-4 shadow-lg active:scale-[0.98] transition-all"
                         >
-                            <span className="material-symbols-outlined font-black !text-2xl shrink-0">notifications_active</span>
+                            <Icon name="notifications_active" className="font-black !w-6 !h-6 shrink-0" />
                             <div className="flex flex-col items-start leading-none text-left">
                                 <span className="text-[9px] font-black opacity-60 uppercase tracking-widest mb-0.5">Marketing</span>
                                 <span className="text-sm font-black uppercase tracking-tight">Enviar Comunicado</span>
@@ -1388,9 +1388,7 @@ const Home = () => {
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className={`w-9 h-9 rounded-full ${activity.type === 'EARN' ? 'bg-primary/10 text-primary' : 'bg-warning/10 text-warning'} flex items-center justify-center shrink-0`}>
-                                            <span className={`material-symbols-outlined !text-lg`}>
-                                                {activity.type === 'EARN' ? 'add_task' : 'stars'}
-                                            </span>
+                                            <Icon name={activity.type === 'EARN' ? 'add_task' : 'stars'} className="!w-5 !h-5" />
                                         </div>
                                         <div className="min-w-0">
                                             <p className="text-sm font-black text-slate-800 truncate leading-tight">
@@ -1442,7 +1440,7 @@ const Home = () => {
                         {/* Header */}
                         <div className="px-8 pt-8 pb-4 flex items-center gap-4 shrink-0 bg-[#F0F2F5]">
                             <div className="w-14 h-16 rounded-[1.25rem] bg-white border-2 border-[#595A5B] flex items-center justify-center shadow-sm shrink-0">
-                                <span className="material-symbols-outlined text-primary !text-3xl">point_of_sale</span>
+                                <Icon name="point_of_sale" className="text-primary !w-8 !h-8" />
                             </div>
                             <div className="flex flex-col flex-1 justify-center">
                                 <h2 className="text-3xl font-black text-[#0F172A] tracking-tight leading-none mb-1.5">Ventas</h2>
@@ -1467,7 +1465,7 @@ const Home = () => {
                                                     className={`size-8 rounded-xl bg-slate-50 border-2 border-slate-100 flex items-center justify-center text-slate-400 hover:text-primary active:scale-90 transition-all ${isFetchingRate ? 'animate-spin' : ''}`}
                                                     title="Actualizar tasa"
                                                 >
-                                                    <span className="material-symbols-outlined !text-lg">refresh</span>
+                                                    <Icon name="refresh" className="!w-5 !h-5" />
                                                 </button>
                                                 <div className="bg-orange-50 border-2 border-primary/20 px-3 py-1.5 rounded-xl flex flex-col items-center justify-center min-w-[80px] shadow-sm relative group">
                                                     <input
@@ -1540,7 +1538,7 @@ const Home = () => {
                                         <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Identificación del Cliente</label>
                                         <div className="flex gap-2">
                                             <div className="relative flex-1">
-                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-lg">mail</span>
+                                                <Icon name="mail" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 !w-5 !h-5" />
                                                 <input
                                                     type="email"
                                                     value={searchEmail}
@@ -1553,7 +1551,7 @@ const Home = () => {
                                                 onClick={startScanner}
                                                 className="size-12 rounded-xl bg-[#1E293B] border-2 border-slate-800 flex items-center justify-center text-white hover:bg-slate-900 transition-all active:scale-95 shadow-xl"
                                             >
-                                                <span className="material-symbols-outlined !text-xl font-black">qr_code_scanner</span>
+                                                <Icon name="qr_code_scanner" className="!w-6 !h-6 font-black" />
                                             </button>
                                         </div>
                                     </div>
@@ -1565,7 +1563,7 @@ const Home = () => {
                                             onClick={handleManualSearch}
                                             className="w-full bg-[#22C55E] hover:bg-[#1da850] text-white h-12 rounded-xl font-black text-base uppercase shadow-[0_5px_15px_rgba(34,197,94,0.2)] flex items-center justify-center gap-2 disabled:opacity-30 disabled:grayscale transition-all active:scale-[0.98]"
                                         >
-                                            <span className="material-symbols-outlined !text-xl font-black">check_circle</span>
+                                            <Icon name="check_circle" className="!w-6 !h-6 font-black" />
                                             {isProcessing ? 'Validando...' : 'Confirmar Registro'}
                                         </button>
                                         <button
@@ -1602,7 +1600,7 @@ const Home = () => {
                                             }}
                                             className="px-8 h-12 rounded-full border-2 border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 hover:text-slate-900 hover:border-slate-900 transition-all"
                                         >
-                                            <span className="material-symbols-outlined text-base">edit</span>
+                                            <Icon name="edit" className="!w-4 !h-4" />
                                             MODIFICAR MONTO
                                         </button>
                                     </div>
@@ -1615,7 +1613,7 @@ const Home = () => {
                             <div className="bg-primary pt-7 pb-[max(2rem,env(safe-area-inset-bottom))] px-8 shrink-0 shadow-[0_-10px_30px_rgba(255,101,14,0.2)] animate-in slide-in-from-bottom duration-500 rounded-t-[2.5rem]">
                                 <div className="flex items-center gap-4 max-w-lg mx-auto">
                                     <div className="size-12 rounded-2xl bg-white/20 flex items-center justify-center text-white shrink-0 backdrop-blur-md border border-white/20 shadow-inner">
-                                        <span className="material-symbols-outlined !text-2xl">celebration</span>
+                                        <Icon name="celebration" className="!w-6 !h-6" />
                                     </div>
                                     <div>
                                         <p className="text-[11px] font-black text-white uppercase tracking-[0.15em] leading-tight">¡Gracias por la compra!</p>
@@ -1637,7 +1635,7 @@ const Home = () => {
                         <div className="p-8 pb-4 shrink-0">
                             <div className="relative flex items-center gap-4 mb-2 pt-2">
                                 <div className="size-12 rounded-full bg-warning/10 flex items-center justify-center text-warning border border-warning/20 shadow-sm">
-                                    <span className="material-symbols-outlined !text-3xl font-bold">redeem</span>
+                                    <Icon name="redeem" className="!w-7 !h-7 font-bold" />
                                 </div>
                                 <div className="flex-1">
                                     <h2 className="text-2xl font-black text-slate-900 leading-tight tracking-tight">Canje de Premio</h2>
@@ -1658,7 +1656,7 @@ const Home = () => {
                                     <div className="bg-slate-50 rounded-3xl overflow-hidden border-2 border-[#595A5B] relative min-h-[300px] flex items-center justify-center">
                                         {isProcessing ? (
                                             <div className="flex flex-col items-center gap-4">
-                                                <span className="animate-spin material-symbols-outlined text-warning text-5xl">refresh</span>
+                                                <Icon name="refresh" className="animate-spin text-warning !w-12 !h-12" />
                                                 <p className="font-bold text-sm text-warning">Buscando cliente...</p>
                                             </div>
                                         ) : (
@@ -1671,12 +1669,12 @@ const Home = () => {
                                 <div className="space-y-6">
                                     <div className="bg-slate-50 border-2 border-[#595A5B] rounded-3xl p-5 flex items-center gap-4 shadow-inner">
                                         <div className="size-14 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-                                            <span className="material-symbols-outlined text-primary text-2xl">person</span>
+                                            <Icon name="person" className="text-primary !w-6 !h-6" />
                                         </div>
                                         <div>
                                             <h3 className="text-lg font-black text-slate-900">{redeemClient?.profiles?.full_name}</h3>
                                             <div className="flex items-center gap-2 mt-1">
-                                                <span className="material-symbols-outlined text-warning text-lg">stars</span>
+                                                <Icon name="stars" className="text-warning !w-5 !h-5" />
                                                 <span className="text-xl font-black text-warning">{redeemClient?.current_points?.toLocaleString()} pts</span>
                                             </div>
                                         </div>
@@ -1699,7 +1697,7 @@ const Home = () => {
                                                                 {reward.image_url ? (
                                                                     <img src={reward.image_url} alt={reward.name} className="w-full h-full object-cover" />
                                                                 ) : (
-                                                                    <span className="material-symbols-outlined text-slate-400">redeem</span>
+                                                                <Icon name="redeem" className="text-slate-400 !w-6 !h-6" />
                                                                 )}
                                                             </div>
                                                             <div className="flex-1 min-w-0">
@@ -1707,7 +1705,7 @@ const Home = () => {
                                                                 <p className="text-[10px] text-warning font-black tracking-widest mt-1">{reward.cost_points} PTS</p>
                                                             </div>
                                                             {canAfford ? (
-                                                                <span className="material-symbols-outlined text-warning opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+                                                                <Icon name="chevron_right" className="text-warning opacity-0 group-hover:opacity-100 transition-opacity !w-5 !h-5" />
                                                             ) : (
                                                                 <span className="text-[9px] font-black text-red-500 uppercase">Faltan puntos</span>
                                                             )}
@@ -1741,7 +1739,7 @@ const Home = () => {
                             {/* Header */}
                             <div className="p-8 pb-4 text-center space-y-2">
                                 <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4 border border-primary/20">
-                                    <span className="material-symbols-outlined !text-4xl">storefront</span>
+                                    <Icon name="storefront" className="!w-9 !h-9" />
                                 </div>
                                 <h3 className="text-xl font-black text-slate-900 leading-tight uppercase tracking-tight">QR de Afiliación</h3>
                                 <p className="text-xs text-slate-500 font-medium px-2">Invita a tus clientes a escanear este código para unirse a tu club.</p>
