@@ -383,7 +383,7 @@ const MyPoints = () => {
 
     if (loading) return (
         <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
-            <span className="animate-spin material-symbols-outlined text-primary text-4xl">refresh</span>
+            <Icon name="refresh" className="animate-spin text-primary !w-10 !h-10" />
         </div>
     );
 

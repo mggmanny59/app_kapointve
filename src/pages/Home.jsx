@@ -897,7 +897,7 @@ const Home = () => {
     if (loading) {
         return (
             <div className="min-h-screen bg-navy-dark flex items-center justify-center">
-                <span className="animate-spin material-symbols-outlined text-primary text-4xl">refresh</span>
+                <Icon name="refresh" className="animate-spin text-primary !w-10 !h-10" />
             </div>
         );
     }
@@ -937,7 +937,7 @@ const Home = () => {
                             onClick={() => setIsMessageCenterOpen(true)}
                             className="w-10 h-10 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center relative group active:scale-90 transition-all shadow-sm"
                         >
-                            <span className="material-symbols-outlined text-slate-500 group-hover:text-primary transition-colors">notifications</span>
+                            <Icon name="notifications" className="text-slate-500 group-hover:text-primary transition-colors" />
                             {unreadCount > 0 && (
                                 <span className="absolute -top-1 -right-1 size-5 bg-primary text-white text-[10px] font-black rounded-full border-2 border-white flex items-center justify-center shadow-lg">
                                     {unreadCount}
@@ -954,7 +954,7 @@ const Home = () => {
                         className="h-10 pl-2 pr-5 rounded-full bg-red-500/10 border-2 border-red-500/30 flex items-center gap-2 hover:bg-red-500 hover:border-red-500 hover:text-white transition-all shadow-sm active:scale-95 group shrink-0"
                     >
                         <div className="size-7 rounded-full bg-red-500/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                            <span className="material-symbols-outlined !text-base font-black text-red-500 group-hover:text-white">logout</span>
+                            <Icon name="logout" className="!w-4 !h-4 text-red-500 group-hover:text-white" />
                         </div>
                         <span className="text-[9px] font-black text-red-500 uppercase tracking-[0.2em] mt-0.5 group-hover:text-white">Cerrar Sesión</span>
                     </button>
@@ -971,7 +971,7 @@ const Home = () => {
                     <div className="bg-amber-50 border-2 border-amber-500 rounded-3xl p-6 flex flex-col gap-4 shadow-sm animate-in slide-in-from-top-4 duration-500">
                         <div className="flex items-start gap-4">
                             <div className="size-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 border border-amber-500">
-                                <span className="material-symbols-outlined !text-3xl">warning</span>
+                                <Icon name="warning" className="!w-8 !h-8" />
                             </div>
                             <div>
                                 <h3 className="text-sm font-black uppercase tracking-wider text-amber-900">
@@ -997,7 +997,7 @@ const Home = () => {
                     <div className="bg-white border-2 border-[#595A5B] rounded-3xl p-6 flex flex-col gap-4 shadow-sm animate-in slide-in-from-top-4 duration-500">
                         <div className="flex items-start gap-4">
                             <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 border border-primary/10">
-                                <span className="material-symbols-outlined !text-3xl">notifications_active</span>
+                                <Icon name="notifications_active" className="!w-8 !h-8" />
                             </div>
                             <div>
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">¡Activa las Notificaciones!</h3>
@@ -1027,7 +1027,7 @@ const Home = () => {
                         onClick={handleTestPush}
                         className="w-full bg-navy-card border border-white/5 p-4 rounded-3xl flex items-center justify-center gap-3 text-slate-400 hover:text-white transition-colors group"
                     >
-                        <span className="material-symbols-outlined text-primary group-hover:animate-bounce">send_and_archive</span>
+                        <Icon name="send_and_archive" className="text-primary group-hover:animate-bounce" />
                         <span className="text-[10px] font-black uppercase tracking-widest">Enviar Notificación a Clientes</span>
                     </button>
                 )}
@@ -1043,7 +1043,7 @@ const Home = () => {
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <span className="material-symbols-outlined text-primary !text-[28px]">store</span>
+                                <Icon name="store" className="text-primary !w-[28] !h-[28]" />
                             )}
                         </div>
                         {business?.name || 'Mi Negocio'}
@@ -1645,7 +1645,7 @@ const Home = () => {
                                     onClick={closeRedeemModal}
                                     className="absolute -top-4 -right-4 size-12 rounded-full bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-400 hover:text-slate-900 shadow-xl transition-all active:scale-95 group"
                                 >
-                                    <span className="material-symbols-outlined group-hover:rotate-90 transition-transform">close</span>
+                                    <Icon name="close" className="group-hover:rotate-90 transition-transform" />
                                 </button>
                             </div>
                         </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -255,7 +256,7 @@ const StaffManagement = () => {
                 <div className="flex items-center justify-between gap-4 mb-6">
                     <div className="flex flex-col">
                         <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                            <span className="material-symbols-outlined text-primary !text-3xl font-black">badge</span>
+                            <Icon name="badge" className="text-primary !w-8 !h-8" />
                             Gestión de Equipo
                         </h1>
                         <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">Control de accesos y personal</p>
@@ -269,14 +270,14 @@ const StaffManagement = () => {
                         onClick={() => setActiveTab('form')}
                         className={`flex-1 h-12 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === 'form' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-400 hover:text-slate-600'}`}
                     >
-                        <span className="material-symbols-outlined text-[18px]">person_add</span>
+                        <Icon name="person_add" className="!w-[18] !h-[18]" />
                         Configurar Acceso
                     </button>
                     <button
                         onClick={() => setActiveTab('list')}
                         className={`flex-1 h-12 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === 'list' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-400 hover:text-slate-600'}`}
                     >
-                        <span className="material-symbols-outlined text-[18px]">group</span>
+                        <Icon name="group" className="!w-[18] !h-[18]" />
                         Ver Equipo ({staff.length})
                     </button>
                 </div>
@@ -376,7 +377,7 @@ const StaffManagement = () => {
                             {editingStaff && (
                                 <div className="bg-slate-50 p-6 rounded-2xl border-2 border-[#595A5B] flex items-center gap-4 shadow-inner">
                                     <div className="size-10 rounded-xl bg-white flex items-center justify-center text-slate-400 shadow-sm border-2 border-[#595A5B]">
-                                        <span className="material-symbols-outlined !text-lg">lock</span>
+                                        <Icon name="lock" className="!w-5 !h-5" />
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Acceso Vincunlado</p>
@@ -417,7 +418,7 @@ const StaffManagement = () => {
                                 disabled={isCreating}
                                 className="w-full bg-primary text-white h-16 rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] shadow-xl shadow-primary/20 active:scale-[0.97] transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-6"
                             >
-                                {isCreating ? <span className="material-symbols-outlined animate-spin font-black">sync</span> : <span className="material-symbols-outlined font-black">{editingStaff ? 'save_as' : 'how_to_reg'}</span>}
+                                {isCreating ? <Icon name="sync" className="animate-spin" /> : <span className="material-symbols-outlined font-black">{editingStaff ? 'save_as' : 'how_to_reg'}</span>}
                                 {editingStaff ? 'GUARDAR ACTUALIZACIÓN' : 'CONFIGURAR NUEVO ACCESO'}
                             </button>
                         </form>
@@ -434,7 +435,7 @@ const StaffManagement = () => {
                                 <div className="flex items-center justify-between gap-4 relative z-10">
                                     <div className="flex items-center gap-4 min-w-0 flex-1">
                                         <div className="size-14 rounded-2xl bg-slate-50 flex-shrink-0 flex items-center justify-center text-primary shadow-inner border-2 border-[#595A5B] group-hover:scale-110 transition-transform">
-                                            <span className="material-symbols-outlined !text-2xl font-black">badge</span>
+                                            <Icon name="badge" className="!w-6 !h-6" />
                                         </div>
                                         <div className="space-y-0.5 min-w-0">
                                             <p className="text-base font-black text-slate-900 leading-tight tracking-tight truncate">{member.profiles?.full_name}</p>
@@ -472,19 +473,19 @@ const StaffManagement = () => {
                                             className="size-11 rounded-2xl bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-400 hover:text-warning hover:border-warning/20 hover:bg-warning/5 transition-all active:scale-90 shadow-sm"
                                             title="Cambiar Contraseña"
                                         >
-                                            <span className="material-symbols-outlined !text-xl font-black">lock_reset</span>
+                                            <Icon name="lock_reset" className="!w-5 !h-5" />
                                         </button>
                                         <button
                                             onClick={() => startEditing(member)}
                                             className="size-11 rounded-2xl bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-400 hover:text-primary hover:border-primary/20 hover:bg-primary/5 transition-all active:scale-90 shadow-sm"
                                         >
-                                            <span className="material-symbols-outlined !text-xl font-black">edit_square</span>
+                                            <Icon name="edit_square" className="!w-5 !h-5" />
                                         </button>
                                         <button
                                             onClick={() => handleDeleteStaff(member.id, member.profiles?.full_name)}
                                             className="size-11 rounded-2xl bg-white border-2 border-[#595A5B] flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-100 hover:bg-red-50 transition-all active:scale-90 shadow-sm"
                                         >
-                                            <span className="material-symbols-outlined !text-xl font-black">delete_sweep</span>
+                                            <Icon name="delete_sweep" className="!w-5 !h-5" />
                                         </button>
                                     </div>
                                 </div>
@@ -492,7 +493,7 @@ const StaffManagement = () => {
                         )) : (
                             <div className="bg-white rounded-[3rem] border border-dashed border-[#595A5B] py-20 flex flex-col items-center justify-center gap-4 mx-4 shadow-inner">
                                 <div className="size-16 rounded-[2rem] bg-slate-50 flex items-center justify-center text-slate-200 border-2 border-[#595A5B] mb-2">
-                                    <span className="material-symbols-outlined !text-5xl">group_off</span>
+                                    <Icon name="group_off" className="!w-12 !h-12" />
                                 </div>
                                 <h3 className="text-lg font-black text-slate-900 tracking-tight">Sin colaboradores</h3>
                                 <p className="text-slate-400 font-bold text-xs uppercase tracking-widest text-[9px]">Aún no has configurado delegados</p>
@@ -508,7 +509,7 @@ const StaffManagement = () => {
                     <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] p-10 border-2 border-[#595A5B] shadow-2xl animate-in zoom-in-95 duration-400">
                         <div className="flex flex-col items-center text-center gap-6 mb-10">
                             <div className="size-20 rounded-[2rem] bg-slate-50 flex items-center justify-center text-warning shadow-inner border-2 border-[#595A5B]">
-                                <span className="material-symbols-outlined !text-4xl font-black">lock_open</span>
+                                <Icon name="lock_open" className="!w-10 !h-10" />
                             </div>
                             <div>
                                 <h3 className="text-2xl font-black text-slate-900 tracking-tight">Reiniciar Clave</h3>
@@ -549,7 +550,7 @@ const StaffManagement = () => {
                                     disabled={isResetting || newStaff.password.length < 6}
                                     className="w-full bg-slate-900 text-white h-16 rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] shadow-xl shadow-slate-200 active:scale-[0.97] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                                 >
-                                    {isResetting ? <span className="material-symbols-outlined animate-spin font-black">sync</span> : <span className="material-symbols-outlined font-black">key</span>}
+                                    {isResetting ? <Icon name="sync" className="animate-spin" /> : <Icon name="key" />}
                                     ACTUALIZAR CLAVE
                                 </button>
                                 <button
@@ -588,7 +589,7 @@ const PermissionToggle = ({ icon, title, description, active, onToggle }) => (
             <p className="text-[10px] text-slate-400 font-bold leading-tight">{description}</p>
         </div>
         <div className={`size-7 rounded-full border-2 flex items-center justify-center transition-all ${active ? 'border-primary bg-primary' : 'border-[#595A5B] bg-white group-hover/toggle:border-[#595A5B]'}`}>
-            {active && <span className="material-symbols-outlined text-white !text-xl font-black">check</span>}
+            {active && <Icon name="check" className="text-white !w-5 !h-5" />}
         </div>
     </button>
 );

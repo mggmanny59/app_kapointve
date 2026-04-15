@@ -1,4 +1,5 @@
 import React from 'react';
+import Icon from '../components/Icon';
 import Notification from '../components/Notification';
 
 const NotificationPreview = () => {
@@ -9,7 +10,7 @@ const NotificationPreview = () => {
 
             <div className="text-center space-y-10 z-10 px-6">
                 <div className="inline-flex items-center justify-center size-24 rounded-[2.5rem] bg-white border-2 border-[#595A5B] shadow-xl shadow-primary/10 mb-2">
-                    <span className="material-symbols-outlined text-primary !text-5xl font-black">notifications_active</span>
+                    <Icon name="notifications_active" className="text-primary !w-12 !h-12" />
                 </div>
 
                 <div className="space-y-4">

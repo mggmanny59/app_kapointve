@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -150,7 +151,7 @@ const ActivityHistory = () => {
     if (loading) {
         return (
             <div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center">
-                <span className="animate-spin material-symbols-outlined text-primary text-4xl">refresh</span>
+                <Icon name="refresh" className="animate-spin text-primary !w-10 !h-10" />
             </div>
         );
     }
@@ -229,7 +230,7 @@ const ActivityHistory = () => {
                             onClick={handleApplyFilters}
                             className="flex-1 bg-primary text-white py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2"
                         >
-                            <span className="material-symbols-outlined text-sm">filter_list</span>
+                            <Icon name="filter_list" className="!w-4 !h-4" />
                             Aplicar Filtro
                         </button>
                         <button 
@@ -237,7 +238,7 @@ const ActivityHistory = () => {
                             className="w-12 bg-white border-2 border-[#595A5B] text-slate-600 rounded-2xl flex items-center justify-center active:scale-95 transition-all"
                             title="Limpiar filtros"
                         >
-                            <span className="material-symbols-outlined">filter_alt_off</span>
+                            <Icon name="filter_alt_off" />
                         </button>
                     </div>
                 </div>
@@ -285,7 +286,7 @@ const ActivityHistory = () => {
                     </div>
                 ) : (
                     <div className="py-20 text-center">
-                        <span className="material-symbols-outlined text-6xl text-slate-200 mb-4 font-black">history</span>
+                        <Icon name="history" className="text-6xl text-slate-200 mb-4" />
                         <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Aún no tienes actividad registrada</p>
                     </div>
                 )}

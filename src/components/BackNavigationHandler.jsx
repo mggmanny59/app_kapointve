@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Icon from './Icon';
 
 /**
  * BackNavigationHandler Component
@@ -62,7 +63,7 @@ const BackNavigationHandler = () => {
                 <div className="flex flex-col items-center text-center">
                     {/* Icon */}
                     <div className="size-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-6 border border-primary/20">
-                        <span className="material-symbols-outlined text-primary !text-5xl animate-pulse">exit_to_app</span>
+                        <Icon name="exit_to_app" className="text-primary !w-12 !h-12 animate-pulse" />
                     </div>
                     
                     <h3 className="text-xl font-black text-white mb-2 leading-tight">

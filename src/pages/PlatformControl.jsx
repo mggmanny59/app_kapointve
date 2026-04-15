@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Icon from '../components/Icon';
 import { supabase } from '../lib/supabase';
 import { useNotification } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
@@ -273,7 +274,7 @@ const PlatformControl = () => {
 
                 <div className="flex flex-col gap-4">
                     <div className="relative flex-1">
-                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 !text-[20px] font-black">search</span>
+                        <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 !w-[20] !h-[20]" />
                         <input
                             type="text"
                             placeholder={activeSection === 'businesses' ? "Search businesses..." : "Search payments..."}
@@ -288,7 +289,7 @@ const PlatformControl = () => {
                         className="h-10 pl-2 pr-5 rounded-full bg-red-500/10 border-2 border-red-500/30 flex items-center gap-2 hover:bg-red-500 hover:border-red-500 hover:text-white transition-all shadow-sm active:scale-95 group shrink-0"
                     >
                         <div className="size-7 rounded-full bg-red-500/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                            <span className="material-symbols-outlined !text-base font-black text-red-500 group-hover:text-white">logout</span>
+                            <Icon name="logout" className="!w-4 !h-4 text-red-500 group-hover:text-white" />
                         </div>
                         <span className="text-[9px] font-black text-red-500 uppercase tracking-[0.2em] mt-0.5 group-hover:text-white">Cerrar Sesión</span>
                     </button>
@@ -301,14 +302,14 @@ const PlatformControl = () => {
                         onClick={() => setActiveSection('businesses')}
                         className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all ${activeSection === 'businesses' ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
                     >
-                        <span className="material-symbols-outlined !text-lg">storefront</span>
+                        <Icon name="storefront" className="!w-5 !h-5" />
                         Comercios
                     </button>
                     <button 
                         onClick={() => setActiveSection('subscriptions')}
                         className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all ${activeSection === 'subscriptions' ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
                     >
-                        <span className="material-symbols-outlined !text-lg">payments</span>
+                        <Icon name="payments" className="!w-5 !h-5" />
                         Suscripciones
                         {pendingPayments.length > 0 && (
                             <span className="size-5 bg-white text-primary text-[10px] rounded-full flex items-center justify-center animate-pulse">
@@ -328,7 +329,7 @@ const PlatformControl = () => {
                     <div className="bg-white rounded-[1.2rem] p-4 w-36 shadow-sm border border-slate-100 flex flex-col">
                         <div className="flex items-center gap-3 mb-2">
                             <div className="size-10 rounded-xl bg-[#ff8228] flex items-center justify-center text-white shadow-sm shrink-0">
-                                <span className="material-symbols-outlined !text-[20px]">groups</span>
+                                <Icon name="groups" className="!w-[20] !h-[20]" />
                             </div>
                             <svg className="w-12 h-6 text-[#ff8228] opacity-50" viewBox="0 0 40 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M2 18 L12 8 L20 14 L38 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -345,7 +346,7 @@ const PlatformControl = () => {
                     <div className="bg-white rounded-[1.2rem] p-4 w-36 shadow-sm border border-slate-100 flex flex-col">
                         <div className="flex items-center gap-3 mb-2">
                             <div className="size-10 rounded-xl bg-[#f5b027] flex items-center justify-center text-white shadow-sm shrink-0">
-                                <span className="material-symbols-outlined !text-[20px]">schedule</span>
+                                <Icon name="schedule" className="!w-[20] !h-[20]" />
                             </div>
                             <svg className="w-12 h-6 text-[#f5b027] opacity-50" viewBox="0 0 40 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M2 14 L10 16 L18 8 L28 14 L38 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -361,7 +362,7 @@ const PlatformControl = () => {
                     <div className="bg-white rounded-[1.2rem] p-4 w-36 shadow-sm border border-slate-100 flex flex-col">
                         <div className="flex items-center gap-3 mb-2">
                             <div className="size-10 rounded-xl bg-[#ef4444] flex items-center justify-center text-white shadow-sm shrink-0">
-                                <span className="material-symbols-outlined !text-[20px]">block</span>
+                                <Icon name="block" className="!w-[20] !h-[20]" />
                             </div>
                             <svg className="w-12 h-6 text-[#ef4444] opacity-50" viewBox="0 0 40 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M2 6 L12 12 L22 4 L38 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -388,10 +389,10 @@ const PlatformControl = () => {
                             </div>
                             <div className="flex gap-2">
                                 <button onClick={() => setConfirmModal({ show: true, biz, type: 'APPROVE' })} className="size-9 rounded-lg bg-[#f5b027] text-white flex items-center justify-center hover:bg-amber-500 active:scale-90 transition-all shadow-sm">
-                                    <span className="material-symbols-outlined !text-sm">check</span>
+                                    <Icon name="check" className="!w-4 !h-4" />
                                 </button>
                                 <button onClick={() => setConfirmModal({ show: true, biz, type: 'REJECT' })} className="size-9 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 active:scale-90 transition-all">
-                                    <span className="material-symbols-outlined !text-sm">close</span>
+                                    <Icon name="close" className="!w-4 !h-4" />
                                 </button>
                             </div>
                         </div>
@@ -450,14 +451,14 @@ const PlatformControl = () => {
                                     {biz.logo_url ? (
                                         <img src={biz.logo_url} alt="" className="w-full h-full object-cover" />
                                     ) : (
-                                        <span className="material-symbols-outlined text-slate-400 !text-xl">store</span>
+                                        <Icon name="store" className="text-slate-400 !w-5 !h-5" />
                                     )}
                                 </div>
                                 <div className="min-w-0 leading-tight">
                                     <h4 className="font-bold text-slate-900 text-[14px] truncate">{biz.name}</h4>
                                     <div className="flex items-center gap-1.5 mt-0.5">
                                         <div className="size-4 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
-                                            <span className="material-symbols-outlined text-slate-500 !text-[12px]">person</span>
+                                            <Icon name="person" className="text-slate-500 !w-[12] !h-[12]" />
                                         </div>
                                         <p className="text-[11.5px] text-slate-600 truncate font-medium">{biz.profiles?.full_name?.split(' ')[0] || 'Admin'}</p>
                                     </div>
@@ -487,7 +488,7 @@ const PlatformControl = () => {
                                     }}
                                     className="size-9 rounded-xl bg-[#ff8228] text-white flex items-center justify-center active:scale-90 transition-all shadow-sm shadow-[#ff8228]/20"
                                 >
-                                    <span className="material-symbols-outlined !text-[17px] !font-light rounded-full border border-white p-0.5">notifications</span>
+                                    <Icon name="notifications" className="!w-[17] !h-[17] !font-light rounded-full border border-white p-0.5" />
                                 </button>
                                 <button
                                     onClick={(e) => {
@@ -562,7 +563,7 @@ const PlatformControl = () => {
                                                 onClick={() => setPaymentModal({ show: true, payment, daysToAdd: 30, plan: 'KPOINT PLUS' })}
                                                 className="flex-1 h-11 rounded-xl bg-primary text-white font-black text-[11px] uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                                             >
-                                                <span className="material-symbols-outlined text-lg">verified</span>
+                                                <Icon name="verified" className="!w-5 !h-5" />
                                                 PROCESAR AHORA
                                             </button>
                                         </div>
@@ -572,7 +573,7 @@ const PlatformControl = () => {
                         ) : (
                             <div className="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-10 text-center space-y-3">
                                 <div className="size-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mx-auto">
-                                    <span className="material-symbols-outlined !text-3xl">done_all</span>
+                                    <Icon name="done_all" className="!w-8 !h-8" />
                                 </div>
                                 <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">No hay pagos pendientes de revisiÃ³n</p>
                             </div>
@@ -702,7 +703,7 @@ const PlatformControl = () => {
                             onClick={() => setSelectedBiz(null)}
                             className="absolute top-8 left-6 size-12 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white active:scale-95 transition-all z-20"
                         >
-                            <span className="material-symbols-outlined">arrow_back</span>
+                            <Icon name="arrow_back" />
                         </button>
 
                         {/* Logo Centrado */}
@@ -711,7 +712,7 @@ const PlatformControl = () => {
                                 {selectedBiz.logo_url ? (
                                     <img src={selectedBiz.logo_url} alt={selectedBiz.name} className="w-full h-full object-contain" />
                                 ) : (
-                                    <span className="material-symbols-outlined !text-6xl text-primary font-black">store</span>
+                                    <Icon name="store" className="!text-6xl text-primary" />
                                 )}
                             </div>
                         </div>
@@ -733,7 +734,7 @@ const PlatformControl = () => {
                                     <div className="md:col-span-2">
                                         <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 block">NODE_UID (READ_ONLY)</label>
                                         <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200 group/id">
-                                            <span className="material-symbols-outlined text-[14px] text-slate-400 group-hover/id:text-primary transition-colors">fingerprint</span>
+                                            <Icon name="fingerprint" className="!w-[14] !h-[14] text-slate-400 group-hover/id:text-primary transition-colors" />
                                             <code className="text-[11px] font-mono font-bold text-slate-500 tracking-tighter truncate">
                                                 {selectedBiz.id}
                                             </code>
@@ -933,7 +934,7 @@ const PlatformControl = () => {
                                         <div className="animate-spin size-5 border-2 border-white/30 border-t-white rounded-full"></div>
                                     ) : (
                                         <>
-                                            <span className="material-symbols-outlined text-xl">commit</span>
+                                            <Icon name="commit" className="!w-5 !h-5" />
                                             DEPLOY_CHANGES
                                         </>
                                     )}
@@ -946,7 +947,7 @@ const PlatformControl = () => {
                                     }}
                                     className="h-14 md:w-32 bg-white border-2 border-slate-900 text-slate-900 rounded-[1.2rem] font-black text-[12px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm"
                                 >
-                                    <span className="material-symbols-outlined text-lg">terminal</span>
+                                    <Icon name="terminal" className="!w-5 !h-5" />
                                     LOGS
                                 </button>
                                 
@@ -954,7 +955,7 @@ const PlatformControl = () => {
                                     onClick={() => setSelectedBiz(null)}
                                     className="h-14 md:w-20 bg-slate-100 text-slate-400 rounded-[1.2rem] font-black text-[10px] flex items-center justify-center hover:text-slate-900 transition-all"
                                 >
-                                    <span className="material-symbols-outlined">close</span>
+                                    <Icon name="close" />
                                 </button>
                             </div>
                         </div>
@@ -969,7 +970,7 @@ const PlatformControl = () => {
                     <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-black">
                         <div className="flex items-center gap-3">
                             <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                                <span className="material-symbols-outlined">data_object</span>
+                                <Icon name="data_object" />
                             </div>
                             <div>
                                 <h3 className="text-white font-black text-sm uppercase tracking-widest">Technical Logs</h3>
@@ -980,7 +981,7 @@ const PlatformControl = () => {
                             onClick={() => setShowLogs(false)}
                             className="size-10 rounded-full hover:bg-slate-800 flex items-center justify-center text-slate-400 transition-colors"
                         >
-                            <span className="material-symbols-outlined text-xl">close</span>
+                            <Icon name="close" className="!w-5 !h-5" />
                         </button>
                     </div>
 
@@ -995,7 +996,7 @@ const PlatformControl = () => {
                             </div>
                         ) : auditLogs.length === 0 ? (
                             <div className="py-20 text-center space-y-2">
-                                <span className="material-symbols-outlined text-slate-800 !text-5xl">terminal</span>
+                                <Icon name="terminal" className="text-slate-800 !w-12 !h-12" />
                                 <p className="text-[10px] text-slate-600 font-mono tracking-widest uppercase">No activity logged yet</p>
                             </div>
                         ) : (
@@ -1072,12 +1073,12 @@ const PlatformControl = () => {
                     onClick={() => setPaymentModal({ show: false, payment: null, daysToAdd: 30, plan: 'KPOINT PLUS' })}
                     className="absolute top-6 right-6 size-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 active:scale-90 transition-transform"
                 >
-                    <span className="material-symbols-outlined">close</span>
+                    <Icon name="close" />
                 </button>
 
                 {/* Status Icon */}
                 <div className="size-20 rounded-[2rem] mx-auto mb-6 flex items-center justify-center border shadow-xl bg-green-500/10 border-green-500/20 text-green-600 shrink-0">
-                    <span className="material-symbols-outlined !text-4xl font-black">payments</span>
+                    <Icon name="payments" className="!w-10 !h-10" />
                 </div>
                 
                 <h3 className="text-2xl font-black text-center text-slate-900 mb-1 uppercase tracking-tight">Procesar Pago</h3>

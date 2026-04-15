@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Icon from './Icon';
 
 const Notification = ({ type = 'success', title, message, onClose, duration = 5000 }) => {
     const [isVisible, setIsVisible] = useState(true);
@@ -41,9 +42,7 @@ const Notification = ({ type = 'success', title, message, onClose, duration = 50
             <div className="max-w-[340px] w-full bg-white border border-white rounded-[2.5rem] p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] flex flex-col items-center text-center animate-in zoom-in-95 duration-400">
                 {/* Icon Circle */}
                 <div className={`size-20 rounded-[2rem] ${currentStyle.bg} flex items-center justify-center border-4 border-white shadow-inner mb-6 ${currentStyle.iconAnimation || ''}`}>
-                    <span className={`material-symbols-outlined !text-4xl ${currentStyle.iconColor} font-black`}>
-                        {currentStyle.icon}
-                    </span>
+                    <Icon name={currentStyle.icon} className={`!w-10 !h-10 ${currentStyle.iconColor}`} />
                 </div>
 
                 {/* Content */}

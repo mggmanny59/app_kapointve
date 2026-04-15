@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from '../components/Icon';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useNotification } from '../context/NotificationContext';
@@ -111,7 +112,7 @@ const Profile = () => {
     if (loading) {
         return (
             <div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center">
-                <span className="animate-spin material-symbols-outlined text-primary text-4xl">refresh</span>
+                <Icon name="refresh" className="animate-spin text-primary !w-10 !h-10" />
             </div>
         );
     }
@@ -135,7 +136,7 @@ const Profile = () => {
                 <div className="relative bg-gradient-to-br from-[rgb(255,101,14)] to-[#e65a0c] p-8 rounded-[2.5rem] shadow-xl text-white overflow-hidden">
                     <div className="relative z-10 flex flex-col items-center text-center">
                         <div className="size-24 rounded-full bg-white/20 backdrop-blur-md border-4 border-white/30 flex items-center justify-center mb-4 shadow-lg">
-                            <span className="material-symbols-outlined !text-5xl text-white font-black">person</span>
+                            <Icon name="person" className="!w-12 !h-12 text-white" />
                         </div>
                         <h2 className="text-2xl font-black tracking-tight">{profile.full_name || 'Sin Nombre'}</h2>
                         <p className="text-white/70 text-sm font-medium uppercase tracking-widest mt-1">{profile.email}</p>
@@ -149,7 +150,7 @@ const Profile = () => {
                     <div className="bg-white p-6 rounded-[2.5rem] border-2 border-[#595A5B] shadow-sm flex items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom duration-700 delay-150">
                         <div className="flex items-center gap-4">
                             <div className="size-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                                <span className="material-symbols-outlined !text-3xl">payments</span>
+                                <Icon name="payments" className="!w-8 !h-8" />
                             </div>
                             <div>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Estado del Plan</p>
@@ -171,7 +172,7 @@ const Profile = () => {
                         <div className="space-y-2">
                             <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Nombre Completo</label>
                             <div className="relative">
-                                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">person</span>
+                                <Icon name="person" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                                 <input
                                     type="text"
                                     value={profile.full_name}
@@ -186,7 +187,7 @@ const Profile = () => {
                         <div className="space-y-2">
                             <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Teléfono</label>
                             <div className="relative">
-                                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">call</span>
+                                <Icon name="call" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                                 <input
                                     type="tel"
                                     value={profile.phone}
@@ -200,7 +201,7 @@ const Profile = () => {
                         <div className="space-y-2 opacity-60">
                             <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Correo Electrónico (No editable)</label>
                             <div className="relative">
-                                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">mail</span>
+                                <Icon name="mail" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                                 <input
                                     type="email"
                                     value={profile.email}
@@ -217,11 +218,11 @@ const Profile = () => {
                         className="w-full h-16 bg-primary text-white rounded-3xl font-black uppercase shadow-xl shadow-primary/30 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
                     >
                         {saving ? (
-                            <span className="animate-spin material-symbols-outlined">sync</span>
+                            <Icon name="sync" className="animate-spin" />
                         ) : (
                             <>
                                 GUARDAR CAMBIOS
-                                <span className="material-symbols-outlined">save</span>
+                                <Icon name="save" />
                             </>
                         )}
                     </button>
@@ -233,7 +234,7 @@ const Profile = () => {
                 {/* Account Info Footer */}
                 <div className="p-6 bg-slate-100 rounded-[2rem] border-2 border-dashed border-slate-300 flex items-center gap-4">
                     <div className="size-12 rounded-xl bg-slate-200 flex items-center justify-center text-slate-500">
-                        <span className="material-symbols-outlined !text-3xl">verified_user</span>
+                        <Icon name="verified_user" className="!w-8 !h-8" />
                     </div>
                     <div>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Seguridad</p>
@@ -255,7 +256,7 @@ const Profile = () => {
                         onClick={() => setShowDeleteModal(true)}
                         className="w-full h-14 bg-white text-rose-500 border-2 border-rose-200 rounded-2xl font-black uppercase text-[11px] tracking-widest flex items-center justify-center gap-2 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all active:scale-95"
                     >
-                        <span className="material-symbols-outlined !text-xl">delete_forever</span>
+                        <Icon name="delete_forever" className="!w-5 !h-5" />
                         ELIMINAR MI CUENTA
                     </button>
                 </div>
@@ -267,22 +268,22 @@ const Profile = () => {
                     <div className="bg-white w-full max-w-sm rounded-[2.5rem] p-8 flex flex-col items-center gap-6 border-4 border-rose-500/20 shadow-2xl relative overflow-hidden">
                         {/* Warning Icon */}
                         <div className="size-20 rounded-full bg-rose-100 flex items-center justify-center text-rose-500 mb-2">
-                            <span className="material-symbols-outlined !text-4xl font-black">warning</span>
+                            <Icon name="warning" className="!w-10 !h-10" />
                         </div>
 
                         <div className="text-center">
                             <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">¿Estás absolutamente seguro?</h3>
                             <div className="mt-4 space-y-3 text-left">
                                 <div className="flex gap-3">
-                                    <span className="material-symbols-outlined text-rose-500 text-lg">cancel</span>
+                                    <Icon name="cancel" className="text-rose-500 !w-5 !h-5" />
                                     <p className="text-[11px] font-bold text-slate-600 leading-tight">Esta operación <span className="text-rose-600 underline">no puede ser revertida</span>.</p>
                                 </div>
                                 <div className="flex gap-3">
-                                    <span className="material-symbols-outlined text-rose-500 text-lg">database_off</span>
+                                    <Icon name="database_off" className="text-rose-500 !w-5 !h-5" />
                                     <p className="text-[11px] font-bold text-slate-600 leading-tight">Se borrarán todos los datos asociados, incluyendo <span className="text-rose-600">Puntos y Premios</span>.</p>
                                 </div>
                                 <div className="flex gap-3">
-                                    <span className="material-symbols-outlined text-rose-500 text-lg">link_off</span>
+                                    <Icon name="link_off" className="text-rose-500 !w-5 !h-5" />
                                     <p className="text-[11px] font-bold text-slate-600 leading-tight">Se desvinculará toda relación con Comercios y <span className="font-black text-primary">KPOINT</span>.</p>
                                 </div>
                             </div>
@@ -295,7 +296,7 @@ const Profile = () => {
                                 className="w-full h-14 bg-rose-500 text-white rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-lg shadow-rose-200 flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
                             >
                                 {isDeleting ? (
-                                    <span className="animate-spin material-symbols-outlined">sync</span>
+                                    <Icon name="sync" className="animate-spin" />
                                 ) : (
                                     'SÍ, ELIMINAR CUENTA DEFINITIVAMENTE'
                                 )}

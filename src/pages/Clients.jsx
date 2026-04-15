@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -199,7 +200,7 @@ const Clients = () => {
     if (loading) {
         return (
             <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
-                <span className="animate-spin material-symbols-outlined text-primary text-4xl">refresh</span>
+                <Icon name="refresh" className="animate-spin text-primary !w-10 !h-10" />
             </div>
         );
     }
@@ -210,7 +211,7 @@ const Clients = () => {
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
                         <div className="bg-white p-2 shadow-sm border-2 border-[#595A5B]" style={{ borderRadius: '12px' }}>
-                            <span className="material-symbols-outlined text-primary !text-2xl">groups</span>
+                            <Icon name="groups" className="text-primary !w-6 !h-6" />
                         </div>
                         <div>
                             <h2 className="text-2xl font-black text-slate-900 leading-tight tracking-tight">Clientes</h2>
@@ -226,7 +227,7 @@ const Clients = () => {
                             className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all active:scale-90 shadow-sm"
                             title="Comunicado Masivo"
                         >
-                            <span className="material-symbols-outlined text-xl font-black">campaign</span>
+                            <Icon name="campaign" className="!w-5 !h-5" />
                         </button>
 
                     </div>
@@ -234,7 +235,7 @@ const Clients = () => {
                 <div className="flex flex-col gap-3">
                     <div className="flex gap-3">
                         <div className="relative flex-1">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 text-xl font-black">search</span>
+                            <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 !w-5 !h-5" />
                             <input
                                 className="w-full bg-white border-2 border-[#595A5B] rounded-2xl py-3.5 pl-12 pr-4 text-sm font-bold text-slate-900 focus:ring-4 focus:ring-primary/10 focus:border-primary/40 placeholder:text-slate-400 outline-none transition-all shadow-sm"
                                 placeholder="Buscar por nombre o celular..."
@@ -247,7 +248,7 @@ const Clients = () => {
                             onClick={() => setShowFilters(!showFilters)}
                             className={`w-12 h-12 rounded-2xl border-2 flex items-center justify-center shadow-sm active:scale-95 transition-all ${showFilters ? 'bg-primary text-white border-primary' : 'bg-white text-slate-500 border-[#595A5B]'}`}
                         >
-                            <span className="material-symbols-outlined font-black">tune</span>
+                            <Icon name="tune" />
                         </button>
                     </div>
 
@@ -342,7 +343,7 @@ const Clients = () => {
                                 </div>
                                 
                                 <div className="flex items-center gap-2 text-slate-500 mb-2">
-                                    <span className="material-symbols-outlined !text-[14px] opacity-40">phone_iphone</span>
+                                    <Icon name="phone_iphone" className="!w-[14] !h-[14] opacity-40" />
                                     <p className="text-[12px] font-bold tracking-tight">
                                         {client.profiles?.phone || 'Sin número'}
                                     </p>
@@ -352,7 +353,7 @@ const Clients = () => {
                                 <div className="flex items-center gap-3">
                                     <div className="bg-[#0F172A] px-3.5 py-1.5 rounded-[1rem] flex items-center gap-2.5 shadow-lg border border-[#1E293B]">
                                         <div className="flex -space-x-1">
-                                            <span className="material-symbols-outlined text-warning !text-[14px] font-black drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]">stars</span>
+                                            <Icon name="stars" className="text-warning !w-[14] !h-[14] drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
                                         </div>
                                         <span className="text-[13px] font-black text-white tracking-tighter flex items-baseline gap-1">
                                             {client.current_points?.toLocaleString() || 0}
@@ -379,7 +380,7 @@ const Clients = () => {
                     );
                 }) : (
                     <div className="text-center py-20 px-10 bg-white rounded-[2rem] border border-dashed border-[#595A5B] shadow-sm">
-                        <span className="material-symbols-outlined text-slate-200 !text-6xl mb-4 font-black">person_off</span>
+                        <Icon name="person_off" className="text-slate-200 !text-6xl mb-4" />
                         <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">No se encontraron clientes</p>
                     </div>
                 )}
@@ -393,7 +394,7 @@ const Clients = () => {
                         <div className="size-11" />
                         <div className="flex items-center gap-3">
                             <div className="bg-white p-2 shadow-sm border-2 border-[#595A5B]" style={{ borderRadius: '12px' }}>
-                                <span className="material-symbols-outlined text-primary !text-xl">person_search</span>
+                                <Icon name="person_search" className="text-primary !w-5 !h-5" />
                             </div>
                             <h1 className="text-lg font-black text-slate-800 tracking-tight">Detalle del Cliente</h1>
                         </div>
@@ -428,14 +429,14 @@ const Clients = () => {
                                         <div className="bg-white border-2 border-[#595A5B] p-6 rounded-[1.5rem] shadow-sm flex flex-col gap-3">
                                             <div className="flex items-center gap-2 text-primary">
                                                 <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                                    <span className="material-symbols-outlined !text-sm">stars</span>
+                                                    <Icon name="stars" className="!w-4 !h-4" />
                                                 </div>
                                                 <span className="text-[10px] font-black uppercase tracking-wider">Puntos Totales</span>
                                             </div>
                                             <div className="space-y-1">
                                                 <p className="text-2xl font-black text-slate-900">{clientSummary.currentPoints?.toLocaleString()}</p>
                                                 <div className="flex items-center gap-1 text-[#10b981]">
-                                                    <span className="material-symbols-outlined !text-[14px]">trending_up</span>
+                                                    <Icon name="trending_up" className="!w-[14] !h-[14]" />
                                                     <span className="text-[10px] font-bold">+150 este mes</span>
                                                 </div>
                                             </div>
@@ -444,14 +445,14 @@ const Clients = () => {
                                         <div className="bg-white border-2 border-[#595A5B] p-6 rounded-[1.5rem] shadow-sm flex flex-col gap-3">
                                             <div className="flex items-center gap-2 text-[#2563EB]">
                                                 <div className="size-8 rounded-full bg-blue-50 flex items-center justify-center">
-                                                    <span className="material-symbols-outlined !text-sm">payments</span>
+                                                    <Icon name="payments" className="!w-4 !h-4" />
                                                 </div>
                                                 <span className="text-[10px] font-black uppercase tracking-wider">Compras Totales</span>
                                             </div>
                                             <div className="space-y-1">
                                                 <p className="text-2xl font-black text-slate-900">${clientSummary.totalPurchasedAmount?.toLocaleString() || '0.00'}</p>
                                                 <div className="flex items-center gap-1 text-[#10b981]">
-                                                    <span className="material-symbols-outlined !text-[14px]">trending_up</span>
+                                                    <Icon name="trending_up" className="!w-[14] !h-[14]" />
                                                     <span className="text-[10px] font-bold">+5% vs avg</span>
                                                 </div>
                                             </div>
@@ -464,7 +465,7 @@ const Clients = () => {
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-3">
                                             <div className="size-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#2563EB]">
-                                                <span className="material-symbols-outlined !text-xl">calendar_today</span>
+                                                <Icon name="calendar_today" className="!w-5 !h-5" />
                                             </div>
                                             <span className="text-sm font-bold text-slate-700">Visitas Totales</span>
                                         </div>
@@ -529,7 +530,7 @@ const Clients = () => {
                             }}
                             className="flex-1 bg-primary text-white h-14 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-orange-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
                         >
-                            <span className="material-symbols-outlined !text-lg">send</span>
+                            <Icon name="send" className="!w-5 !h-5" />
                             Mensaje
                         </button>
                         <button

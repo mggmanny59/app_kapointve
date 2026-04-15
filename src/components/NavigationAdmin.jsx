@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Icon from './Icon';
 
 const NavigationAdmin = () => {
     const navigate = useNavigate();
@@ -18,9 +19,9 @@ const NavigationAdmin = () => {
 
     const adminNavItems = [
         { path: '/platform-admin', label: 'Comercios', icon: 'storefront' },
-        { path: '/platform-reports', label: 'Métricas', icon: 'monitoring' },
+        { path: '/platform-reports', label: 'Métricas', icon: 'analytics' },
         { path: '/platform-broadcast', label: 'Global Push', icon: 'campaign' },
-        { path: '/platform-settings', label: 'Sistema', icon: 'settings_applications' }
+        { path: '/platform-settings', label: 'Sistema', icon: 'settings' }
     ];
 
     return (
@@ -42,9 +43,7 @@ const NavigationAdmin = () => {
                             isActive ? 'bg-primary/10 shadow-lg shadow-primary/10 border border-primary/20' : 
                             isLogout ? 'bg-red-50' : 'bg-transparent'
                         }`}>
-                            <span className={`material-symbols-outlined !text-2xl ${isActive ? 'font-black scale-105' : 'group-hover:scale-110 font-medium'} transition-transform`}>
-                                {item.icon}
-                            </span>
+                            <Icon name={item.icon} className={`!w-6 !h-6 ${isActive ? 'scale-105' : 'group-hover:scale-110'} transition-transform`} />
                         </div>
                         <span className={`text-[9px] font-black uppercase tracking-[0.15em] leading-none transition-all ${isActive ? 'opacity-100' : 'opacity-60'}`}>
                             {item.label}

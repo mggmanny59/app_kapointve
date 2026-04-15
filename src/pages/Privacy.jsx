@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 
 const Privacy = () => {
@@ -17,7 +18,7 @@ const Privacy = () => {
                         onClick={() => navigate(-1)}
                         className="p-2 hover:bg-white/20 rounded-full transition-colors"
                     >
-                        <span className="material-symbols-outlined">arrow_back</span>
+                        <Icon name="arrow_back" />
                     </button>
                     <div>
                         <h1 className="text-xl font-black uppercase tracking-tight">Privacidad de Datos</h1>
@@ -30,7 +31,7 @@ const Privacy = () => {
             <div className="flex-1 p-6 max-w-2xl mx-auto space-y-8 pb-12">
                 <section className="bg-orange-50 p-6 rounded-[32px] border border-orange-100 relative overflow-hidden">
                     <div className="absolute top-[-20px] right-[-20px] text-[#ff6a00] opacity-10">
-                        <span className="material-symbols-outlined text-[120px]">security</span>
+                        <Icon name="security" className="!w-[120] !h-[120]" />
                     </div>
                     <div className="relative z-10">
                         <h2 className="text-sm font-black text-[#ff6a00] uppercase tracking-[0.2em] mb-2">Nuestro Compromiso</h2>
@@ -42,19 +43,19 @@ const Privacy = () => {
 
                 <section className="space-y-4">
                     <div className="flex items-center gap-3 text-slate-900 border-b pb-2">
-                        <span className="material-symbols-outlined font-bold text-[#ff6a00]">database</span>
+                        <Icon name="database" className="text-[#ff6a00]" />
                         <h3 className="text-md font-black uppercase tracking-tight">Datos Recolectados</h3>
                     </div>
                     <div className="grid gap-4">
                         <div className="flex items-start gap-4">
-                            <span className="bg-slate-100 p-2 rounded-xl text-slate-500 material-symbols-outlined">person</span>
+                            <Icon name="person" className="bg-slate-100 p-2 rounded-xl text-slate-500" />
                             <div>
                                 <h4 className="font-bold text-sm text-slate-800 tracking-tight">Identificación</h4>
                                 <p className="text-xs text-slate-500">Nombre completo y número telefónico (como identificador único).</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-4">
-                            <span className="bg-slate-100 p-2 rounded-xl text-slate-500 material-symbols-outlined">shopping_bag</span>
+                            <Icon name="shopping_bag" className="bg-slate-100 p-2 rounded-xl text-slate-500" />
                             <div>
                                 <h4 className="font-bold text-sm text-slate-800 tracking-tight">Transaccional</h4>
                                 <p className="text-xs text-slate-500">Puntos acumulados, comercios visitados y premios canjeados.</p>
@@ -65,7 +66,7 @@ const Privacy = () => {
 
                 <section className="space-y-4">
                     <div className="flex items-center gap-3 text-slate-900 border-b pb-2">
-                        <span className="material-symbols-outlined font-bold text-[#ff6a00]">hub</span>
+                        <Icon name="hub" className="text-[#ff6a00]" />
                         <h3 className="text-md font-black uppercase tracking-tight">Uso de la Información</h3>
                     </div>
                     <p className="text-sm leading-relaxed text-slate-600">
@@ -74,7 +75,7 @@ const Privacy = () => {
                 </section>
                 <section className="space-y-4">
                     <div className="flex items-center gap-3 text-slate-900 border-b pb-2">
-                        <span className="material-symbols-outlined font-bold text-[#ff6a00]">settings_accessibility</span>
+                        <Icon name="settings_accessibility" className="text-[#ff6a00]" />
                         <h3 className="text-md font-black uppercase tracking-tight">Tus Derechos ARCO</h3>
                     </div>
                     <p className="text-sm leading-relaxed text-slate-600">
@@ -84,7 +85,7 @@ const Privacy = () => {
 
                 <section className="bg-red-50 p-6 rounded-[32px] border border-red-100 relative overflow-hidden">
                     <div className="absolute top-[-20px] right-[-20px] text-red-600 opacity-10">
-                        <span className="material-symbols-outlined text-[120px]">policy</span>
+                        <Icon name="policy" className="!w-[120] !h-[120]" />
                     </div>
                     <div className="relative z-10">
                         <h2 className="text-sm font-black text-red-600 uppercase tracking-[0.2em] mb-2">Ley Contra Delitos Informáticos</h2>

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 
 const Terms = () => {
@@ -17,7 +18,7 @@ const Terms = () => {
                         onClick={() => navigate(-1)}
                         className="p-2 hover:bg-white/20 rounded-full transition-colors"
                     >
-                        <span className="material-symbols-outlined">arrow_back</span>
+                        <Icon name="arrow_back" />
                     </button>
                     <div>
                         <h1 className="text-xl font-black uppercase tracking-tight">Términos y Condiciones</h1>
@@ -30,7 +31,7 @@ const Terms = () => {
             <div className="flex-1 p-6 max-w-2xl mx-auto space-y-8 pb-12">
                 <section className="space-y-3">
                     <div className="flex items-center gap-3 text-[#ff6a00]">
-                        <span className="material-symbols-outlined font-bold">handshake</span>
+                        <Icon name="handshake" />
                         <h2 className="text-lg font-black uppercase tracking-tight">Acuerdo de Uso</h2>
                     </div>
                     <p className="text-sm leading-relaxed text-slate-600">
@@ -40,7 +41,7 @@ const Terms = () => {
 
                 <section className="space-y-3">
                     <div className="flex items-center gap-3 text-[#ff6a00]">
-                        <span className="material-symbols-outlined font-bold">token</span>
+                        <Icon name="token" />
                         <h2 className="text-lg font-black uppercase tracking-tight">Naturaleza de los Puntos</h2>
                     </div>
                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
@@ -56,7 +57,7 @@ const Terms = () => {
                 </section>
                 <section className="space-y-3">
                     <div className="flex items-center gap-3 text-[#ff6a00]">
-                        <span className="material-symbols-outlined font-bold">store</span>
+                        <Icon name="store" />
                         <h2 className="text-lg font-black uppercase tracking-tight">Responsabilidad del Comercio</h2>
                     </div>
                     <p className="text-sm leading-relaxed text-slate-600">
@@ -66,7 +67,7 @@ const Terms = () => {
 
                 <section className="space-y-3">
                     <div className="flex items-center gap-3 text-[#ff6a00]">
-                        <span className="material-symbols-outlined font-bold">bolt</span>
+                        <Icon name="bolt" />
                         <h2 className="text-lg font-black uppercase tracking-tight">Exclusión de Responsabilidad</h2>
                     </div>
                     <p className="text-sm leading-relaxed text-slate-600">
@@ -82,7 +83,7 @@ const Terms = () => {
 
                 <section className="space-y-3">
                     <div className="flex items-center gap-3 text-[#ff6a00]">
-                        <span className="material-symbols-outlined font-bold">gavel</span>
+                        <Icon name="gavel" />
                         <h2 className="text-lg font-black uppercase tracking-tight">Marco Legal</h2>
                     </div>
                     <p className="text-sm leading-relaxed text-slate-600">

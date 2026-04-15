@@ -1,4 +1,5 @@
 import React from 'react';
+import Icon from './Icon';
 import { Link, useNavigate } from 'react-router-dom';
 
 const AuthLayout = ({ children, title, footerText, footerLinkText, footerLinkHref, showBackButton }) => {
@@ -58,7 +59,7 @@ const AuthLayout = ({ children, title, footerText, footerLinkText, footerLinkHre
                     onClick={() => navigate(-1)}
                     className="relative z-10 mt-6 flex items-center gap-2 text-slate-subtitle hover:text-white transition-colors"
                 >
-                    <span className="material-symbols-outlined text-sm">arrow_back_ios_new</span>
+                    <Icon name="arrow_back_ios_new" className="!w-4 !h-4" />
                     <span className="text-sm font-bold uppercase tracking-wider">Volver</span>
                 </button>
             )}

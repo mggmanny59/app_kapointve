@@ -1,4 +1,5 @@
 import React from 'react';
+import Icon from './Icon';
 import { useMessages } from '../context/MessageContext';
 
 const MessageCenter = ({ isOpen, onClose }) => {
@@ -33,7 +34,7 @@ const MessageCenter = ({ isOpen, onClose }) => {
                         onClick={onClose}
                         className="size-11 rounded-2xl bg-slate-50 border-2 border-[#595A5B] flex items-center justify-center text-slate-400 active:scale-90 transition-all shadow-sm group"
                     >
-                        <span className="material-symbols-outlined !text-xl group-hover:text-slate-900">close</span>
+                        <Icon name="close" className="!w-5 !h-5 group-hover:text-slate-900" />
                     </button>
                 </header>
 
@@ -66,7 +67,7 @@ const MessageCenter = ({ isOpen, onClose }) => {
                                                 {msg.businesses?.logo_url ? (
                                                     <img src={msg.businesses.logo_url} className="w-full h-full object-cover" alt="Logo" />
                                                 ) : (
-                                                    <span className="material-symbols-outlined text-lg font-black">storefront</span>
+                                                    <Icon name="storefront" className="!w-5 !h-5" />
                                                 )}
                                             </div>
                                             <span className="text-xs font-black text-slate-900 tracking-tight">
@@ -84,7 +85,7 @@ const MessageCenter = ({ isOpen, onClose }) => {
                                                 }}
                                                 className="size-8 flex items-center justify-center rounded-xl bg-slate-50 hover:bg-red-50 text-slate-300 hover:text-red-500 transition-all border-2 border-[#595A5B]"
                                             >
-                                                <span className="material-symbols-outlined !text-base">delete</span>
+                                                <Icon name="delete" className="!w-4 !h-4" />
                                             </button>
                                         </div>
                                     </div>
@@ -103,7 +104,7 @@ const MessageCenter = ({ isOpen, onClose }) => {
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-center p-10 space-y-6">
                             <div className="size-24 rounded-[2.5rem] bg-slate-50 flex items-center justify-center text-slate-200 border-2 border-[#595A5B] group shadow-inner">
-                                <span className="material-symbols-outlined !text-5xl group-hover:scale-110 transition-transform">notifications_off</span>
+                                <Icon name="notifications_off" className="!w-12 !h-12 group-hover:scale-110 transition-transform" />
                             </div>
                             <div className="space-y-2">
                                 <h3 className="text-lg font-black text-slate-900 tracking-tight">Bandeja Vacía</h3>

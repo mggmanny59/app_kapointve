@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Icon from './Icon';
 import { useMessages } from '../context/MessageContext';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
@@ -117,7 +118,7 @@ const SendNotificationModal = ({ isOpen, onClose, businessId, targetClient = nul
                 <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                         <div className="size-11 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white">
-                            <span className="material-symbols-outlined !text-2xl font-black">campaign</span>
+                            <Icon name="campaign" className="!w-6 !h-6" />
                         </div>
                         <div>
                             <h2 className="text-base font-black text-white tracking-tight leading-tight">
@@ -163,7 +164,7 @@ const SendNotificationModal = ({ isOpen, onClose, businessId, targetClient = nul
                                     <option value="POINTS">Bono de Puntos</option>
                                     <option value="REWARD">Premio Disponible</option>
                                 </select>
-                                <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none !text-xl font-black">expand_more</span>
+                                <Icon name="expand_more" className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none !w-5 !h-5" />
                             </div>
                         </div>
 
@@ -173,7 +174,7 @@ const SendNotificationModal = ({ isOpen, onClose, businessId, targetClient = nul
                                 <div className="flex items-center justify-between h-12 px-6 bg-primary/5 rounded-2xl border-2 border-primary/10 transition-all">
                                     <div className="flex items-center gap-3">
                                         <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                                            <span className="material-symbols-outlined !text-lg font-normal">notifications_active</span>
+                                            <Icon name="notifications_active" className="!w-5 !h-5" />
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-black text-slate-900 uppercase tracking-tighter">Enviar Push Mobile</p>
@@ -223,7 +224,7 @@ const SendNotificationModal = ({ isOpen, onClose, businessId, targetClient = nul
                             {sending ? (
                                 <div className="animate-spin size-4 border-2 border-white/30 border-t-white rounded-full"></div>
                             ) : (
-                                <span className="material-symbols-outlined !text-xl">send</span>
+                                <Icon name="send" className="!w-5 !h-5" />
                             )}
                             {sending ? 'ENVIANDO...' : 'ENVIAR AHORA'}
                         </button>

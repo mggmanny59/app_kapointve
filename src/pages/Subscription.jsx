@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from '../components/Icon';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
@@ -205,7 +206,7 @@ const Subscription = () => {
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <div className="size-16 rounded-[1.5rem] bg-[#FEF6F0] border-2 border-primary flex items-center justify-center shadow-lg">
-                            <span className="material-symbols-outlined text-primary !text-4xl font-black">card_membership</span>
+                            <Icon name="card_membership" className="text-primary !w-10 !h-10" />
                         </div>
                         <div className="flex flex-col">
                             <h1 className="text-3xl font-black text-slate-900 leading-tight">Suscripción</h1>
@@ -219,7 +220,7 @@ const Subscription = () => {
             {hasPendingPayment && (
                 <div className="mx-6 mt-6 bg-amber-50 border-2 border-amber-200 p-4 rounded-[2rem] flex items-center gap-3 animate-pulse">
                     <div className="size-10 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined !text-xl animate-spin-slow">history</span>
+                        <Icon name="history" className="!w-5 !h-5 animate-spin-slow" />
                     </div>
                     <div className="leading-tight">
                         <p className="text-sm font-black text-amber-900">Pago en Verificación</p>
@@ -318,7 +319,7 @@ const Subscription = () => {
                                 </div>
                                 {selectedPlan === p.id && (
                                     <div className="absolute -bottom-1 -right-1 size-10 bg-primary rounded-tl-[2rem] flex items-center justify-center pt-1 pl-1">
-                                        <span className="material-symbols-outlined text-white !text-xl">check</span>
+                                        <Icon name="check" className="text-white !w-5 !h-5" />
                                     </div>
                                 )}
                             </div>
@@ -340,7 +341,7 @@ const Subscription = () => {
                             className={`flex items-center gap-2 px-5 py-3 rounded-2xl transition-all border-2 ${activeTab === 'PAGO_MOVIL' ? 'bg-white shadow-md border-primary text-slate-900' : 'bg-slate-100 border-transparent text-slate-400'}`}
                         >
                             <div className={`p-1.5 rounded-lg ${activeTab === 'PAGO_MOVIL' ? 'bg-primary text-white' : 'bg-slate-200 text-slate-400'}`}>
-                                <span className="material-symbols-outlined !text-sm">bolt</span>
+                                <Icon name="bolt" className="!w-4 !h-4" />
                             </div>
                             <span className="text-xs font-black uppercase tracking-wider">Pago Móvil</span>
                         </button>
@@ -349,7 +350,7 @@ const Subscription = () => {
                             className={`flex items-center gap-2 px-5 py-3 rounded-2xl transition-all border-2 ${activeTab === 'TRANSFERENCIA' ? 'bg-white shadow-md border-primary text-slate-900' : 'bg-slate-100 border-transparent text-slate-400'}`}
                         >
                             <div className={`p-1.5 rounded-lg ${activeTab === 'TRANSFERENCIA' ? 'bg-slate-400 text-white' : 'bg-slate-200 text-slate-400'}`}>
-                                <span className="material-symbols-outlined !text-sm">account_balance</span>
+                                <Icon name="account_balance" className="!w-4 !h-4" />
                             </div>
                             <span className="text-xs font-black uppercase tracking-wider">Transferencia</span>
                         </button>
@@ -365,39 +366,39 @@ const Subscription = () => {
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between group">
                                     <div className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-slate-400 !text-xl">description</span>
+                                        <Icon name="description" className="text-slate-400 !w-5 !h-5" />
                                         <span className="text-xs font-bold text-slate-500">RIF (Copiar)</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-xs font-black text-slate-800">{paymentData[activeTab].rif}</span>
                                         <button onClick={() => copyToClipboard(paymentData[activeTab].rif)} className="text-primary active:scale-90 transition-transform">
-                                            <span className="material-symbols-outlined !text-xl">content_copy</span>
+                                            <Icon name="content_copy" className="!w-5 !h-5" />
                                         </button>
                                     </div>
                                 </div>
 
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-slate-400 !text-xl">call</span>
+                                        <Icon name="call" className="text-slate-400 !w-5 !h-5" />
                                         <span className="text-xs font-bold text-slate-500">{activeTab === 'PAGO_MOVIL' ? 'Teléfono' : 'Cuenta'}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-xs font-black text-slate-800">{activeTab === 'PAGO_MOVIL' ? paymentData[activeTab].phone : paymentData[activeTab].account}</span>
                                         <button onClick={() => copyToClipboard(activeTab === 'PAGO_MOVIL' ? paymentData[activeTab].phone : paymentData[activeTab].account)} className="text-primary active:scale-90 transition-transform">
-                                            <span className="material-symbols-outlined !text-xl">content_copy</span>
+                                            <Icon name="content_copy" className="!w-5 !h-5" />
                                         </button>
                                     </div>
                                 </div>
 
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-slate-400 !text-xl">account_balance</span>
+                                        <Icon name="account_balance" className="text-slate-400 !w-5 !h-5" />
                                         <span className="text-xs font-bold text-slate-500">Banco</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-xs font-black text-slate-800">{paymentData[activeTab].bank}</span>
                                         <button onClick={() => copyToClipboard(paymentData[activeTab].bank)} className="text-primary active:scale-90 transition-transform">
-                                            <span className="material-symbols-outlined !text-xl">content_copy</span>
+                                            <Icon name="content_copy" className="!w-5 !h-5" />
                                         </button>
                                     </div>
                                 </div>
@@ -410,7 +411,7 @@ const Subscription = () => {
                 {hasPendingPayment || (daysLeft > 3 && !user?.is_super_admin) ? (
                     <div className="bg-white border-2 border-green-500 rounded-[32px] p-8 text-center space-y-4 shadow-xl animate-in fade-in zoom-in duration-500">
                         <div className="size-20 rounded-[2.2rem] bg-green-500 text-white flex items-center justify-center mx-auto shadow-xl shadow-green-500/20">
-                            <span className="material-symbols-outlined !text-4xl font-black italic">verified_user</span>
+                            <Icon name="verified_user" className="!w-10 !h-10 italic" />
                         </div>
                         <div className="space-y-2">
                             <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Estás al Día</h3>
@@ -421,7 +422,7 @@ const Subscription = () => {
                         
                         {hasPendingPayment ? (
                             <div className="bg-amber-50 p-4 rounded-2xl flex items-center gap-3">
-                                <span className="material-symbols-outlined text-amber-500 animate-spin-slow">sync</span>
+                                <Icon name="sync" className="text-amber-500 animate-spin-slow" />
                                 <p className="text-[11px] font-black text-amber-700 text-left uppercase leading-tight">
                                     VERIFICANDO TU RECIENTE REPORTE DE PAGO. ESPERA LA APROBACIÓN DEL SISTEMA.
                                 </p>
@@ -505,7 +506,7 @@ const Subscription = () => {
                 <div className="fixed inset-0 z-[600] flex items-center justify-center px-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="relative w-full max-w-sm bg-white border-2 border-primary rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in duration-300">
                         <div className="size-20 rounded-[2rem] mx-auto mb-8 bg-green-500/10 border-2 border-green-500/20 text-green-500 flex items-center justify-center shadow-inner">
-                            <span className="material-symbols-outlined !text-4xl font-black">verified</span>
+                            <Icon name="verified" className="!w-10 !h-10" />
                         </div>
                         <h3 className="text-xl font-black text-center text-slate-900 mb-4 uppercase tracking-tight leading-tight">
                             ¡Pago Registrado!
@@ -528,7 +529,7 @@ const Subscription = () => {
                 <div className="fixed inset-0 z-[600] flex items-center justify-center px-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="relative w-full max-w-sm bg-white border-2 border-red-500 rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in duration-300">
                         <div className="size-20 rounded-[2rem] mx-auto mb-8 bg-red-500/10 border-2 border-red-500/20 text-red-500 flex items-center justify-center shadow-inner">
-                            <span className="material-symbols-outlined !text-4xl font-black italic">lock_clock</span>
+                            <Icon name="lock_clock" className="!w-10 !h-10 italic" />
                         </div>
                         <h3 className="text-xl font-black text-center text-slate-900 mb-4 uppercase tracking-tighter leading-tight">
                             Cuenta Bloqueada
@@ -541,7 +542,7 @@ const Subscription = () => {
                                 onClick={scrollToForm}
                                 className="w-full h-16 rounded-3xl bg-red-500 text-white font-black text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-red-500/20 transition-all active:scale-[0.97] flex items-center justify-center gap-2"
                             >
-                                <span className="material-symbols-outlined !text-lg">payments</span>
+                                <Icon name="payments" className="!w-5 !h-5" />
                                 IR AL PAGO
                             </button>
                             <button

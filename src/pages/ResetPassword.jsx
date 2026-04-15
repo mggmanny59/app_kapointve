@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from '../components/Icon';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { useNotification } from '../context/NotificationContext';
@@ -98,7 +99,7 @@ const ResetPassword = () => {
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
                                     />
-                                    <span className="material-symbols-outlined absolute left-4 top-4 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors text-xl">lock</span>
+                                    <Icon name="lock" className="absolute left-4 top-4 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors !w-5 !h-5" />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
@@ -122,7 +123,7 @@ const ResetPassword = () => {
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         required
                                     />
-                                    <span className="material-symbols-outlined absolute left-4 top-4 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors text-xl">verified_user</span>
+                                    <Icon name="verified_user" className="absolute left-4 top-4 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors !w-5 !h-5" />
                                 </div>
                             </div>
 
@@ -132,11 +133,11 @@ const ResetPassword = () => {
                                 className="w-full bg-[#ff6a00] hover:bg-[#ff8c3a] text-white font-black h-14 rounded-2xl shadow-xl shadow-[#ff6a00]/20 transition-all flex items-center justify-center gap-3 disabled:opacity-70 active:scale-[0.98] mt-4"
                             >
                                 {loading ? (
-                                    <span className="animate-spin material-symbols-outlined">refresh</span>
+                                    <Icon name="refresh" className="animate-spin" />
                                 ) : (
                                     <>
                                         <span className="text-sm">Actualizar contraseña</span>
-                                        <span className="material-symbols-outlined text-lg">check_circle</span>
+                                        <Icon name="check_circle" className="!w-5 !h-5" />
                                     </>
                                 )}
                             </button>

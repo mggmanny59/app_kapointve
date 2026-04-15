@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from './Icon';
 import { supabase } from '../lib/supabase';
 import { useNotification } from '../context/NotificationContext';
 import { jsPDF } from 'jspdf';
@@ -109,7 +110,7 @@ const MarketingHub = () => {
         <div className="space-y-6">
             <div className="bg-primary/10 rounded-[1.5rem] p-4 border-2 border-primary/20 flex items-center gap-4">
                 <div className="bg-white/60 p-3 rounded-2xl flex-shrink-0 shadow-sm">
-                    <span className="material-symbols-outlined text-primary !text-[28px]">campaign</span>
+                    <Icon name="campaign" className="text-primary !w-[28] !h-[28]" />
                 </div>
                 <div>
                     <h2 className="text-sm font-black text-slate-900 mb-0.5 whitespace-nowrap">Centro de Marketing</h2>
@@ -139,18 +140,18 @@ const MarketingHub = () => {
             {/* Carrusel de Plantillas */}
             <div className="bg-white rounded-[2rem] p-6 border-2 border-slate-100 shadow-sm min-h-[300px]">
                 <div className="flex items-center gap-3 mb-6">
-                    <span className="material-symbols-outlined text-primary text-xl font-black">burst_mode</span>
+                    <Icon name="burst_mode" className="text-primary !w-5 !h-5" />
                     <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">Plantillas Disponibles</h3>
                 </div>
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center h-48">
-                        <span className="material-symbols-outlined text-primary animate-spin !text-4xl mb-4">sync</span>
+                        <Icon name="sync" className="text-primary animate-spin !w-10 !h-10 mb-4" />
                         <p className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Cargando galería...</p>
                     </div>
                 ) : templates.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-48 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 p-6 text-center">
-                        <span className="material-symbols-outlined text-slate-400 text-4xl mb-2">image_not_supported</span>
+                        <Icon name="image_not_supported" className="text-slate-400 !w-10 !h-10 mb-2" />
                         <p className="text-slate-500 font-black uppercase tracking-widest text-[10px]">Sin plantillas en esta categoría</p>
                     </div>
                 ) : (
@@ -181,14 +182,14 @@ const MarketingHub = () => {
                         {/* Header Modal */}
                         <div className="flex items-center justify-between p-5 bg-gradient-to-b from-black/50 to-transparent">
                             <h3 className="text-white font-black uppercase tracking-widest text-xs flex items-center gap-2">
-                                <span className="material-symbols-outlined text-primary !text-lg">visibility</span>
+                                <Icon name="visibility" className="text-primary !w-5 !h-5" />
                                 Vista Previa
                             </h3>
                             <button 
                                 onClick={() => setIsPreviewModalOpen(false)}
                                 className="size-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/30 transition-colors active:scale-90"
                             >
-                                <span className="material-symbols-outlined font-black">close</span>
+                                <Icon name="close" />
                             </button>
                         </div>
                         
@@ -213,7 +214,7 @@ const MarketingHub = () => {
                                     onClick={() => handleDownload('carta')}
                                     className="flex flex-col items-center justify-center p-4 rounded-3xl border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 active:scale-95 transition-all gap-2 disabled:opacity-50"
                                 >
-                                    <span className="material-symbols-outlined text-primary text-3xl">description</span>
+                                    <Icon name="description" className="text-primary !w-8 !h-8" />
                                     <span className="font-black text-slate-900 text-[11px] text-center uppercase tracking-widest">Formato<br/>Carta</span>
                                     <span className="text-[9px] text-slate-500 font-bold text-center mt-1">1 imagen grande<br/>alta resolución</span>
                                 </button>
@@ -224,7 +225,7 @@ const MarketingHub = () => {
                                     onClick={() => handleDownload('media-carta')}
                                     className="flex flex-col items-center justify-center p-4 rounded-3xl border-2 border-primary bg-primary hover:bg-orange-600 active:scale-95 transition-all gap-2 disabled:opacity-50 shadow-lg shadow-primary/30"
                                 >
-                                    <span className="material-symbols-outlined text-white text-3xl">file_copy</span>
+                                    <Icon name="file_copy" className="text-white !w-8 !h-8" />
                                     <span className="font-black text-white text-[11px] text-center uppercase tracking-widest">Media<br/>Carta</span>
                                     <span className="text-[9px] text-white/80 font-bold text-center mt-1">2 medianos<br/>(ahorra papel)</span>
                                 </button>

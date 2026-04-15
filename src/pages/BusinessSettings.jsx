@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -246,7 +247,7 @@ const BusinessSettings = () => {
     if (loading) {
         return (
             <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center p-6 text-center">
-                <span className="material-symbols-outlined text-primary animate-spin !text-5xl mb-4">sync</span>
+                <Icon name="sync" className="text-primary animate-spin !w-12 !h-12 mb-4" />
                 <p className="text-slate-400 font-black uppercase tracking-widest text-xs">Cargando Configuración...</p>
             </div>
         );
@@ -264,10 +265,10 @@ const BusinessSettings = () => {
                                     onClick={() => setActiveTab(null)}
                                     className="size-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-primary transition-all mr-1"
                                 >
-                                    <span className="material-symbols-outlined !text-xl">arrow_back</span>
+                                    <Icon name="arrow_back" className="!w-5 !h-5" />
                                 </button>
                             )}
-                            <span className="material-symbols-outlined text-primary !text-3xl font-black">storefront</span>
+                            <Icon name="storefront" className="text-primary !w-8 !h-8" />
                             {activeTab ? (
                                 <span>
                                     {activeTab === 'info' && 'Identidad'}
@@ -295,7 +296,7 @@ const BusinessSettings = () => {
                             <div className="relative z-10 flex flex-col gap-3">
                                 <div className="flex items-center gap-3">
                                     <div className="size-10 rounded-xl bg-primary/20 flex items-center justify-center border border-primary/30 shadow-inner">
-                                        <span className="material-symbols-outlined text-primary !text-xl font-black">rocket_launch</span>
+                                        <Icon name="rocket_launch" className="text-primary !w-5 !h-5" />
                                     </div>
                                     <h3 className="text-xl font-black text-white tracking-tight">Centro de Control</h3>
                                 </div>
@@ -356,7 +357,7 @@ const BusinessSettings = () => {
                         <div className="space-y-4 px-1">
                             {/* Section Header */}
                             <div className="flex items-center gap-3 pb-2 border-b-2 border-slate-100">
-                                <span className="material-symbols-outlined text-primary !text-xl font-black">info</span>
+                                <Icon name="info" className="text-primary !w-5 !h-5" />
                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Identidad del Negocio</span>
                             </div>
 
@@ -369,17 +370,17 @@ const BusinessSettings = () => {
                                                 <img src={business.logo_url} alt="Logo" className="w-full h-full object-cover" />
                                             ) : (
                                                 <div className="text-center p-4">
-                                                    <span className="material-symbols-outlined text-slate-300 text-6xl">add_a_photo</span>
+                                                    <Icon name="add_a_photo" className="text-slate-300 text-6xl" />
                                                 </div>
                                             )}
                                             {uploading && (
                                                 <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-20">
-                                                    <span className="material-symbols-outlined animate-spin text-primary text-4xl">sync</span>
+                                                    <Icon name="sync" className="animate-spin text-primary !w-10 !h-10" />
                                                 </div>
                                             )}
                                         </div>
                                         <label className="absolute -bottom-2 right-2 size-14 rounded-2xl bg-white border-2 border-[#595A5B] shadow-2xl flex items-center justify-center cursor-pointer hover:bg-slate-50 active:scale-90 transition-all z-30">
-                                            <span className="material-symbols-outlined text-primary text-3xl font-black">upload</span>
+                                            <Icon name="upload" className="text-primary !w-8 !h-8" />
                                             <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} disabled={uploading} />
                                         </label>
                                     </div>
@@ -440,7 +441,7 @@ const BusinessSettings = () => {
                         {/* Rules Section */}
                         <div className="space-y-4 px-1">
                             <div className="flex items-center gap-3 pb-2 border-b-2 border-slate-100">
-                                <span className="material-symbols-outlined text-primary !text-xl font-black">settings_account_box</span>
+                                <Icon name="settings_account_box" className="text-primary !w-5 !h-5" />
                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Reglas y Puntos</span>
                             </div>
                             <div className="space-y-1">
@@ -464,7 +465,7 @@ const BusinessSettings = () => {
                         {/* Legal Section for Owners */}
                         <div className="bg-slate-100 rounded-[2rem] p-6 border-2 border-slate-200 space-y-3">
                             <div className="flex items-center gap-2 mb-1">
-                                <span className="material-symbols-outlined text-slate-400 font-bold text-lg">gavel</span>
+                                <Icon name="gavel" className="text-slate-400 !w-5 !h-5" />
                                 <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Compromiso Legal</p>
                             </div>
                             <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
@@ -477,7 +478,7 @@ const BusinessSettings = () => {
                             disabled={saving}
                             className="w-full bg-primary text-white h-16 rounded-[2rem] font-black text-sm uppercase shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-3"
                         >
-                            {saving ? <span className="material-symbols-outlined animate-spin">refresh</span> : 'GUARDAR CAMBIOS'}
+                            {saving ? <Icon name="refresh" className="animate-spin" /> : 'GUARDAR CAMBIOS'}
                         </button>
                     </form>
                 )}
@@ -497,7 +498,7 @@ const BusinessSettings = () => {
                                     }}
                                     className="h-10 px-5 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg"
                                 >
-                                    <span className="material-symbols-outlined !text-sm">add</span>
+                                    <Icon name="add" className="!w-4 !h-4" />
                                     Crear Nueva
                                 </button>
                             )}
@@ -506,7 +507,7 @@ const BusinessSettings = () => {
                                     onClick={() => setPromoView('list')}
                                     className="h-10 px-5 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase flex items-center gap-2"
                                 >
-                                    <span className="material-symbols-outlined !text-sm">arrow_back</span>
+                                    <Icon name="arrow_back" className="!w-4 !h-4" />
                                     Volver
                                 </button>
                             )}
@@ -533,17 +534,17 @@ const BusinessSettings = () => {
                                             </div>
                                             <div className="flex flex-col gap-2">
                                                 <button onClick={() => handleEditPromo(promo)} className="size-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center">
-                                                    <span className="material-symbols-outlined !text-sm">edit</span>
+                                                    <Icon name="edit" className="!w-4 !h-4" />
                                                 </button>
                                                 <button onClick={() => handleDeletePromo(promo.id)} className="size-8 rounded-lg bg-red-50 text-red-400 flex items-center justify-center">
-                                                    <span className="material-symbols-outlined !text-sm">delete</span>
+                                                    <Icon name="delete" className="!w-4 !h-4" />
                                                 </button>
                                             </div>
                                         </div>
                                     ))
                                 ) : (
                                     <div className="bg-white border-2 border-dashed border-slate-200 rounded-[2.5rem] py-16 flex flex-col items-center justify-center gap-4">
-                                        <span className="material-symbols-outlined text-slate-200 !text-6xl">celebration</span>
+                                        <Icon name="celebration" className="text-slate-200 !text-6xl" />
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No hay promociones activas</p>
                                     </div>
                                 )}
@@ -560,7 +561,7 @@ const BusinessSettings = () => {
                                             />
                                         </div>
                                         <label className="absolute -bottom-2 -right-2 size-10 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg border-2 border-white cursor-pointer active:scale-90 transition-all">
-                                            <span className="material-symbols-outlined !text-xl">add_a_photo</span>
+                                            <Icon name="add_a_photo" className="!w-5 !h-5" />
                                             <input type="file" accept="image/*" onChange={handlePromoImageUpload} className="hidden" />
                                         </label>
                                     </div>
@@ -616,7 +617,7 @@ const BusinessSettings = () => {
                                         disabled={isSavingPromo}
                                         className="w-full h-16 bg-primary text-white rounded-[2rem] font-black uppercase shadow-xl shadow-primary/20 flex items-center justify-center gap-3 transition-all"
                                     >
-                                        {isSavingPromo ? <span className="material-symbols-outlined animate-spin">refresh</span> : 'GUARDAR PROMOCIÓN'}
+                                        {isSavingPromo ? <Icon name="refresh" className="animate-spin" /> : 'GUARDAR PROMOCIÓN'}
                                     </button>
                                 </div>
                             </div>

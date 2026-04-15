@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import PrizeCalculator from '../components/PrizeCalculator';
@@ -215,7 +216,7 @@ const PrizeDesigner = () => {
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-4">
                             <div className="size-14 rounded-2xl bg-orange-50 flex items-center justify-center text-primary shadow-inner border-2 border-[#595A5B]">
-                                <span className="material-symbols-outlined !text-3xl font-black">inventory_2</span>
+                                <Icon name="inventory_2" className="!w-8 !h-8" />
                             </div>
                             <div>
                                 <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-none">
@@ -251,7 +252,7 @@ const PrizeDesigner = () => {
                             onClick={() => setShowCalculator(true)}
                             className="flex-1 h-12 rounded-full bg-white border border-[#595A5B] flex items-center justify-center gap-2 text-slate-600 active:scale-95 transition-all shadow-sm hover:border-primary/20"
                         >
-                            <span className="material-symbols-outlined font-black !text-xl text-primary">calculate</span>
+                            <Icon name="calculate" className="!w-5 !h-5 text-primary" />
                             <span className="text-[10px] font-black uppercase tracking-widest text-center leading-tight">Motor Puntos</span>
                         </button>
 
@@ -326,7 +327,7 @@ const PrizeDesigner = () => {
                                     ) : (
                                         <div className="text-center p-6 space-y-2">
                                             <div className="size-10 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-2 border-2 border-[#595A5B]">
-                                                <span className="material-symbols-outlined text-slate-200 !text-2xl">image</span>
+                                                <Icon name="image" className="text-slate-200 !w-6 !h-6" />
                                             </div>
                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">Carga la foto del premio</p>
                                         </div>
@@ -344,7 +345,7 @@ const PrizeDesigner = () => {
                                     onClick={() => fileInputRef.current?.click()}
                                     className="absolute -bottom-1 -right-1 size-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/40 border-4 border-white active:scale-90 transition-all z-10"
                                 >
-                                    <span className="material-symbols-outlined !text-xl font-black">photo_camera</span>
+                                    <Icon name="photo_camera" className="!w-5 !h-5" />
                                 </button>
                             </div>
                         </div>
@@ -394,7 +395,7 @@ const PrizeDesigner = () => {
                                     <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em] ml-1">Valor en Puntos</label>
                                     <div className="relative group">
                                         <div className="absolute inset-0 bg-primary/[0.03] rounded-2xl -z-10 group-focus-within:bg-primary/[0.05] transition-all"></div>
-                                        <span className="absolute left-6 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary !text-2xl font-black">token</span>
+                                        <Icon name="token" className="absolute left-6 top-1/2 -translate-y-1/2 text-primary !w-6 !h-6" />
                                         <input
                                             type="number"
                                             required
@@ -444,7 +445,7 @@ const PrizeDesigner = () => {
                                     onClick={handleDelete}
                                     className="w-full h-14 rounded-2xl border border-red-100 text-red-500 font-black text-[10px] uppercase tracking-widest hover:bg-red-50 transition-all flex items-center justify-center gap-2"
                                 >
-                                    <span className="material-symbols-outlined !text-lg font-black">delete_forever</span>
+                                    <Icon name="delete_forever" className="!w-5 !h-5" />
                                     Eliminar Definitivamente
                                 </button>
                             )}
@@ -495,7 +496,7 @@ const PrizeDesigner = () => {
                                                 }}
                                                 className="size-8 rounded-full bg-white flex items-center justify-center text-[#595A5B] hover:text-primary active:scale-90 transition-all border border-[#595A5B]"
                                             >
-                                                <span className="material-symbols-outlined !text-[17px] font-black">edit</span>
+                                                <Icon name="edit" className="!w-[17] !h-[17]" />
                                             </button>
                                             <button
                                                 onClick={(e) => {
@@ -504,7 +505,7 @@ const PrizeDesigner = () => {
                                                 }}
                                                 className="size-8 rounded-full bg-[#FFF0F0] flex items-center justify-center text-[#FF5252] hover:bg-red-100 active:scale-90 transition-all"
                                             >
-                                                <span className="material-symbols-outlined !text-[17px] font-black">delete</span>
+                                                <Icon name="delete" className="!w-[17] !h-[17]" />
                                             </button>
                                         </div>
                                     </div>
@@ -512,7 +513,7 @@ const PrizeDesigner = () => {
                             ) : (
                                 <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[3rem] border border-dashed border-[#595A5B] mx-4">
                                     <div className="size-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6 border-2 border-[#595A5B]">
-                                        <span className="material-symbols-outlined text-slate-300 !text-5xl">inventory</span>
+                                        <Icon name="inventory" className="text-slate-300 !w-12 !h-12" />
                                     </div>
                                     <h3 className="text-lg font-black text-slate-900 mb-2">Catálogo Vacío</h3>
                                     <p className="text-slate-600 font-bold text-xs mb-8 text-center px-10 leading-relaxed">Aún no has registrado beneficios para tus clientes.</p>

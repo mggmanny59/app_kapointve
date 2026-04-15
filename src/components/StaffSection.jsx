@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from './Icon';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
@@ -221,7 +222,7 @@ const StaffSection = () => {
 
     if (loading) return (
         <div className="py-20 flex flex-col items-center justify-center">
-            <span className="material-symbols-outlined text-primary animate-spin !text-4xl">sync</span>
+            <Icon name="sync" className="text-primary animate-spin !w-10 !h-10" />
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-4">Cargando Equipo...</p>
         </div>
     );
@@ -241,7 +242,7 @@ const StaffSection = () => {
                         }}
                         className="h-10 px-5 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg"
                     >
-                        <span className="material-symbols-outlined !text-sm">person_add</span>
+                        <Icon name="person_add" className="!w-4 !h-4" />
                         Nuevo Acceso
                     </button>
                 ) : (
@@ -249,7 +250,7 @@ const StaffSection = () => {
                         onClick={() => setActiveView('list')}
                         className="h-10 px-5 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase flex items-center gap-2"
                     >
-                        <span className="material-symbols-outlined !text-sm">arrow_back</span>
+                        <Icon name="arrow_back" className="!w-4 !h-4" />
                         Ver Lista
                     </button>
                 )}
@@ -340,7 +341,7 @@ const StaffSection = () => {
                             disabled={isCreating}
                             className="w-full h-16 bg-primary text-white rounded-[2rem] font-black uppercase shadow-xl shadow-primary/20 flex items-center justify-center gap-3 transition-all"
                         >
-                            {isCreating ? <span className="material-symbols-outlined animate-spin">refresh</span> : 'GUARDAR COLABORADOR'}
+                            {isCreating ? <Icon name="refresh" className="animate-spin" /> : 'GUARDAR COLABORADOR'}
                         </button>
                     </form>
                 </div>
@@ -351,7 +352,7 @@ const StaffSection = () => {
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="size-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-primary">
-                                        <span className="material-symbols-outlined !text-2xl font-black">badge</span>
+                                        <Icon name="badge" className="!w-6 !h-6" />
                                     </div>
                                     <div>
                                         <h3 className="font-black text-slate-900 uppercase text-sm">{member.profiles?.full_name}</h3>
@@ -374,20 +375,20 @@ const StaffSection = () => {
                                 </div>
                                 <div className="flex gap-2">
                                     <button onClick={() => setResettingStaff(member)} className="size-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center border border-slate-100 hover:text-primary transition-all">
-                                        <span className="material-symbols-outlined !text-sm">lock_reset</span>
+                                        <Icon name="lock_reset" className="!w-4 !h-4" />
                                     </button>
                                     <button onClick={() => startEditing(member)} className="size-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center border border-slate-100 hover:text-primary transition-all">
-                                        <span className="material-symbols-outlined !text-sm">edit</span>
+                                        <Icon name="edit" className="!w-4 !h-4" />
                                     </button>
                                     <button onClick={() => handleDeleteStaff(member.profile_id, member.profiles?.full_name)} className="size-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center border border-red-100 hover:bg-red-500 hover:text-white transition-all">
-                                        <span className="material-symbols-outlined !text-sm">delete</span>
+                                        <Icon name="delete" className="!w-4 !h-4" />
                                     </button>
                                 </div>
                             </div>
                         </div>
                     )) : (
                         <div className="bg-white border-2 border-dashed border-slate-200 rounded-[2.5rem] py-16 flex flex-col items-center justify-center gap-4">
-                            <span className="material-symbols-outlined text-slate-200 !text-6xl text-slate-200">group_off</span>
+                            <Icon name="group_off" className="text-slate-200 !text-6xl text-slate-200" />
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No hay personal configurado</p>
                         </div>
                     )}
@@ -444,7 +445,7 @@ const PermissionToggle = ({ icon, title, active, onToggle }) => (
             <span className={`text-[10px] font-black uppercase tracking-widest ${active ? 'text-primary' : 'text-slate-500'}`}>{title}</span>
         </div>
         <div className={`size-5 rounded-full border-2 flex items-center justify-center ${active ? 'bg-primary border-primary' : 'bg-white border-slate-200'}`}>
-            {active && <span className="material-symbols-outlined text-white !text-xs font-black">check</span>}
+            {active && <Icon name="check" className="text-white !text-xs" />}
         </div>
     </button>
 );

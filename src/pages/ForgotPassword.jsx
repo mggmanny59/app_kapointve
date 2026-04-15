@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Icon from '../components/Icon';
 import { supabase } from '../lib/supabase';
 import { useNavigate, Link } from 'react-router-dom';
 import { useNotification } from '../context/NotificationContext';
@@ -93,7 +94,7 @@ const ForgotPassword = () => {
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
                                     />
-                                    <span className="material-symbols-outlined absolute left-4 top-4 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors text-xl">mail</span>
+                                    <Icon name="mail" className="absolute left-4 top-4 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors !w-5 !h-5" />
                                 </div>
                             </div>
 
@@ -103,11 +104,11 @@ const ForgotPassword = () => {
                                 className="w-full bg-[#ff6a00] hover:bg-[#ff8c3a] text-white font-black h-14 rounded-2xl shadow-xl shadow-[#ff6a00]/20 transition-all flex items-center justify-center gap-3 disabled:opacity-70 active:scale-[0.98] mt-4"
                             >
                                 {loading ? (
-                                    <span className="animate-spin material-symbols-outlined">refresh</span>
+                                    <Icon name="refresh" className="animate-spin" />
                                 ) : (
                                     <>
                                         <span className="text-sm">Enviar enlace de recuperación</span>
-                                        <span className="material-symbols-outlined text-lg">send</span>
+                                        <Icon name="send" className="!w-5 !h-5" />
                                     </>
                                 )}
                             </button>
@@ -115,7 +116,7 @@ const ForgotPassword = () => {
 
                         <div className="mt-8 text-center pt-4 border-t border-[#595A5B]/10">
                             <Link className="text-[#ff6a00] font-black text-xs uppercase tracking-widest hover:underline flex items-center justify-center gap-2" to="/login">
-                                <span className="material-symbols-outlined text-base">arrow_back</span>
+                                <Icon name="arrow_back" className="!w-4 !h-4" />
                                 Volver al login
                             </Link>
                         </div>

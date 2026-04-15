@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -217,11 +218,11 @@ const KPIDashboard = () => {
                         onClick={() => navigate('/dashboard')}
                         className="size-10 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center text-slate-600 active:scale-95 transition-all shadow-sm"
                     >
-                        <span className="material-symbols-outlined !text-xl">arrow_back</span>
+                        <Icon name="arrow_back" className="!w-5 !h-5" />
                     </button>
                     <div>
                         <div className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-primary text-2xl font-black">insights</span>
+                            <Icon name="insights" className="text-primary !w-6 !h-6" />
                             <h1 className="text-2xl font-black tracking-tight leading-none text-slate-900">Panel KPI</h1>
                         </div>
                         <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">Inteligencia de Negocio</p>
@@ -261,7 +262,7 @@ const KPIDashboard = () => {
                 <div className="grid grid-cols-1 gap-5 mt-6">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-10 gap-3">
-                            <span className="animate-spin material-symbols-outlined text-primary text-4xl">refresh</span>
+                            <Icon name="refresh" className="animate-spin text-primary !w-10 !h-10" />
                             <p className="text-sm font-bold text-slate-500">Procesando Inteligencia de Negocios...</p>
                         </div>
                     ) : (
@@ -272,7 +273,7 @@ const KPIDashboard = () => {
                                      style={{ backgroundImage: 'radial-gradient(#94a3b8 0.5px, transparent 0.5px)', backgroundSize: '12px 12px' }}></div>
                                 <div className="flex items-center justify-between mb-2 z-10 relative">
                                     <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-inner">
-                                        <span className="material-symbols-outlined !text-xl font-black">receipt_long</span>
+                                        <Icon name="receipt_long" className="!w-5 !h-5" />
                                     </div>
                                     <span className="text-[9px] border border-primary/20 bg-primary/10 text-primary px-3 py-1 rounded-lg font-black tracking-widest uppercase">AOV</span>
                                 </div>
@@ -281,7 +282,7 @@ const KPIDashboard = () => {
                                     <p className="text-[25px] font-black text-white tracking-tighter">${kpiData.aov.toFixed(2)}</p>
                                     <div className="mt-3 pt-3 border-t border-[#1E293B]">
                                         <p className="text-[10px] text-slate-400 font-bold leading-relaxed flex items-start gap-3">
-                                            <span className="material-symbols-outlined !text-[18px] text-primary">info</span>
+                                            <Icon name="info" className="!w-[18] !h-[18] text-primary" />
                                             <span>
                                                 "Monto promedio por visita".
                                                 <br /><span className="text-slate-500 uppercase text-[8px] tracking-widest mt-1 block font-black">Tip: Incentiva el Up-selling para subir este valor</span>
@@ -297,7 +298,7 @@ const KPIDashboard = () => {
                                      style={{ backgroundImage: 'radial-gradient(#94a3b8 0.5px, transparent 0.5px)', backgroundSize: '12px 12px' }}></div>
                                 <div className="flex items-center justify-between mb-2 z-10 relative">
                                     <div className="size-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shadow-inner">
-                                        <span className="material-symbols-outlined !text-xl font-black">groups</span>
+                                        <Icon name="groups" className="!w-5 !h-5" />
                                     </div>
                                     <span className="text-[9px] border border-amber-500/20 bg-amber-500/10 text-amber-500 px-3 py-1 rounded-lg font-black tracking-widest uppercase">Base</span>
                                 </div>
@@ -306,7 +307,7 @@ const KPIDashboard = () => {
                                     <p className="text-[25px] font-black text-white tracking-tighter">{kpiData.totalClients}</p>
                                     <div className="mt-3 pt-3 border-t border-[#1E293B]">
                                         <p className="text-[10px] text-slate-400 font-bold leading-relaxed flex items-start gap-3">
-                                            <span className="material-symbols-outlined !text-[18px] text-amber-500">info</span>
+                                            <Icon name="info" className="!w-[18] !h-[18] text-amber-500" />
                                             <span>
                                                 "Personas en tu programa de lealtad".
                                                 <br /><span className="text-slate-500 uppercase text-[8px] tracking-widest mt-1 block font-black">Potencial: Base total para marketing directo</span>
@@ -322,7 +323,7 @@ const KPIDashboard = () => {
                                      style={{ backgroundImage: 'radial-gradient(#94a3b8 0.5px, transparent 0.5px)', backgroundSize: '12px 12px' }}></div>
                                 <div className="flex items-center justify-between mb-2 z-10 relative">
                                     <div className="size-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 shadow-inner">
-                                        <span className="material-symbols-outlined !text-xl font-black">history_toggle_off</span>
+                                        <Icon name="history_toggle_off" className="!w-5 !h-5" />
                                     </div>
                                 </div>
                                 <div className="relative z-10 mt-1">
@@ -330,7 +331,7 @@ const KPIDashboard = () => {
                                     <p className="text-[25px] font-black text-white tracking-tighter">{kpiData.averageRecencyDays.toFixed(1)} <span className="text-sm text-slate-500">días</span></p>
                                     <div className="mt-3 pt-3 border-t border-[#1E293B]">
                                         <p className="text-[10px] text-slate-400 font-bold leading-relaxed flex items-start gap-3">
-                                            <span className="material-symbols-outlined !text-[18px] text-blue-500">info</span>
+                                            <Icon name="info" className="!w-[18] !h-[18] text-blue-500" />
                                             <span>
                                                 "Tus clientes suelen volver cada {kpiData.averageRecencyDays.toFixed(0)} días".
                                                 <br /><span className="text-slate-500 uppercase text-[8px] tracking-widest mt-1 block font-black">Alerta: Campaña de reactivación a los {(kpiData.averageRecencyDays + 5).toFixed(0)} días</span>
@@ -352,7 +353,7 @@ const KPIDashboard = () => {
                                             <p className="text-lg font-black text-white tracking-tight">Top 10% Clientes</p>
                                         </div>
                                         <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center">
-                                            <span className="material-symbols-outlined !text-xl font-black">diamond</span>
+                                            <Icon name="diamond" className="!w-5 !h-5" />
                                         </div>
                                     </div>
 
@@ -395,7 +396,7 @@ const KPIDashboard = () => {
 
                                     <div className="mt-4 pt-3 border-t border-[#1E293B]">
                                         <p className="text-[10px] text-slate-400 font-bold leading-relaxed flex items-start gap-3">
-                                            <span className="material-symbols-outlined !text-[18px] text-primary">campaign</span>
+                                            <Icon name="campaign" className="!w-[18] !h-[18] text-primary" />
                                             <span>
                                                 "Tus 10% mejores clientes generan el <span className="font-black text-primary text-xs">{kpiData.top10SharePercentage.toFixed(1)}%</span> de tus ingresos totales".
                                                 <br /><span className="text-slate-500 uppercase text-[8px] tracking-widest mt-1 block font-black">Pronto: Nodo de Agradecimiento VIP Automático</span>
@@ -417,7 +418,7 @@ const KPIDashboard = () => {
                                             <p className="text-lg font-black text-white tracking-tight">Composición de Cartera</p>
                                         </div>
                                         <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center">
-                                            <span className="material-symbols-outlined !text-xl font-black">pie_chart</span>
+                                            <Icon name="pie_chart" className="!w-5 !h-5" />
                                         </div>
                                     </div>
 
@@ -466,7 +467,7 @@ const KPIDashboard = () => {
                                             </ResponsiveContainer>
                                         ) : (
                                             <div className="flex flex-col items-center gap-2">
-                                                <span className="material-symbols-outlined text-slate-700 text-4xl">analytics</span>
+                                                <Icon name="analytics" className="text-slate-700 !w-10 !h-10" />
                                                 <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Sin Datos de Cartera</p>
                                             </div>
                                         )}
@@ -482,7 +483,7 @@ const KPIDashboard = () => {
 
                                     <div className="mt-6 pt-4 border-t border-[#1E293B]">
                                         <p className="text-[10px] text-slate-400 font-bold leading-relaxed flex items-start gap-3">
-                                            <span className="material-symbols-outlined !text-[18px] text-amber-500">psychology_alt</span>
+                                            <Icon name="psychology_alt" className="!w-[18] !h-[18] text-amber-500" />
                                             <span>
                                                 "Convierte a tus <span className="text-slate-200">Nuevos</span> en <span className="text-amber-500">Casuales</span>, e impúlsalos a ser <span className="text-primary">Fieles</span>."
                                                 <br /><span className="text-slate-500 uppercase text-[8px] tracking-widest mt-1 block font-black">Estrategia: Crea promociones de retención dirigidas</span>

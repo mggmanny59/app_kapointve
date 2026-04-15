@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from './Icon';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
@@ -78,7 +79,7 @@ const PrizeCalculator = ({ onClose, onApply, initialCost }) => {
                 <div className="p-6 pb-2 flex justify-between items-center shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="size-11 rounded-xl bg-orange-50 flex items-center justify-center text-primary border-2 border-[#595A5B]">
-                            <span className="material-symbols-outlined !text-2xl font-black">calculate</span>
+                            <Icon name="calculate" className="!w-6 !h-6" />
                         </div>
                         <div>
                             <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none mb-0.5">Calc Estratégica</h2>
@@ -92,7 +93,7 @@ const PrizeCalculator = ({ onClose, onApply, initialCost }) => {
                         onClick={() => setShowHelp(true)}
                         className="size-9 rounded-full bg-slate-50 border-2 border-[#595A5B] flex items-center justify-center text-slate-400 hover:text-primary transition-all active:scale-90"
                     >
-                        <span className="material-symbols-outlined !text-lg font-black">help</span>
+                        <Icon name="help" className="!w-5 !h-5" />
                     </button>
                 </div>
 
@@ -103,7 +104,7 @@ const PrizeCalculator = ({ onClose, onApply, initialCost }) => {
                             <header className="flex items-center justify-between mb-6">
                                 <h3 className="text-xl font-black text-slate-900 tracking-tight">Guía de Cálculo</h3>
                                 <button onClick={() => setShowHelp(false)} className="size-9 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400">
-                                    <span className="material-symbols-outlined !text-2xl font-black">close</span>
+                                    <Icon name="close" className="!w-6 !h-6" />
                                 </button>
                             </header>
                             <div className="flex-1 space-y-4">
@@ -164,14 +165,14 @@ const PrizeCalculator = ({ onClose, onApply, initialCost }) => {
                                         onClick={() => setVisits(prev => Math.max(1, prev - 1))}
                                         className="size-8 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-300 hover:text-slate-900 transition-all active:scale-90"
                                     >
-                                        <span className="material-symbols-outlined !text-lg font-black">remove</span>
+                                        <Icon name="remove" className="!w-5 !h-5" />
                                     </button>
                                     <span className="text-2xl font-black text-slate-900 tabular-nums">{visits}</span>
                                     <button
                                         onClick={() => setVisits(prev => prev + 1)}
                                         className="size-8 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-300 hover:text-primary transition-all active:scale-90"
                                     >
-                                        <span className="material-symbols-outlined !text-lg font-black text-primary">add</span>
+                                        <Icon name="add" className="!w-5 !h-5 text-primary" />
                                     </button>
                                 </div>
                             </div>

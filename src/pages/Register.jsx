@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Icon from '../components/Icon';
 
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
@@ -244,7 +245,7 @@ const Register = () => {
                                     : 'text-slate-500 hover:text-slate-900'
                                     }`}
                             >
-                                <span className="material-symbols-outlined text-base">person</span>
+                                <Icon name="person" className="!w-4 !h-4" />
                                 Cliente
                             </button>
                             <button
@@ -255,7 +256,7 @@ const Register = () => {
                                     : 'text-slate-500 hover:text-slate-900'
                                     }`}
                             >
-                                <span className="material-symbols-outlined text-base">storefront</span>
+                                <Icon name="storefront" className="!w-4 !h-4" />
                                 Dueño
                             </button>
                         </div>
@@ -282,7 +283,7 @@ const Register = () => {
                                         onChange={handleChange}
                                         required
                                     />
-                                    <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors text-xl">person</span>
+                                    <Icon name="person" className="absolute left-3.5 top-2.5 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors !w-5 !h-5" />
                                 </div>
                             </div>
 
@@ -303,7 +304,7 @@ const Register = () => {
                                             <option value="0424">0424</option>
                                             <option value="0426">0426</option>
                                         </select>
-                                        <span className="material-symbols-outlined absolute right-2.5 top-2.5 text-slate-400 pointer-events-none text-xl">expand_more</span>
+                                        <Icon name="expand_more" className="absolute right-2.5 top-2.5 text-slate-400 pointer-events-none !w-5 !h-5" />
                                     </div>
                                     <div className="relative flex-1 text-sm">
                                         <input
@@ -321,7 +322,7 @@ const Register = () => {
                                             }}
                                             required
                                         />
-                                        <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-xl">phone</span>
+                                        <Icon name="phone" className="absolute left-3.5 top-2.5 text-slate-400 !w-5 !h-5" />
                                     </div>
                                 </div>
                             </div>
@@ -341,7 +342,7 @@ const Register = () => {
                                         onCopy={(e) => e.preventDefault()}
                                         onPaste={(e) => e.preventDefault()}
                                     />
-                                    <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-xl">mail</span>
+                                    <Icon name="mail" className="absolute left-3.5 top-2.5 text-slate-400 !w-5 !h-5" />
                                 </div>
                             </div>
 
@@ -360,7 +361,7 @@ const Register = () => {
                                         onCopy={(e) => e.preventDefault()}
                                         onPaste={(e) => e.preventDefault()}
                                     />
-                                    <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-xl">mark_email_read</span>
+                                    <Icon name="mark_email_read" className="absolute left-3.5 top-2.5 text-slate-400 !w-5 !h-5" />
                                 </div>
                             </div>
 
@@ -376,7 +377,7 @@ const Register = () => {
                                         onChange={handleChange}
                                         required
                                     />
-                                    <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-xl">cake</span>
+                                    <Icon name="cake" className="absolute left-3.5 top-2.5 text-slate-400 !w-5 !h-5" />
                                 </div>
                             </div>
 
@@ -393,7 +394,7 @@ const Register = () => {
                                         onChange={handleChange}
                                         required
                                     />
-                                    <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-xl">lock</span>
+                                    <Icon name="lock" className="absolute left-3.5 top-2.5 text-slate-400 !w-5 !h-5" />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
@@ -421,7 +422,7 @@ const Register = () => {
                                                 onChange={handleChange}
                                                 required
                                             />
-                                            <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-xl">store</span>
+                                            <Icon name="store" className="absolute left-3.5 top-2.5 text-slate-400 !w-5 !h-5" />
                                         </div>
                                     </div>
 
@@ -439,7 +440,7 @@ const Register = () => {
                                                 }}
                                                 required
                                             />
-                                            <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-slate-400 text-xl">badge</span>
+                                            <Icon name="badge" className="absolute left-3.5 top-2.5 text-slate-400 !w-5 !h-5" />
                                         </div>
                                     </div>
                                 </>
@@ -455,7 +456,7 @@ const Register = () => {
                                         : 'border-[#595A5B] bg-white'
                                         }`}
                                 >
-                                    {acceptedTerms && <span className="material-symbols-outlined text-base font-bold">check</span>}
+                                    {acceptedTerms && <Icon name="check" className="!w-4 !h-4" />}
                                 </button>
                                 <div className="text-[11px] leading-relaxed text-slate-600 font-medium">
                                     Acepto los <Link to="/terms" className="text-[#ff6a00] font-bold hover:underline">Términos y Condiciones</Link> y reconozco que mis datos serán tratados según la <Link to="/privacy" className="text-[#ff6a00] font-bold hover:underline">Política de Privacidad</Link> ajustada al marco legal venezolano.
@@ -468,11 +469,11 @@ const Register = () => {
                                 className="w-full bg-[#ff6a00] hover:bg-[#ff8c3a] text-white font-black h-13 rounded-2xl shadow-xl shadow-[#ff6a00]/20 transition-all flex items-center justify-center gap-3 active:scale-[0.98] mt-4"
                             >
                                 {loading ? (
-                                    <span className="animate-spin material-symbols-outlined">refresh</span>
+                                    <Icon name="refresh" className="animate-spin" />
                                 ) : (
                                     <>
                                         <span className="text-sm">Crear mi Cuenta</span>
-                                        <span className="material-symbols-outlined text-lg">rocket_launch</span>
+                                        <Icon name="rocket_launch" className="!w-5 !h-5" />
                                     </>
                                 )}
                             </button>

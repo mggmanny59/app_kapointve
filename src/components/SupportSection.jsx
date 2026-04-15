@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from './Icon';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -84,7 +85,7 @@ const SupportSection = ({ userType = 'client' }) => {
                     <div className="relative z-10">
                         <div className="flex items-center gap-4 mb-4">
                             <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-inner">
-                                <span className="material-symbols-outlined !text-4xl font-black">support_agent</span>
+                                <Icon name="support_agent" className="!w-10 !h-10" />
                             </div>
                             <div>
                                 <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">¿Necesitas Ayuda?</h3>
@@ -101,7 +102,7 @@ const SupportSection = ({ userType = 'client' }) => {
                                 onClick={handleEmailSupport}
                                 className="w-full h-16 bg-slate-900 text-white rounded-3xl font-black uppercase text-[11px] tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-slate-800 transition-all active:scale-95 shadow-xl"
                             >
-                                <span className="material-symbols-outlined !text-xl">mail</span>
+                                <Icon name="mail" className="!w-5 !h-5" />
                                 Enviar Correo Directo
                             </button>
 
@@ -109,7 +110,7 @@ const SupportSection = ({ userType = 'client' }) => {
                                 disabled
                                 className="w-full h-16 bg-slate-100 text-slate-400 rounded-3xl font-black uppercase text-[11px] tracking-[0.2em] flex items-center justify-center gap-3 cursor-not-allowed"
                             >
-                                <span className="material-symbols-outlined !text-xl">chat</span>
+                                <Icon name="chat" className="!w-5 !h-5" />
                                 Chat por WhatsApp
                             </button>
                         </div>
