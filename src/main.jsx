@@ -11,8 +11,9 @@ import { registerSW } from 'virtual:pwa-register'
 const updateSW = registerSW({
   onRegistered(r) {
     if (r) {
-      // Verificar actualizaciones cada 3 minutos para mayor frescura
+      // Verificar actualizaciones del SW cada 3 minutos
       setInterval(() => {
+        console.log('Buscando actualizaciones de Service Worker...');
         r.update();
       }, 3 * 60 * 1000);
 
@@ -25,15 +26,40 @@ const updateSW = registerSW({
     }
   },
   onNeedRefresh() {
-    // Si registerType es 'autoUpdate', esto se llama y el plugin refresca solo.
-    // Pero si queremos forzarlo o registrar el evento:
-    console.log('Nueva versión detectada, actualizando...');
-    updateSW(true);
+    console.log('Nueva versión detectada. Recargando aplicación para aplicar cambios...');
+    // Forzar recarga inmediata para asegurar que el usuario tenga el fix de iconos
+    window.location.reload();
   },
   onOfflineReady() {
     console.log('App lista para uso offline');
   }
 })
+
+// === MECANISMO DE ACTUALIZACIÓN PROACTIVA ===
+const CURRENT_VERSION = '1.0.2';
+const checkForUpdates = async () => {
+    try {
+        const response = await fetch('/version.json?t=' + Date.now());
+        const data = await response.json();
+        if (data.version && data.version !== CURRENT_VERSION) {
+            console.log(`Nueva versión disponible: ${data.version}. Actualizando...`);
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let registration of registrations) {
+                    await registration.update();
+                }
+            }
+            window.location.reload();
+        }
+    } catch (err) {
+        console.warn('No se pudo verificar la versión remota:', err);
+    }
+};
+
+// Verificar versión cada 5 minutos
+setInterval(checkForUpdates, 5 * 60 * 1000);
+// Y al cargar
+checkForUpdates();
 
 
 createRoot(document.getElementById('root')).render(
