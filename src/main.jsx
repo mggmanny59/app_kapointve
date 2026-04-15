@@ -11,10 +11,10 @@ import { registerSW } from 'virtual:pwa-register'
 const updateSW = registerSW({
   onRegistered(r) {
     if (r) {
-      // Verificar actualizaciones cada 30 minutos
+      // Verificar actualizaciones cada 3 minutos para mayor frescura
       setInterval(() => {
         r.update();
-      }, 30 * 60 * 1000);
+      }, 3 * 60 * 1000);
 
       // Verificar actualizaciones cuando la pestaña recupera el foco
       document.addEventListener('visibilitychange', () => {
