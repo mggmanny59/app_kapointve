@@ -35,27 +35,6 @@ const updateSW = registerSW({
   }
 })
 
-// === PROTECTOR DE FUENTES (Evita ver texto en lugar de íconos) ===
-// Detectar cuando la fuente de iconos esté lista para mostrar la app
-if ('fonts' in document) {
-  // Intentar cargar la familia de íconos explícitamente
-  document.fonts.load('24px "Material Symbols Outlined"').then(() => {
-    document.documentElement.classList.add('fonts-active');
-  }).catch(() => {
-    // Fallback por si falla o tarda demasiado (3 segundos)
-    setTimeout(() => document.documentElement.classList.add('fonts-active'), 3000);
-  });
-
-  // También escuchar cuando todas las fuentes del documento estén listas
-  document.fonts.ready.then(() => {
-    document.documentElement.classList.add('fonts-active');
-  });
-} else {
-  // Fallback para navegadores antiguos
-  document.documentElement.classList.add('fonts-active');
-}
-
-
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

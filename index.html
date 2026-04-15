@@ -22,8 +22,32 @@
     <meta name="apple-mobile-web-app-title" content="KPoint" />
     <link rel="apple-touch-icon" href="/pwa-192x192.png" />
     <script>
-        // Capturar el evento de instalación globalmente para que no se pierda
-        // mientras la aplicación React se carga.
+        // === PROTECTOR DE ICONOS (Anti-FOUT) ===
+        // Ocultar iconos hasta que la fuente esté realmente lista
+        (function() {
+            const root = document.documentElement;
+            root.classList.remove('fonts-active');
+            
+            if ('fonts' in document) {
+                // Registrar carga de la fuente de iconos
+                document.fonts.load('24px "Material Symbols Outlined"').then(function() {
+                    root.classList.add('fonts-active');
+                    console.log('Iconos listos (Pre-load)');
+                });
+
+                // Fallback general para asegurar que la app no se quede oculta
+                document.fonts.ready.then(function() {
+                    root.classList.add('fonts-active');
+                });
+            }
+            
+            // Seguridad: Si en 3 segundos no han cargado, mostrar de todos modos
+            setTimeout(function() {
+                root.classList.add('fonts-active');
+            }, 3000);
+        })();
+
+        // Capturar el evento de instalación globalmente
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             window.deferredPWA = e;

@@ -59,16 +59,19 @@ body {
     vertical-align: middle;
     user-select: none;
 
-    /* REGLA CRÍTICA: Ocular inicialmente para evitar ver el texto fallback */
+    /* == PROTECCIÓN AGRESIVA ANTI-TEXTO == */
+    /* Hacemos que el texto sea invisible y no ocupe espacio visual */
+    color: transparent !important;
     visibility: hidden;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease, color 0.1s ease;
 }
 
-/* Mostrar solo cuando la fuente esté lista */
+/* Revelar solo cuando la fuente esté realmente lista y cargada */
 .fonts-active .material-symbols-outlined {
     visibility: visible;
     opacity: 1;
+    color: inherit !important; /* Recuperar color real (negro o blanco según el componente) */
 }
 
 .custom-scrollbar-hide::-webkit-scrollbar {
