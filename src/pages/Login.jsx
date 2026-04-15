@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useNotification } from '../context/NotificationContext';
 import { useRateLimit } from '../hooks/useRateLimit';
+import Icon from '../components/Icon';
 
 const Login = () => {
     const [activeTab, setActiveTab] = useState('client');
