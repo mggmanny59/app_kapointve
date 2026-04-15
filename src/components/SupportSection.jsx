@@ -1,9 +1,74 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 
 const SupportSection = ({ userType = 'client' }) => {
+    const { user } = useAuth();
+    const [profileData, setProfileData] = useState({
+        businessName: '',
+        legalName: '',
+        phone: ''
+    });
+
+    useEffect(() => {
+        const fetchInfo = async () => {
+            if (!user) return;
+            
+            try {
+                // Fetch profile info
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('full_name, phone')
+                    .eq('id', user.id)
+                    .single();
+
+                let bName = 'N/A';
+                let lName = profile?.full_name || '';
+                let phone = profile?.phone || '';
+
+                if (userType === 'owner') {
+                    const { data: business } = await supabase
+                        .from('businesses')
+                        .select('name, legal_representative, phone')
+                        .eq('owner_id', user.id)
+                        .maybeSingle();
+                    
+                    if (business) {
+                        bName = business.name || '';
+                        lName = business.legal_representative || lName;
+                        phone = business.phone || phone;
+                    }
+                }
+
+                setProfileData({
+                    businessName: bName,
+                    legalName: lName,
+                    phone: phone
+                });
+            } catch (err) {
+                console.error('Error fetching support info:', err);
+            }
+        };
+
+        fetchInfo();
+    }, [user, userType]);
+
     const handleEmailSupport = () => {
         const subject = encodeURIComponent(`Soporte KPoint - ${userType === 'owner' ? 'Comercio' : 'Cliente'}`);
-        const body = encodeURIComponent(`Hola equipo de KPoint,\n\nEscribo para solicitar apoyo con respecto a mi cuenta.\n\nTipo de Usuario: ${userType}\n\nDetalles del problema:\n`);
+        
+        let bodyContent = `Hola equipo de KPoint,\n\nEscribo para solicitar apoyo con respecto a mi cuenta.\n\nTipo de Usuario: ${userType === 'owner' ? 'Comercio' : 'Cliente'}\n`;
+        
+        if (userType === 'owner') {
+            bodyContent += `Nombre del Comercio: ${profileData.businessName}\n`;
+            bodyContent += `Nombre del Representante Legal: ${profileData.legalName}\n`;
+        } else {
+            bodyContent += `Nombre del Cliente: ${profileData.legalName}\n`;
+        }
+        
+        bodyContent += `Teléfono de Contacto: ${profileData.phone}\n\n`;
+        bodyContent += `Detalles del problema:\n`;
+        
+        const body = encodeURIComponent(bodyContent);
         window.location.href = `mailto:soporte.kpointve@gmail.com?subject=${subject}&body=${body}`;
     };
 
