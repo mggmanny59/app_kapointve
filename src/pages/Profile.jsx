@@ -172,7 +172,7 @@ const Profile = () => {
                         <div className="space-y-2">
                             <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Nombre Completo</label>
                             <div className="relative">
-                                <Icon name="person" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <Icon name="person" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 !w-5 !h-5" />
                                 <input
                                     type="text"
                                     value={profile.full_name}
@@ -187,7 +187,7 @@ const Profile = () => {
                         <div className="space-y-2">
                             <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Teléfono</label>
                             <div className="relative">
-                                <Icon name="call" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <Icon name="call" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 !w-5 !h-5" />
                                 <input
                                     type="tel"
                                     value={profile.phone}
@@ -201,7 +201,7 @@ const Profile = () => {
                         <div className="space-y-2 opacity-60">
                             <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Correo Electrónico (No editable)</label>
                             <div className="relative">
-                                <Icon name="mail" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <Icon name="mail" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 !w-5 !h-5" />
                                 <input
                                     type="email"
                                     value={profile.email}
@@ -218,11 +218,11 @@ const Profile = () => {
                         className="w-full h-16 bg-primary text-white rounded-3xl font-black uppercase shadow-xl shadow-primary/30 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
                     >
                         {saving ? (
-                            <Icon name="sync" className="animate-spin" />
+                            <Icon name="sync" className="animate-spin !w-5 !h-5" />
                         ) : (
                             <>
                                 GUARDAR CAMBIOS
-                                <Icon name="save" />
+                                <Icon name="save" className="!w-5 !h-5" />
                             </>
                         )}
                     </button>

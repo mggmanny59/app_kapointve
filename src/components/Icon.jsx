@@ -635,16 +635,19 @@ const SVG_ICONS = {
 };
 
 
-const Icon = ({ name, className = "", ...props }) => {
+const Icon = ({ name, className = "", style = {}, ...props }) => {
     const SvgComponent = SVG_ICONS[name];
     
+    // Default: scale with the surrounding text fontSize (like a font icon would)
+    const defaultStyle = { width: '1em', height: '1em', display: 'inline-block', verticalAlign: 'middle', flexShrink: 0, ...style };
+    
     if (SvgComponent) {
-        return <SvgComponent className={className} {...props} />;
+        return <SvgComponent className={className} style={defaultStyle} {...props} />;
     }
 
-    // Fallback social/material icons (as text, but hopefully hidden by our CSS anti-FOUT)
+    // Fallback: render as font icon (should almost never happen now)
     return (
-        <span className={`material-symbols-outlined ${className}`} {...props}>
+        <span className={`material-symbols-outlined ${className}`} style={style} {...props}>
             {name}
         </span>
     );

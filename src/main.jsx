@@ -36,7 +36,7 @@ const updateSW = registerSW({
 })
 
 // === MECANISMO DE ACTUALIZACIÓN PROACTIVA ===
-const CURRENT_VERSION = '1.0.7';
+const CURRENT_VERSION = '1.0.8';
 const checkForUpdates = async () => {
     try {
         const response = await fetch('/version.json?t=' + Date.now());
