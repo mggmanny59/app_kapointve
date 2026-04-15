@@ -20,10 +20,6 @@ import Profile from './pages/Profile';
 import { useAuth } from './context/AuthContext';
 import BackNavigationHandler from './components/BackNavigationHandler';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
-import SplashScreen from './components/SplashScreen';
-// Registro de PWA movido a main.jsx para máxima compatibilidad
-// Splash Screen restaurada para flujo premium
-
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
   const location = useLocation();
@@ -69,10 +65,6 @@ const SuperAdminRoute = ({ children }) => {
 };
 
 function App() {
-  const [showSplash, setShowSplash] = useState(true);
-
-  if (showSplash) return <SplashScreen onComplete={() => setShowSplash(false)} />;
-
   return (
     <Router>
       <BackNavigationHandler />
