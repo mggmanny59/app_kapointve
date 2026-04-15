@@ -274,7 +274,7 @@ const Clients = () => {
                                             ? `${activeStyles} shadow-sm` 
                                             : 'bg-white border-[#595A5B] text-slate-500'}`}
                                     >
-                                        <span className="material-symbols-outlined !text-base">{btn.icon}</span>
+                                        <Icon name={btn.icon} className="!w-4 !h-4" />
                                         {btn.label}
                                     </button>
                                 );
@@ -492,9 +492,7 @@ const Clients = () => {
                                         {recentTransactions.slice(0, 3).map((tx) => (
                                             <div key={tx.id} className="bg-white p-4 rounded-[1.25rem] border-2 border-[#595A5B] shadow-sm flex items-center gap-4">
                                                 <div className={`size-12 rounded-[1rem] flex items-center justify-center shrink-0 ${tx.type === 'EARN' ? 'bg-blue-50 text-[#2563EB]' : 'bg-orange-50 text-orange-500'}`}>
-                                                    <span className="material-symbols-outlined">
-                                                        {tx.type === 'EARN' ? 'shopping_bag' : 'redeem'}
-                                                    </span>
+                                                    <Icon name={tx.type === 'EARN' ? 'shopping_bag' : 'redeem'} />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <h4 className="font-bold text-slate-900 truncate tracking-tight">

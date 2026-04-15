@@ -305,7 +305,7 @@ const StaffSection = () => {
                                             onClick={() => setShowPassword(!showPassword)}
                                             className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
                                         >
-                                            <span className="material-symbols-outlined !text-xl">{showPassword ? 'visibility_off' : 'visibility'}</span>
+                                            <Icon name={showPassword ? 'visibility_off' : 'visibility'} className="!w-5 !h-5" />
                                         </button>
                                     </div>
                                 </div>
@@ -441,7 +441,7 @@ const PermissionToggle = ({ icon, title, active, onToggle }) => (
         className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${active ? 'bg-primary/5 border-primary/30' : 'bg-slate-50 border-slate-100 opacity-60'}`}
     >
         <div className="flex items-center gap-3">
-            <span className={`material-symbols-outlined !text-xl ${active ? 'text-primary' : 'text-slate-400'}`}>{icon}</span>
+            <Icon name={icon} className={`!w-5 !h-5 ${active ? 'text-primary' : 'text-slate-400'}`} />
             <span className={`text-[10px] font-black uppercase tracking-widest ${active ? 'text-primary' : 'text-slate-500'}`}>{title}</span>
         </div>
         <div className={`size-5 rounded-full border-2 flex items-center justify-center ${active ? 'bg-primary border-primary' : 'bg-white border-slate-200'}`}>

@@ -253,9 +253,7 @@ const ActivityHistory = () => {
                             >
                                 <div className="flex items-center gap-4">
                                     <div className={`size-11 rounded-full flex items-center justify-center border-2 shrink-0 ${tx.type === 'EARN' ? 'bg-primary/5 text-primary border-primary/20' : 'bg-warning/5 text-warning border-warning/20'}`}>
-                                        <span className="material-symbols-outlined text-2xl font-bold">
-                                            {tx.type === 'EARN' ? 'add_task' : 'celebration'}
-                                        </span>
+                                        <Icon name={tx.type === 'EARN' ? 'add_task' : 'celebration'} className="!w-6 !h-6" />
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-[15px] font-black text-slate-900 truncate tracking-tight leading-none mb-1.5">

@@ -400,9 +400,7 @@ const Register = () => {
                                         onClick={() => setShowPassword(!showPassword)}
                                         className="absolute right-3.5 top-2.5 text-slate-300 hover:text-[#ff6a00] transition-colors"
                                     >
-                                        <span className="material-symbols-outlined text-xl">
-                                            {showPassword ? 'visibility_off' : 'visibility'}
-                                        </span>
+                                        <Icon name={showPassword ? 'visibility_off' : 'visibility'} className="!w-5 !h-5" />
                                     </button>
                                 </div>
                             </div>

@@ -503,9 +503,7 @@ const PlatformControl = () => {
                                     }}
                                     className="size-9 rounded-xl bg-[#ff8228] text-white flex items-center justify-center active:scale-90 transition-all shadow-sm shadow-[#ff8228]/20"
                                 >
-                                    <span className="material-symbols-outlined !text-[17px] !font-light rounded-full border border-white p-0.5">
-                                        {biz.is_active ? 'block' : 'lock_open'}
-                                    </span>
+                                    <Icon name={biz.is_active ? 'block' : 'lock_open'} className="!w-[17] !h-[17] ! rounded-full border border-white p-0.5" />
                                 </button>
                             </div>
                         </div>
@@ -633,9 +631,7 @@ const PlatformControl = () => {
                 <div className="fixed inset-0 z-[200] flex items-center justify-center px-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="relative w-full max-w-sm bg-white border-2 border-[#595A5B] rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in duration-300">
                         <div className={`size-20 rounded-[2rem] mx-auto mb-8 flex items-center justify-center border shadow-xl ${confirmModal.type === 'APPROVE' ? 'bg-primary/5 border-primary/20 text-primary' : 'bg-red-50 border-red-100 text-red-500'}`}>
-                            <span className="material-symbols-outlined !text-4xl font-black">
-                                {confirmModal.type === 'APPROVE' ? 'verified_user' : 'report'}
-                            </span>
+                            <Icon name={confirmModal.type === 'APPROVE' ? 'verified_user' : 'report'} className="!w-10 !h-10" />
                         </div>
                         <h3 className="text-2xl font-black text-center text-slate-900 mb-2 uppercase tracking-tight">
                             {confirmModal.type === 'APPROVE' ? 'Â¿Autorizar Acceso?' : 'Â¿AtenciÃ³n!'}
@@ -913,9 +909,7 @@ const PlatformControl = () => {
                                     <div className="h-px flex-1 bg-slate-100"></div>
                                 </div>
                                 <div className={`p-4 rounded-2xl border flex items-center gap-3 ${selectedBiz.registration_data ? 'bg-green-50 border-green-100 text-green-700' : 'bg-amber-50 border-amber-100 text-amber-700'}`}>
-                                    <span className="material-symbols-outlined !text-xl">
-                                        {selectedBiz.registration_data ? 'check_circle' : 'pending'}
-                                    </span>
+                                    <Icon name={selectedBiz.registration_data ? 'check_circle' : 'pending'} className="!w-5 !h-5" />
                                     <div className="flex flex-col">
                                         <span className="text-[10px] font-black uppercase tracking-widest leading-none">Formulario Ajustes</span>
                                         <span className="text-xs font-bold">{selectedBiz.registration_data ? 'Completado y Verificado' : 'Pendiente por completar'}</span>
@@ -1008,11 +1002,9 @@ const PlatformControl = () => {
                                                 log.type === 'ERROR' ? 'bg-red-500/10 text-red-500' :
                                                     'bg-blue-500/10 text-blue-500'
                                             }`}>
-                                            <span className="material-symbols-outlined !text-[16px]">
-                                                {log.type === 'SUCCESS' ? 'check_circle' :
+                                            <Icon name={log.type === 'SUCCESS' ? 'check_circle' :
                                                     log.type === 'WARNING' ? 'warning' :
-                                                        log.type === 'ERROR' ? 'error' : 'info'}
-                                            </span>
+                                                        log.type === 'ERROR' ? 'error' : 'info'} className="!w-[16] !h-[16]" />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between mb-1.5">

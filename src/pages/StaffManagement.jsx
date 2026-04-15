@@ -289,9 +289,7 @@ const StaffManagement = () => {
                     <div className="space-y-6">
                         <div className="flex items-center justify-between pb-2 border-b-2 border-slate-100">
                             <div className="flex items-center gap-3">
-                                <span className="material-symbols-outlined text-primary !text-xl font-black">
-                                    {editingStaff ? 'edit_square' : 'person_add'}
-                                </span>
+                                <Icon name={editingStaff ? 'edit_square' : 'person_add'} className="text-primary !w-5 !h-5" />
                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
                                     {editingStaff ? 'Editar Miembro' : 'Nueva Credencial'}
                                 </span>
@@ -365,9 +363,7 @@ const StaffManagement = () => {
                                                 onClick={() => setShowPassword(!showPassword)}
                                                 className="absolute right-4 top-1/2 -translate-y-1/2 size-10 flex items-center justify-center text-slate-400 hover:text-primary transition-colors"
                                             >
-                                                <span className="material-symbols-outlined font-black">
-                                                    {showPassword ? 'visibility_off' : 'visibility'}
-                                                </span>
+                                                <Icon name={showPassword ? 'visibility_off' : 'visibility'} />
                                             </button>
                                         </div>
                                     </div>
@@ -418,7 +414,7 @@ const StaffManagement = () => {
                                 disabled={isCreating}
                                 className="w-full bg-primary text-white h-16 rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] shadow-xl shadow-primary/20 active:scale-[0.97] transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-6"
                             >
-                                {isCreating ? <Icon name="sync" className="animate-spin" /> : <span className="material-symbols-outlined font-black">{editingStaff ? 'save_as' : 'how_to_reg'}</span>}
+                                {isCreating ? <Icon name="sync" className="animate-spin" /> : <Icon name={editingStaff ? 'save_as' : 'how_to_reg'} />}
                                 {editingStaff ? 'GUARDAR ACTUALIZACIÓN' : 'CONFIGURAR NUEVO ACCESO'}
                             </button>
                         </form>
@@ -537,9 +533,7 @@ const StaffManagement = () => {
                                         onClick={() => setShowPassword(!showPassword)}
                                         className="absolute right-4 top-1/2 -translate-y-1/2 size-10 flex items-center justify-center text-slate-400 hover:text-primary transition-colors"
                                     >
-                                        <span className="material-symbols-outlined font-black">
-                                            {showPassword ? 'visibility_off' : 'visibility'}
-                                        </span>
+                                        <Icon name={showPassword ? 'visibility_off' : 'visibility'} />
                                     </button>
                                 </div>
                             </div>
@@ -582,7 +576,7 @@ const PermissionToggle = ({ icon, title, description, active, onToggle }) => (
         className={`flex items-center gap-5 p-5 rounded-2xl border transition-all text-left group/toggle ${active ? 'bg-primary/5 border-primary/20 shadow-sm ring-4 ring-primary/5' : 'bg-slate-50 border-[#595A5B] opacity-60 hover:opacity-100'}`}
     >
         <div className={`size-12 rounded-2xl flex items-center justify-center transition-all ${active ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white text-slate-400 border-2 border-[#595A5B]'}`}>
-            <span className="material-symbols-outlined !text-2xl font-black">{icon}</span>
+            <Icon name={icon} className="!w-6 !h-6" />
         </div>
         <div className="flex-1 space-y-0.5">
             <p className={`text-[12px] font-black uppercase tracking-widest ${active ? 'text-primary' : 'text-slate-500'}`}>{title}</p>

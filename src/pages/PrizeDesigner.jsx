@@ -268,9 +268,7 @@ const PrizeDesigner = () => {
                             }}
                             className="flex-1 h-12 rounded-full bg-primary text-white flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-primary/20"
                         >
-                            <span className="material-symbols-outlined font-black !text-xl">
-                                {view === 'create' ? 'list_alt' : 'add_circle'}
-                            </span>
+                            <Icon name={view === 'create' ? 'list_alt' : 'add_circle'} className="!w-5 !h-5" />
                             <span className="text-[10px] font-black uppercase tracking-widest">
                                 {view === 'create' ? 'Catálogo' : 'Crear'}
                             </span>
@@ -417,9 +415,7 @@ const PrizeDesigner = () => {
                                         : 'bg-white border-[#595A5B] text-slate-400 opacity-60'}`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined font-black">
-                                            {formData.is_active ? 'visibility' : 'visibility_off'}
-                                        </span>
+                                        <Icon name={formData.is_active ? 'visibility' : 'visibility_off'} />
                                         <span className="text-[10px] font-black uppercase tracking-widest">Estado en Catálogo</span>
                                     </div>
                                     <span className={`text-[10px] font-black uppercase px-4 py-1.5 rounded-full ${formData.is_active ? 'bg-primary/10' : 'bg-slate-100'}`}>

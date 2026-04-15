@@ -5,9 +5,9 @@ import { clientsClaim } from 'workbox-core';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
 
-// === VERSIÓN DEL SERVICE WORKER: 1.0.6 ===
+// === VERSIÓN DEL SERVICE WORKER: 1.0.7 ===
 // Cambiar este número fuerza al navegador a detectar una nueva versión.
-const SW_VERSION = '1.0.6';
+const SW_VERSION = '1.0.7';
 
 self.skipWaiting();
 clientsClaim();

@@ -131,7 +131,7 @@ const MarketingHub = () => {
                             : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
                         }`}
                     >
-                        <span className="material-symbols-outlined !text-lg">{cat.icon}</span>
+                        <Icon name={cat.icon} className="!w-5 !h-5" />
                         {cat.name}
                     </button>
                 ))}

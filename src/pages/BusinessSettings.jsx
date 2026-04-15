@@ -652,7 +652,7 @@ const SettingCard = ({ icon, label, onClick }) => {
             className="bg-primary border border-slate-200 rounded-[2rem] p-5 flex flex-col items-center justify-center gap-3 shadow-md hover:shadow-xl hover:-translate-y-1 active:scale-95 transition-all group overflow-hidden relative min-h-[130px]"
         >
             <div className="size-14 rounded-2xl bg-white/20 flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110 shadow-inner">
-                <span className="material-symbols-outlined !text-4xl font-black">{icon}</span>
+                <Icon name={icon} className="!w-10 !h-10" />
             </div>
             <span className="text-[12px] font-black text-white uppercase tracking-widest text-center leading-tight px-1 drop-shadow-sm">{label}</span>
             
