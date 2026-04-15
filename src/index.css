@@ -30,23 +30,32 @@ body {
 
 /* Fix for Material Symbols showing as text (ligatures) while loading */
 .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined' !important;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
     display: inline-block;
     white-space: nowrap;
     word-wrap: normal;
     direction: ltr;
-    font-feature-settings: 'liga';
     -webkit-font-feature-settings: 'liga';
     -webkit-font-smoothing: antialiased;
+    
+    /* Robust hiding of ligature text while font is loading */
+    width: 1em;
+    height: 1em;
     overflow: hidden;
-    text-indent: -9999px;
-    /* Hide text until font loads */
+    font-variant-ligatures: discretionary-ligatures;
 }
 
-/* When font is loaded, Google Fonts replaces the class or handles the indent */
-/* This is a safer approach for PWA environments */
-.material-symbols-outlined:not(:empty) {
-    text-indent: 0;
-    width: auto;
+/* Fallback for when the font is absolutely not loading (e.g. offline with no cache) */
+@font-face {
+    font-family: 'Material Symbols Outlined';
+    font-style: normal;
+    src: url(https://fonts.gstatic.com/s/materialsymbolsoutlined/v1/y8n_0reSNoBY9_41v_s.woff2) format('woff2');
 }
 
 .custom-scrollbar-hide::-webkit-scrollbar {
