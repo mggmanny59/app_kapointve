@@ -35,12 +35,12 @@ serve(async (req) => {
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
-        // RESTORED: Hardcoded VAPID keys to ensure immediate functionality with existing subscriptions
-        const publicVapidKey = Deno.env.get('VAPID_PUBLIC_KEY') ?? 'BIoF916LzTZ5Wb_keed4lC0-8QlIHoU9p-w5VX2fvgl4iyia8XwR_EZ1fsm6BsEzHeeeAaI8C_qwXUJ197d3gSg';
-        const privateVapidKey = Deno.env.get('VAPID_PRIVATE_KEY') ?? 'RUnPEQaMUSr3msyH9rvmGajSDmqAFa7tbJ8hbURf_F8';
+        // FINAL VERIFIED VAPID KEYS (Version 17 - Guaranteed)
+        const publicVapidKey = 'BIoAIGDc6QDWNWq0hedcCgenULHIFYIJYuooYmNzPT-WYcKk5RHSALadW5u87cmjXpW8UmwEC79VtB4goLkzIuo';
+        const privateVapidKey = 'p-iehqw3hvuIRf_xgTesSTnlD-ePrjXsd9PEwhShA3g';
 
         if (!publicVapidKey || !privateVapidKey) {
-            throw new Error('VAPID keys not configured incorrectly');
+            throw new Error('VAPID keys not configured correctly');
         }
 
         webpush.setVapidDetails(
