@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useMessages } from '../context/MessageContext';
+import Icon from './Icon';
 
 const Navigation = () => {
     const navigate = useNavigate();
@@ -27,20 +28,20 @@ const Navigation = () => {
 
     // Menú para Comercios (Staff/Admins)
     const businessItems = [
-        { path: '/dashboard', label: 'Panel', icon: 'grid_view' },
-        { path: '/clients', label: 'Clientes', icon: 'face' },
-        { path: '/prizes', label: 'Premios', icon: 'cards' },
-        { path: '/settings', label: 'Ajustes', icon: 'settings' },
-        { path: '/profile', label: 'Perfil', icon: 'person' },
-        { path: '/platform-admin', label: 'Admin', icon: 'admin_panel_settings', superAdminOnly: true }
+        { path: '/dashboard', label: 'Panel', iconName: 'grid_view' },
+        { path: '/clients', label: 'Clientes', iconName: 'face' },
+        { path: '/prizes', label: 'Premios', iconName: 'cards' },
+        { path: '/settings', label: 'Ajustes', iconName: 'settings' },
+        { path: '/profile', label: 'Perfil', iconName: 'person' },
+        { path: '/platform-admin', label: 'Admin', iconName: 'admin_panel_settings', superAdminOnly: true }
     ];
 
     // Menú para Clientes
     const clientItems = [
-        { path: '/my-points', label: 'Puntos', icon: 'token' },
-        { path: '/activity-history', label: 'Actividad', icon: 'history' },
-        { action: 'messages', label: 'Mensajes', icon: 'mail', showBadge: true },
-        { path: '/profile', label: 'Perfil', icon: 'person' }
+        { path: '/my-points', label: 'Puntos', iconName: 'token' },
+        { path: '/activity-history', label: 'Actividad', iconName: 'history' },
+        { action: 'messages', label: 'Mensajes', iconName: 'mail', showBadge: true },
+        { path: '/profile', label: 'Perfil', iconName: 'person' }
     ];
 
     const isClient = userRole === 'client';
@@ -91,9 +92,10 @@ const Navigation = () => {
                             }`}
                     >
                         <div className={`size-10 rounded-2xl flex items-center justify-center transition-all relative ${isActive ? 'bg-primary/10 shadow-lg shadow-primary/5 border border-primary/20' : 'bg-transparent'}`}>
-                            <span className={`material-symbols-outlined !text-[22px] transition-transform ${isActive ? 'font-black scale-110' : 'group-hover:scale-110 font-medium'}`}>
-                                {item.icon}
-                            </span>
+                            <Icon 
+                                name={item.iconName} 
+                                className={`size-5.5 transition-transform ${isActive ? 'stroke-[2.5px] scale-110' : 'group-hover:scale-110'}`} 
+                            />
 
                             {item.showBadge && unreadCount > 0 && (
                                 <span className="absolute -top-1 -right-1 size-4 bg-primary text-[8px] text-white flex items-center justify-center rounded-full font-black border-2 border-white">

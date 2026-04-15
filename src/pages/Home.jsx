@@ -1083,7 +1083,7 @@ const Home = () => {
                         className="w-full h-16 bg-white border-2 border-[#595A5B] rounded-[2rem] flex items-center justify-start px-6 gap-4 group active:scale-95 transition-all shadow-sm relative overflow-hidden"
                     >
                         <div className="size-10 rounded-xl bg-orange-50 flex items-center justify-center text-primary shrink-0 border border-primary/10 group-hover:scale-110 transition-transform relative z-10">
-                            <span className="material-symbols-outlined font-black !text-2xl">qr_code_2</span>
+                            <Icon name="qr_code_2" className="size-6 stroke-[2.5px]" />
                         </div>
                         <div className="flex flex-col items-start leading-none text-left relative z-10">
                             <span className="text-[9px] font-black text-primary/70 uppercase tracking-widest mb-0.5">Invitar Clientes</span>
@@ -1091,7 +1091,7 @@ const Home = () => {
                         </div>
                         {/* QR decorativo de fondo */}
                         <div className="absolute right-[-10%] top-[-20%] opacity-[0.05] rotate-12 pointer-events-none transition-transform group-hover:rotate-0 duration-700">
-                             <span className="material-symbols-outlined !text-[100px] text-slate-900">qr_code_2</span>
+                             <Icon name="qr_code_2" className="size-24" />
                         </div>
                     </button>
                 </div>
@@ -1115,7 +1115,7 @@ const Home = () => {
                             }}
                             className="w-full bg-primary hover:opacity-95 hover:scale-[1.02] text-white h-16 rounded-2xl flex items-center justify-start px-6 gap-4 border-2 border-[#1E293B] shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
                         >
-                            <span className="material-symbols-outlined font-black !text-2xl shrink-0">add_shopping_cart</span>
+                            <Icon name="add_shopping_cart" className="size-6 stroke-[2.5px] shrink-0" />
                             <div className="flex flex-col items-start leading-none text-left">
                                 <span className="text-[9px] font-black opacity-70 uppercase tracking-widest mb-0.5">Ventas</span>
                                 <span className="text-xs font-black uppercase tracking-tight">Registrar Venta</span>
@@ -1134,7 +1134,7 @@ const Home = () => {
                             }}
                             className="w-full bg-[#22C55E] hover:opacity-95 hover:scale-[1.02] text-white h-16 rounded-2xl flex items-center justify-start px-6 gap-4 border-2 border-[#1E293B] shadow-lg shadow-[#22C55E]/20 active:scale-[0.98] transition-all"
                         >
-                            <span className="material-symbols-outlined font-black !text-2xl shrink-0">redeem</span>
+                            <Icon name="redeem" className="size-6 stroke-[2.5px] shrink-0" />
                             <div className="flex flex-col items-start leading-none text-left">
                                 <span className="text-[9px] font-black opacity-70 uppercase tracking-widest mb-0.5">Lealtad</span>
                                 <span className="text-xs font-black uppercase tracking-tight">Canjear Premio</span>
@@ -1147,7 +1147,7 @@ const Home = () => {
                 <div className="grid grid-cols-2 gap-3">
                     <div className="bg-white p-3.5 rounded-3xl border-2 border-[#595A5B] shadow-sm relative overflow-hidden group">
                         <div className="absolute -right-2 -top-2 bg-primary/5 size-12 rounded-full blur-2xl group-hover:bg-primary/10 transition-all"></div>
-                        <span className="material-symbols-outlined text-primary mb-1 block !text-[20px]">payments</span>
+                        <Icon name="payments" className="size-5 text-primary mb-1 block" />
                         <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-0.5">Ventas Hoy</p>
                         <div className="flex items-baseline gap-1">
                             <p className="text-lg font-black text-slate-900">${stats.sales}</p>
