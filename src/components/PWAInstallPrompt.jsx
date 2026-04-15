@@ -15,6 +15,7 @@ const PWAInstallPrompt = () => {
     const [statusText, setStatusText] = useState('Iniciando...');
     const [isStandalone, setIsStandalone] = useState(false);
     const [isIOS, setIsIOS] = useState(false);
+    const [isDismissed, setIsDismissed] = useState(false);
 
     useEffect(() => {
         const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
@@ -94,8 +95,8 @@ const PWAInstallPrompt = () => {
         }
     };
 
-    // SI ESTÁ EN MODO STANDALONE, NO MOSTRAR NADA (Entra a la App)
-    if (isStandalone) return null;
+    // SI ESTÁ EN MODO STANDALONE O SE HA CERRADO, NO MOSTRAR NADA
+    if (isStandalone || isDismissed) return null;
 
     return (
         <div className="fixed inset-0 z-[10000] flex flex-col items-center justify-center p-6 bg-white overflow-hidden font-display">
@@ -143,6 +144,13 @@ const PWAInstallPrompt = () => {
                             Instalar KPoint
                             <span className="material-symbols-outlined text-xl">download</span>
                         </button>
+
+                        <button 
+                            onClick={() => setIsDismissed(true)}
+                            className="mt-6 text-slate-400 font-bold text-[10px] uppercase tracking-widest hover:text-slate-600 transition-colors"
+                        >
+                            Continuar al Navegador
+                        </button>
                     </div>
                 )}
 
@@ -187,6 +195,13 @@ const PWAInstallPrompt = () => {
                         <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 text-center mb-4">
                             <p className="text-blue-600 text-[10px] font-black uppercase tracking-wider">Una vez instalada, cierra esta ventana y abre la App.</p>
                         </div>
+
+                        <button 
+                            onClick={() => setIsDismissed(true)}
+                            className="w-full text-center text-slate-400 font-bold text-[10px] uppercase tracking-widest py-2"
+                        >
+                            Ver en Navegador
+                        </button>
                     </div>
                 )}
 
