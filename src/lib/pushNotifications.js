@@ -50,23 +50,23 @@ export async function subscribeUserToPush() {
             throw new Error('VAPID key no configurada en el entorno.');
         }
 
-
         let subscription;
         try {
-            subscription = await registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
-            });
-        } catch (subError) {
-            console.warn('Error al suscribir. Posible cambio de VAPID key. Intentando renovar...', subError);
+            // FORZAR RESUSCRIPCIÓN: Limpiar cualquier rastro de llaves viejas en el navegador
             const existingSub = await registration.pushManager.getSubscription();
             if (existingSub) {
+                console.log('Detectada suscripción existente. Limpiando para sincronización VAPID...');
                 await existingSub.unsubscribe();
             }
+
             subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
             });
+            console.log('Nueva suscripción generada exitosamente con VAPID v17.');
+        } catch (subError) {
+            console.error('Error crítico al suscribir:', subError);
+            throw subError;
         }
 
         // 5. Guardar la suscripción en Supabase

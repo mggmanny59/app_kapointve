@@ -66,12 +66,13 @@ serve(async (req) => {
             })
         }
 
-        // Preparar payload
+        // Preparar payload con máxima compatibilidad (body y message)
         const payload = JSON.stringify({
             title: title || 'KPoint',
             message: message || '¡Tienes una nueva actualización!',
+            body: message || '¡Tienes una nueva actualización!', // Para compatibilidad con versiones anteriores
             url: url || '/dashboard',
-            icon: icon || null,
+            icon: icon || '/pwa-192x192.png',
             image: image || null,
             badge: badge || '/pwa-192x192.png'
         })

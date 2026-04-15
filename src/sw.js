@@ -38,8 +38,8 @@ self.addEventListener('push', (event) => {
         try {
             const parsed = event.data.json();
             data = { ...data, ...parsed };
-            // El campo de cuerpo del mensaje puede venir como 'message' o 'body'
-            data.body = parsed.message || parsed.body || data.message;
+            // Asegurar que el cuerpo del mensaje se asigne correctamente desde cualquier formato
+            data.body = parsed.message || parsed.body || data.body;
             console.log('[SW] Datos del push (JSON):', data);
         } catch (e) {
             data.body = event.data.text();
