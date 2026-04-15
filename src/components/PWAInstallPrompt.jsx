@@ -98,7 +98,7 @@ const PWAInstallPrompt = () => {
                             onClick={handleInstall}
                             className="w-full h-14 bg-[#ff6a00] text-white rounded-2xl font-black text-sm tracking-wide shadow-2xl shadow-[#ff6a00]/30 transition-all active:scale-[0.97] flex items-center justify-center gap-3 mb-4"
                         >
-                            <span className="material-symbols-outlined text-xl">download</span>
+                            <Icon name="download" className="size-5" />
                             Instalar KPoint
                         </button>
 

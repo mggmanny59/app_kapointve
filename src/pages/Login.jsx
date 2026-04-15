@@ -192,7 +192,7 @@ const Login = () => {
                                     : 'text-slate-500 hover:text-slate-900'
                                     }`}
                             >
-                                <span className="material-symbols-outlined text-base">shopping_bag</span>
+                                <Icon name="shopping_bag" className="size-4" />
                                 Cliente
                             </button>
                             <button
@@ -203,7 +203,7 @@ const Login = () => {
                                     : 'text-slate-500 hover:text-slate-900'
                                     }`}
                             >
-                                <span className="material-symbols-outlined text-base">storefront</span>
+                                <Icon name="storefront" className="size-4" />
                                 Dueño
                             </button>
                         </div>
@@ -227,7 +227,7 @@ const Login = () => {
                                         required
                                         autoComplete="off"
                                     />
-                                    <span className="material-symbols-outlined absolute left-3.5 top-3 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors text-xl">mail</span>
+                                    <Icon name="mail" className="absolute left-3.5 top-3.5 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors size-5" />
                                 </div>
                             </div>
 
@@ -246,15 +246,13 @@ const Login = () => {
                                         required
                                         autoComplete="current-password"
                                     />
-                                    <span className="material-symbols-outlined absolute left-3.5 top-3 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors text-xl">lock</span>
+                                    <Icon name="lock" className="absolute left-3.5 top-3.5 text-slate-400 group-focus-within:text-[#ff6a00] transition-colors size-5" />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3.5 top-3 text-slate-300 hover:text-[#ff6a00] transition-colors"
+                                        className="absolute right-3.5 top-3.5 text-slate-300 hover:text-[#ff6a00] transition-colors"
                                     >
-                                        <span className="material-symbols-outlined text-xl">
-                                            {showPassword ? 'visibility_off' : 'visibility'}
-                                        </span>
+                                        <Icon name={showPassword ? 'visibility_off' : 'visibility'} className="size-5" />
                                     </button>
                                 </div>
                             </div>
@@ -265,11 +263,11 @@ const Login = () => {
                                 className="w-full bg-[#ff6a00] hover:bg-[#ff8c3a] text-white font-black h-13 rounded-2xl shadow-xl shadow-[#ff6a00]/20 transition-all flex items-center justify-center gap-3 disabled:opacity-70 active:scale-[0.98] mt-3"
                             >
                                 {loading ? (
-                                    <span className="animate-spin material-symbols-outlined">refresh</span>
+                                    <Icon name="refresh" className="animate-spin size-5" />
                                 ) : (
                                     <>
                                         <span className="text-sm">{activeTab === 'client' ? 'Ver mis Puntos' : 'Entrar al Panel'}</span>
-                                        <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                                        <Icon name="arrow_forward" className="size-5" />
                                     </>
                                 )}
                             </button>
