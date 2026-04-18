@@ -45,7 +45,7 @@ export async function subscribeUserToPush() {
         }
 
         // 4. Suscribir al usuario con la llave pública VAPID (HARDCODED PARA ESTA VERSIÓN)
-        const publicVapidKey = 'BEsOZT9XFGkdJ1fN8xpOa-k40vjM_QowmWht0Rriw-CTodZo3NOOlqsJKolRty27kW88KHm4N2NWjWsR-u9wdNQ';
+        const publicVapidKey = 'BNjZVD5xzxwgxiZ4jzMRSglRAJLzwT4pL16fhd4_0S81jFvBi4rwhIyxqPBj9__XhIeJwTHNc8w8VWLIYsTE7hw';
         
         console.log('[Push] Usando llave pública para suscripción:', publicVapidKey);
 

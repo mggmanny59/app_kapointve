@@ -35,9 +35,9 @@ serve(async (req) => {
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
-        // FINAL VERIFIED VAPID KEYS (Version 17 - Guaranteed)
-        const publicVapidKey = 'BIoAIGDc6QDWNWq0hedcCgenULHIFYIJYuooYmNzPT-WYcKk5RHSALadW5u87cmjXpW8UmwEC79VtB4goLkzIuo';
-        const privateVapidKey = 'p-iehqw3hvuIRf_xgTesSTnlD-ePrjXsd9PEwhShA3g';
+        // NEW VAPID KEYS - Version 19 (synchronized with client)
+        const publicVapidKey = 'BNjZVD5xzxwgxiZ4jzMRSglRAJLzwT4pL16fhd4_0S81jFvBi4rwhIyxqPBj9__XhIeJwTHNc8w8VWLIYsTE7hw';
+        const privateVapidKey = '0PKQBWTWFnRDkxGMKLhId2foB34_t0Hk7gxfXDD20K8';
 
         if (!publicVapidKey || !privateVapidKey) {
             throw new Error('VAPID keys not configured correctly');
