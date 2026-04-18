@@ -58,38 +58,49 @@ const Home = () => {
 
     useEffect(() => {
         const checkPushStatus = async () => {
-            if ('Notification' in window) {
-                if (Notification.permission === 'default') {
-                    setShowPushBanner(true);
-                } else if (Notification.permission === 'granted') {
-                    // Solo marcar como suscrito si realmente existe una suscripción activa
+            if (!('Notification' in window)) {
+                console.log('[Push] Notificaciones no soportadas en este navegador/dispositivo.');
+                return;
+            }
+
+            if (Notification.permission === 'default') {
+                // El usuario aún no ha decidido: mostrar banner para invitarle
+                setShowPushBanner(true);
+            } else if (Notification.permission === 'granted') {
+                // El permiso está concedido: solo verificar si existe suscripción activa
+                try {
                     const registration = await navigator.serviceWorker.ready;
                     const sub = await registration.pushManager.getSubscription();
-                    if (sub) {
+                    
+                    // Detectar endpoints legacy de FCM (deprecados por Google 2024)
+                    const isLegacy = sub && sub.endpoint.includes('fcm.googleapis.com/fcm/send/');
+                    
+                    if (sub && !isLegacy) {
+                        // Suscripción activa y moderna: todo bien
                         setIsSubscribed(true);
-                        // Proactivamente asegurar que la suscripción esté en la DB
-                        const { data: { user: currentUser } } = await supabase.auth.getUser();
-                        if (currentUser) {
-                            await subscribeUserToPush();
-                            console.log('Push subscription synced on load (Client)');
-                        }
-                    } else {
-                        // Tenemos permiso pero NO hay suscripción activa
+                        setShowPushBanner(false);
+                        console.log('[Push] Suscripción moderna activa:', sub.endpoint.substring(0, 60) + '...');
+                    } else if (isLegacy) {
+                        // Endpoint legacy: necesita renovación
                         setIsSubscribed(false);
                         setShowPushBanner(true);
+                        console.warn('[Push] Endpoint legacy detectado. Mostrar banner para re-suscribir.');
+                    } else {
+                        // Sin suscripción
+                        setIsSubscribed(false);
+                        setShowPushBanner(true);
+                        console.log('[Push] Sin suscripción activa. Mostrar banner.');
                     }
-                } else if (Notification.permission === 'denied') {
-                    // Si está denegado, no mostramos banner (política de navegador)
-                    setIsSubscribed(false);
+                } catch (err) {
+                    console.warn('[Push] Error verificando estado de suscripción:', err);
                 }
-            } else {
-                console.log('Notificaciones no soportadas en este navegador/dispositivo.');
+            } else if (Notification.permission === 'denied') {
+                // Denegado por el usuario: no mostrar banner (política del navegador)
+                setIsSubscribed(false);
+                setShowPushBanner(false);
             }
         };
-        // Ejecutar inmediatamente
-        checkPushStatus();
 
-        // Ejecutar cuando el usuario esté listo
         if (user) checkPushStatus();
     }, [user]);
 
@@ -840,9 +851,14 @@ const Home = () => {
 
             // 6. Notificación Push Personalizada
             const pointsToGain = (parseFloat(amount) * (business?.points_per_dollar || 10)).toFixed(0);
-            console.log(`[Manual] Puntos ganados: ${pointsToGain}. Avisando a notifyConversion para perfil: ${profileData.id}`);
+            console.log(`[Manual] ✅ Todo OK. Intentando enviar Push a ${profileData.id}, puntos: ${pointsToGain}`);
             
-            await notifyConversion(profileData.id, pointsToGain);
+            try {
+                await notifyConversion(profileData.id, pointsToGain);
+                console.log('[Manual] ✅ notifyConversion completado exitosamente.');
+            } catch (pushErr) {
+                console.error('[Manual] ❌ Error en notifyConversion:', pushErr.message);
+            }
 
         } catch (err) {
             console.error('[Manual] Error en registro:', err);

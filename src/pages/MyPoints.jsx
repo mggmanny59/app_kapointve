@@ -137,21 +137,35 @@ const MyPoints = () => {
                 // Nunca ha decidido -> mostrar banner
                 setShowPushBanner(true);
             } else if (Notification.permission === 'granted') {
-                // Tiene permiso: verificar si hay suscripción real
-                const registration = await navigator.serviceWorker.ready;
-                const sub = await registration.pushManager.getSubscription();
-                if (sub) {
-                    setIsSubscribed(true);
-                    // Sincronizar con Supabase
-                    await subscribeUserToPush();
-                } else {
-                    // Permiso dado pero suscripción perdida (ej: re-instalación)
-                    setIsSubscribed(false);
-                    setShowPushBanner(true);
+                // Tiene permiso: solo verificar el estado, NO recrear la suscripción
+                try {
+                    const registration = await navigator.serviceWorker.ready;
+                    const sub = await registration.pushManager.getSubscription();
+                    
+                    // Detectar endpoints legacy de FCM (deprecados por Google 2024)
+                    const isLegacy = sub && sub.endpoint.includes('fcm.googleapis.com/fcm/send/');
+                    
+                    if (sub && !isLegacy) {
+                        // Suscripción activa y moderna: marcar como subscrito
+                        setIsSubscribed(true);
+                        setShowPushBanner(false);
+                    } else if (isLegacy) {
+                        // Endpoint legacy: necesita renovación
+                        setIsSubscribed(false);
+                        setShowPushBanner(true);
+                        console.warn('[Push] Endpoint legacy en MyPoints. Mostrar banner.');
+                    } else {
+                        // Permiso dado pero sin suscripción
+                        setIsSubscribed(false);
+                        setShowPushBanner(true);
+                    }
+                } catch (err) {
+                    console.warn('[Push] Error verificando suscripción en MyPoints:', err);
                 }
             } else {
                 // 'denied' -> no podemos hacer nada
                 setIsSubscribed(false);
+                setShowPushBanner(false);
             }
         };
         if (user) checkPushStatus();

@@ -44,64 +44,66 @@ export async function subscribeUserToPush() {
             throw new Error('Permiso denegado por el usuario.');
         }
 
-        // 4. Suscribir al usuario con la llave pública VAPID desde variables de entorno
-        const publicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-        if (!publicVapidKey) {
-            throw new Error('VAPID key no configurada en el entorno.');
-        }
+        // 4. Suscribir al usuario con la llave pública VAPID (HARDCODED PARA ESTA VERSIÓN)
+        const publicVapidKey = 'BEsOZT9XFGkdJ1fN8xpOa-k40vjM_QowmWht0Rriw-CTodZo3NOOlqsJKolRty27kW88KHm4N2NWjWsR-u9wdNQ';
+        
+        console.log('[Push] Usando llave pública para suscripción:', publicVapidKey);
 
         let subscription;
         try {
-            // FORZAR RESUSCRIPCIÓN: Limpiar cualquier rastro de llaves viejas en el navegador
             const existingSub = await registration.pushManager.getSubscription();
+
             if (existingSub) {
-                console.log('Detectada suscripción existente. Limpiando para sincronización VAPID...');
+                console.warn('[Push] Suscripción existente detectada. Forzando renovación para asegurar sincronización con nueva llave...');
                 await existingSub.unsubscribe();
             }
-
+            
+            console.log('[Push] Creando nueva suscripción definitiva...');
             subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
             });
-            console.log('Nueva suscripción generada exitosamente con VAPID v17.');
+            console.log('[Push] Suscripción generada con éxito:', subscription.endpoint);
         } catch (subError) {
-            console.error('Error crítico al suscribir:', subError);
+            console.error('[Push] Error en pushManager.subscribe:', subError);
             throw subError;
         }
 
-        // 5. Guardar la suscripción en Supabase
+        // 5. Guardar/Sincronizar la suscripción en Supabase usando el endpoint como clave única
         const { data: { user } } = await supabase.auth.getUser();
 
         if (user) {
             const subscriptionJSON = subscription.toJSON();
+            console.log('[Push] Guardando llave en DB para:', user.id);
 
-            const { data: existing } = await supabase
+            // Intentar insertar la nueva llave. Si ya existe, Supabase simplemente 
+            // dará un error que manejaremos suavemente.
+            const { error } = await supabase
                 .from('push_subscriptions')
-                .select('id')
-                .eq('profile_id', user.id)
-                .eq('user_agent', navigator.userAgent)
-                .limit(1);
+                .insert({
+                    profile_id: user.id,
+                    subscription: subscriptionJSON,
+                    user_agent: navigator.userAgent
+                });
 
-            if (!existing || existing.length === 0) {
-                const { error } = await supabase
-                    .from('push_subscriptions')
-                    .insert({
-                        profile_id: user.id,
-                        subscription: subscriptionJSON,
-                        user_agent: navigator.userAgent
-                    });
-
-                if (error) throw new Error(`DB Error: ${error.message}`);
-                console.log('Suscripción Push guardada correctamente.');
-            } else {
-                const { error } = await supabase
-                    .from('push_subscriptions')
-                    .update({ subscription: subscriptionJSON })
-                    .eq('id', existing[0].id);
-
-                if (error) throw new Error(`DB Update Error: ${error.message}`);
-                console.log('Suscripción Push actualizada correctamente.');
+            if (error) {
+                // Si el error es por duplicado, intentamos actualizar la existente
+                if (error.code === '23505') {
+                   await supabase
+                        .from('push_subscriptions')
+                        .update({ 
+                            subscription: subscriptionJSON,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('profile_id', user.id)
+                        .eq('user_agent', navigator.userAgent);
+                } else {
+                    console.error('[Push] Error en guardado:', error.message);
+                    throw error;
+                }
             }
+
+            console.log('[Push] ¡Suscripción sincronizada!');
             return subscription;
         }
 
