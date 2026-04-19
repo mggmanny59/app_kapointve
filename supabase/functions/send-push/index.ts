@@ -5,7 +5,8 @@ import webpush from 'npm:web-push@3.6.7'
 const ALLOWED_ORIGINS = [
     'https://app.kpointve.com',
     'https://kpointve.com',
-    'http://localhost:5173'
+    'http://localhost:5173',
+    'http://localhost:5174'
 ];
 
 function getCorsHeaders(req: Request) {

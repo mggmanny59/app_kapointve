@@ -944,7 +944,7 @@ const Home = () => {
                         </div>
                         <div>
                             <h1 className="text-lg font-black tracking-tight text-slate-900 leading-tight">KPoint</h1>
-                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Panel de Control • v1.1.0</p>
+                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Versión 1.2</p>
                         </div>
                     </div>
                     
