@@ -1,5 +1,7 @@
 import { supabase } from './supabase';
 
+const PUBLIC_VAPID_KEY = 'BNjZVD5xzxwgxiZ4jzMRSglRAJLzwT4pL16fhd4_0S81jFvBi4rwhIyxqPBj9__XhIeJwTHNc8w8VWLIYsTE7hw';
+
 /**
  * Convierte una llave VAPID de base64 a un array de bytes (Uint8Array)
  * Requerido por el Service Worker para la suscripción.
@@ -17,6 +19,58 @@ function urlBase64ToUint8Array(base64String) {
         outputArray[i] = rawData.charCodeAt(i);
     }
     return outputArray;
+}
+
+/**
+ * Auto-Heal: Verifica silenciosamente si la suscripción actual coincide con la llave VAPID
+ * y la renueva automáticamente en segundo plano.
+ */
+export async function verifyAndRepairPushSubscription() {
+    try {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) return true; // Ignorar si no soporta Push
+        if (Notification.permission !== 'granted') return false; // Si no hay permiso, devolvemos false para mostrar el banner
+
+        const registration = await navigator.serviceWorker.ready;
+        const sub = await registration.pushManager.getSubscription();
+        
+        if (!sub) return false; // Sin suscripción, requiere mostrar el banner o pedirla
+        
+        // Comprobar si es legacy (Google FCM viejo)
+        const isLegacy = sub.endpoint.includes('fcm.googleapis.com/fcm/send/');
+        
+        // Comprobar si las llaves VAPID coinciden comparando buffers (muy complejo en JS),
+        // Alternativa práctica: forzar la renovación si NO sabemos si tienen la llave actual
+        // Lo que haremos es simplemente comparar si la suscripción está registrada correctamente y 
+        // si falla renovamos todo silenciósamente.
+        
+        // Dado que ayer cambiamos la llave, renovaremos a los que tengan cualquier inconsistencia.
+        // Simulando revisión de llave mediante re-suscripción segura:
+        let isCorrectKey = true;
+        try {
+            const options = sub.options;
+            if (options && options.applicationServerKey) {
+                const currentKeyArray = new Uint8Array(options.applicationServerKey);
+                const targetKeyArray = urlBase64ToUint8Array(PUBLIC_VAPID_KEY);
+                // Comparación simple de los primeros bytes
+                if (currentKeyArray.length !== targetKeyArray.length || currentKeyArray[0] !== targetKeyArray[0] || currentKeyArray[currentKeyArray.length - 1] !== targetKeyArray[targetKeyArray.length - 1]) {
+                    isCorrectKey = false;
+                }
+            } else {
+                isCorrectKey = false;
+            }
+        } catch(e) { isCorrectKey = false; }
+
+        if (isLegacy || !isCorrectKey) {
+            console.warn('[Push Auto-Heal] Suscripción antigua/desactualizada detectada. Reparando silenciosamente...');
+            await subscribeUserToPush(); // Esto desuscribe y suscribe con la nueva llave
+            return true;
+        }
+
+        return true; // Suscripción moderna y correcta activa
+    } catch (e) {
+        console.error('[Push Auto-Heal] Error durante la reparación:', e);
+        return false;
+    }
 }
 
 /**

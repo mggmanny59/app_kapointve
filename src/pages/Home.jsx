@@ -9,7 +9,7 @@ import { useMessages } from '../context/MessageContext';
 import Navigation from '../components/Navigation';
 import MessageCenter from '../components/MessageCenter';
 import SendNotificationModal from '../components/SendNotificationModal';
-import { subscribeUserToPush, sendPushToProfile } from '../lib/pushNotifications';
+import { subscribeUserToPush, sendPushToProfile, verifyAndRepairPushSubscription } from '../lib/pushNotifications';
 import { forceAppUpdate } from '../utils/appUpdate';
 import Icon from '../components/Icon';
 
@@ -67,32 +67,16 @@ const Home = () => {
                 // El usuario aún no ha decidido: mostrar banner para invitarle
                 setShowPushBanner(true);
             } else if (Notification.permission === 'granted') {
-                // El permiso está concedido: solo verificar si existe suscripción activa
-                try {
-                    const registration = await navigator.serviceWorker.ready;
-                    const sub = await registration.pushManager.getSubscription();
-                    
-                    // Detectar endpoints legacy de FCM (deprecados por Google 2024)
-                    const isLegacy = sub && sub.endpoint.includes('fcm.googleapis.com/fcm/send/');
-                    
-                    if (sub && !isLegacy) {
-                        // Suscripción activa y moderna: todo bien
-                        setIsSubscribed(true);
-                        setShowPushBanner(false);
-                        console.log('[Push] Suscripción moderna activa:', sub.endpoint.substring(0, 60) + '...');
-                    } else if (isLegacy) {
-                        // Endpoint legacy: necesita renovación
-                        setIsSubscribed(false);
-                        setShowPushBanner(true);
-                        console.warn('[Push] Endpoint legacy detectado. Mostrar banner para re-suscribir.');
-                    } else {
-                        // Sin suscripción
-                        setIsSubscribed(false);
-                        setShowPushBanner(true);
-                        console.log('[Push] Sin suscripción activa. Mostrar banner.');
-                    }
-                } catch (err) {
-                    console.warn('[Push] Error verificando estado de suscripción:', err);
+                // Ejecutar el Auto-Heal: Verifica la llave VAPID y repara si es necesario sin pedir permiso nuevo.
+                const isHealthy = await verifyAndRepairPushSubscription();
+                
+                if (isHealthy) {
+                    setIsSubscribed(true);
+                    setShowPushBanner(false);
+                } else {
+                    // Algo falló (ej: el usuario revocó permisos)
+                    setIsSubscribed(false);
+                    setShowPushBanner(true);
                 }
             } else if (Notification.permission === 'denied') {
                 // Denegado por el usuario: no mostrar banner (política del navegador)

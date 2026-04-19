@@ -8,7 +8,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useMessages } from '../context/MessageContext';
 import MessageCenter from '../components/MessageCenter';
 import Navigation from '../components/Navigation';
-import { subscribeUserToPush, sendPushToProfile, unsubscribeUserFromPush } from '../lib/pushNotifications';
+import { subscribeUserToPush, sendPushToProfile, unsubscribeUserFromPush, verifyAndRepairPushSubscription } from '../lib/pushNotifications';
 import { forceAppUpdate } from '../utils/appUpdate';
 import Icon from '../components/Icon';
 
@@ -137,30 +137,16 @@ const MyPoints = () => {
                 // Nunca ha decidido -> mostrar banner
                 setShowPushBanner(true);
             } else if (Notification.permission === 'granted') {
-                // Tiene permiso: solo verificar el estado, NO recrear la suscripción
-                try {
-                    const registration = await navigator.serviceWorker.ready;
-                    const sub = await registration.pushManager.getSubscription();
-                    
-                    // Detectar endpoints legacy de FCM (deprecados por Google 2024)
-                    const isLegacy = sub && sub.endpoint.includes('fcm.googleapis.com/fcm/send/');
-                    
-                    if (sub && !isLegacy) {
-                        // Suscripción activa y moderna: marcar como subscrito
-                        setIsSubscribed(true);
-                        setShowPushBanner(false);
-                    } else if (isLegacy) {
-                        // Endpoint legacy: necesita renovación
-                        setIsSubscribed(false);
-                        setShowPushBanner(true);
-                        console.warn('[Push] Endpoint legacy en MyPoints. Mostrar banner.');
-                    } else {
-                        // Permiso dado pero sin suscripción
-                        setIsSubscribed(false);
-                        setShowPushBanner(true);
-                    }
-                } catch (err) {
-                    console.warn('[Push] Error verificando suscripción en MyPoints:', err);
+                // Ejecutar el Auto-Heal: Verifica la llave VAPID y repara si es necesario sin pedir permiso nuevo.
+                const isHealthy = await verifyAndRepairPushSubscription();
+                
+                if (isHealthy) {
+                    setIsSubscribed(true);
+                    setShowPushBanner(false);
+                } else {
+                    // Algo falló (ej: el usuario revocó permisos)
+                    setIsSubscribed(false);
+                    setShowPushBanner(true);
                 }
             } else {
                 // 'denied' -> no podemos hacer nada
