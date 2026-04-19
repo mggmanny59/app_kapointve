@@ -1,28 +1,45 @@
-const webpush = require('web-push');
 
-const vapidKeys = {
-  publicKey: 'BEsOZT9XFGkdJ1fN8xpOa-k40vjM_QowmWht0Rriw-CTodZo3NOOlqsJKolRty27kW88KHm4N2NWjWsR-u9wdNQ',
-  privateKey: 'VXZ3k3z1Qxh6eZK2jwYNk2uJGrQIlmCYCf90PzMAw6E'
-};
+const { createClient } = require('@supabase/supabase-js');
 
-webpush.setVapidDetails(
-  'mailto:soporte@kpoint.com',
-  vapidKeys.publicKey,
-  vapidKeys.privateKey
+const supabase = createClient(
+  'https://gtxzmkmwjclwppnkiifi.supabase.co',
+  'sb_publishable_v_ZfK2QvTQmliN5WlD9_NA_nER5um_T' // Anon Key
 );
 
-const subscription = {"keys":{"auth":"pRFkREn5JAwN-3wlFdXelw","p256dh":"BBK6LMllAZ7eLqZy-0nKv0XBQHr9hJnI-ma8PS8l7DIUMRMx0g9hD6z26r6pC8u1Q106dLzrvVHc6doM4QUD_ko"},"endpoint":"https://fcm.googleapis.com/fcm/send/cISccuK0mqY:APA91bELf71oeV_yfVPk104XrmQak4oJi7oQdOc00dpVHyBjHv3fuui4qU8lRNJ2kBnQkRpuFbtlyeNOAfVVeLrkqVhf0BvXEqGmU5CPO7d-QoUvVTpDX2r3emTML2GGESSoPq-AHB7b","expirationTime":null};
+async function testPush() {
+  const { data: subs, error: sError } = await supabase
+    .from('push_subscriptions')
+    .select('id, profile_id, updated_at, subscription, profiles(full_name)')
+    .order('updated_at', { ascending: false })
+    .limit(5);
 
-const payload = JSON.stringify({
-  title: '¡POR FIN! 🚀',
-  message: 'KPoint: Sistema de notificaciones restaurado.',
-  body: 'KPoint: Sistema de notificaciones restaurado.',
-  url: '/my-points',
-  icon: '/pwa-192x192.png'
-});
+  if (sError) {
+    console.log('Error fetching subs:', sError);
+    return;
+  }
 
-console.log('Enviando notificación DE-FI-NI-TI-VA...');
+  if (subs.length === 0) {
+    console.log('No subscriptions found.');
+    return;
+  }
 
-webpush.sendNotification(subscription, payload)
-  .then(result => console.log('¡GRAN VICTORIA! Google aceptó el envío:', result.statusCode))
-  .catch(error => console.error('ERROR INESPERADO:', error));
+  const sub = subs[0];
+  console.log('Testing push for:', sub.profiles?.full_name, 'Profile ID:', sub.profile_id);
+
+  const { data, error } = await supabase.functions.invoke('send-push', {
+    body: {
+      profile_id: sub.profile_id,
+      title: 'Prueba Técnica',
+      message: 'Prueba desde consola de desarrollo.',
+      url: '/my-points'
+    }
+  });
+
+  if (error) {
+    console.log('Edge Function threw an error:', error);
+  } else {
+    console.log('Return data:', JSON.stringify(data, null, 2));
+  }
+}
+
+testPush();

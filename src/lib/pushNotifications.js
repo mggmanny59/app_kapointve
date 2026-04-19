@@ -33,7 +33,11 @@ export async function verifyAndRepairPushSubscription() {
         const registration = await navigator.serviceWorker.ready;
         const sub = await registration.pushManager.getSubscription();
         
-        if (!sub) return false; // Sin suscripción, requiere mostrar el banner o pedirla
+        if (!sub) {
+            console.warn('[Push Auto-Heal] Permiso concedido pero sin suscripción activa tras limpieza de datos. Restaurando silenciomente...');
+            await subscribeUserToPush();
+            return true;
+        }
         
         // Comprobar si es legacy (Google FCM viejo)
         const isLegacy = sub.endpoint.includes('fcm.googleapis.com/fcm/send/');
