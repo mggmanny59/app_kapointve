@@ -424,48 +424,40 @@ const Clients = () => {
                                 <div className="space-y-4">
                                     <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] px-1">ESTADÍSTICAS CLAVE</h3>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="bg-white border-2 border-[#595A5B] p-6 rounded-[1.5rem] shadow-sm flex flex-col gap-3">
+                                        <div className="bg-white border-2 border-[#595A5B] p-6 rounded-[1.5rem] shadow-[0_12px_25px_rgba(30,41,59,0.15)] flex flex-col gap-3">
                                             <div className="flex items-center gap-2 text-primary">
                                                 <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center">
                                                     <Icon name="stars" className="!w-4 !h-4" />
                                                 </div>
-                                                <span className="text-[13px] font-black uppercase tracking-tight">Puntos Totales</span>
+                                                <span className="text-[16px] font-black uppercase tracking-tight">Puntos Totales</span>
                                             </div>
                                             <div className="space-y-1">
                                                 <p className="text-2xl font-black text-slate-900">{clientSummary.currentPoints?.toLocaleString()}</p>
-                                                <div className="flex items-center gap-1 text-[#10b981]">
-                                                    <Icon name="trending_up" className="!w-[14] !h-[14]" />
-                                                    <span className="text-[10px] font-bold">+150 este mes</span>
-                                                </div>
                                             </div>
                                         </div>
 
-                                        <div className="bg-white border-2 border-[#595A5B] p-6 rounded-[1.5rem] shadow-sm flex flex-col gap-3">
+                                        <div className="bg-white border-2 border-[#595A5B] p-6 rounded-[1.5rem] shadow-[0_12px_25px_rgba(30,41,59,0.15)] flex flex-col gap-3">
                                             <div className="flex items-center gap-2 text-[#2563EB]">
                                                 <div className="size-8 rounded-full bg-blue-50 flex items-center justify-center">
                                                     <Icon name="payments" className="!w-4 !h-4" />
                                                 </div>
-                                                <span className="text-[13px] font-black uppercase tracking-tight">Compras Totales</span>
+                                                <span className="text-[16px] font-black uppercase tracking-tight">Compras Totales</span>
                                             </div>
                                             <div className="space-y-1">
                                                 <p className="text-2xl font-black text-slate-900">${clientSummary.totalPurchasedAmount?.toLocaleString() || '0.00'}</p>
-                                                <div className="flex items-center gap-1 text-[#10b981]">
-                                                    <Icon name="trending_up" className="!w-[14] !h-[14]" />
-                                                    <span className="text-[10px] font-bold">+5% vs avg</span>
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Visits Section */}
-                                <div className="bg-white border-2 border-[#595A5B] p-6 rounded-[1.5rem] shadow-sm space-y-4">
+                                <div className="bg-white border-2 border-[#595A5B] p-6 rounded-[1.5rem] shadow-[0_12px_25px_rgba(30,41,59,0.15)] space-y-4">
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-3">
                                             <div className="size-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#2563EB]">
                                                 <Icon name="calendar_today" className="!w-5 !h-5" />
                                             </div>
-                                            <span className="text-[13px] font-black uppercase tracking-tight">Visitas Totales</span>
+                                            <span className="text-[16px] font-black uppercase tracking-tight">Visitas Totales</span>
                                         </div>
                                         <p className="text-2xl font-black text-slate-900">{clientSummary.totalPurchases}</p>
                                     </div>
