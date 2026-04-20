@@ -928,7 +928,7 @@ const Home = () => {
                         </div>
                         <div>
                             <h1 className="text-lg font-black tracking-tight text-slate-900 leading-tight">KPoint</h1>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">v1.2.6</p>
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">v1.2.7</p>
                         </div>
                     </div>
                     

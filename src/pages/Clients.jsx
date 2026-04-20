@@ -40,16 +40,20 @@ const Clients = () => {
                 if (tx.type === 'EARN') {
                     acc.totalPurchases += 1;
                     acc.totalPurchasedAmount = (acc.totalPurchasedAmount || 0) + (Number(tx.amount_fiat) || 0);
+                    if (!acc.lastVisit) acc.lastVisit = tx.created_at;
                 } else if (tx.type === 'REDEEM') {
                     acc.totalRedeemedPoints += Math.abs(tx.points_amount);
+                    acc.totalRedeemedCount += 1;
                 }
                 return acc;
-            }, { totalPurchases: 0, totalRedeemedPoints: 0, totalPurchasedAmount: 0 });
+            }, { totalPurchases: 0, totalRedeemedPoints: 0, totalPurchasedAmount: 0, totalRedeemedCount: 0, lastVisit: null });
 
             setClientSummary({
                 ...summary,
                 currentPoints: client.current_points,
-                lifetimePoints: client.total_accumulated_points
+                lifetimePoints: client.total_accumulated_points,
+                totalRedeemedCount: summary.totalRedeemedCount,
+                lastVisit: summary.lastVisit
             });
         } catch (err) {
             console.error('Error fetching client summary:', err);
@@ -447,6 +451,35 @@ const Clients = () => {
                                                 <p className="text-2xl font-black text-slate-900">${clientSummary.totalPurchasedAmount?.toLocaleString() || '0.00'}</p>
                                             </div>
                                         </div>
+
+                                        <div className="bg-white border-2 border-[#595A5B] p-6 rounded-[1.5rem] shadow-[0_12px_25px_rgba(30,41,59,0.15)] flex flex-col gap-3">
+                                            <div className="flex items-center gap-2 text-orange-500">
+                                                <div className="size-8 rounded-full bg-orange-50 flex items-center justify-center">
+                                                    <Icon name="redeem" className="!w-4 !h-4" />
+                                                </div>
+                                                <span className="text-[16px] font-black uppercase tracking-tight">Premios Canjeados</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-2xl font-black text-slate-900">{clientSummary.totalRedeemedCount || 0}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white border-2 border-[#595A5B] p-6 rounded-[1.5rem] shadow-[0_12px_25px_rgba(30,41,59,0.15)] flex flex-col gap-3">
+                                            <div className="flex items-center gap-2 text-indigo-500">
+                                                <div className="size-8 rounded-full bg-indigo-50 flex items-center justify-center">
+                                                    <Icon name="event_available" className="!w-4 !h-4" />
+                                                </div>
+                                                <span className="text-[16px] font-black uppercase tracking-tight">Última Visita</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xl font-black text-slate-900">
+                                                    {clientSummary.lastVisit 
+                                                        ? new Date(clientSummary.lastVisit).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
+                                                        : 'Nunca'}
+                                                </p>
+                                            </div>
+                                        </div>
+
                                     </div>
                                 </div>
 
