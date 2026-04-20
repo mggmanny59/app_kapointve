@@ -7,7 +7,7 @@ import { ExpirationPlugin } from 'workbox-expiration';
 
 // === VERSIÓN DEL SERVICE WORKER: 1.0.9 ===
 // Cambiar este número fuerza al navegador a detectar una nueva versión.
-const SW_VERSION = '1.0.9';
+const SW_VERSION = '1.1.0';
 
 self.skipWaiting();
 clientsClaim();

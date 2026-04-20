@@ -410,7 +410,6 @@ const Home = () => {
                 (payload) => {
                     console.log('Operación de negocio detectada:', payload.new);
 
-                    // Notificar visualmente en el dashboard
                     if (payload.new.type === 'EARN') {
                         showNotification('success', '¡Nueva Venta!', `Se han asignado ${payload.new.points_amount} puntos.`);
                     } else if (payload.new.type === 'REDEEM') {
@@ -526,30 +525,28 @@ const Home = () => {
 
             // 1. BROADCAST REALTIME: Envío directo al cliente para actualización INSTANTÁNEA
             const pointsToGain = (parseFloat(amount) * (business?.points_per_dollar || 10)).toFixed(0);
-            console.log(`Puntos a ganar calculados: ${pointsToGain} para cliente: ${clientId}`);
             
             const topicEarn = `client-points-realtime-${clientId}`;
-            const broadcastChannel = supabase.getChannels().find(c => c.topic === `realtime:${topicEarn}`) || supabase.channel(topicEarn);
+            const broadcastChannel = supabase.channel(topicEarn);
             
+            const CURRENT_VERSION = '1.3.1';
             const payloadEarn = {
                 type: 'broadcast',
                 event: 'points_earned',
                 payload: {
-                    businessName: business?.name || 'Comercio',
+                    businessId: businessId,
                     points: pointsToGain,
-                    amountUSD: amount
+                    "version": "1.3.1",
                 }
             };
 
-            if (broadcastChannel.state === 'joined') {
-                await broadcastChannel.send(payloadEarn).catch(console.error);
-            } else {
-                broadcastChannel.subscribe(async (status) => {
-                    if (status === 'SUBSCRIBED') {
-                        await broadcastChannel.send(payloadEarn).catch(console.error);
-                    }
-                });
-            }
+            broadcastChannel.subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    broadcastChannel.send(payloadEarn)
+                        .then(() => console.log('✅ Broadcast enviado con éxito'))
+                        .catch(e => console.error('❌ Error enviando broadcast:', e));
+                }
+            });
 
             // 2. NOTIFICACIÓN PUSH PERSONALIZADA
             // Esperamos un poco para que los triggers de DB procesen el saldo antes de buscar premios
@@ -752,6 +749,8 @@ const Home = () => {
                 type: 'broadcast',
                 event: 'reward_redeemed',
                 payload: {
+                    businessId: businessId,
+                    profileId: client.profile_id,
                     businessName: business?.name || 'Comercio',
                     prizeName: reward.name,
                     pointsSpent: reward.cost_points
@@ -844,6 +843,28 @@ const Home = () => {
                 console.error('[Manual] ❌ Error en notifyConversion:', pushErr.message);
             }
 
+            // 7. BROADCAST REALTIME: Envío directo al cliente para actualización INSTANTÁNEA (Manual)
+            const topicEarnManual = `client-points-realtime-${profileData.id}`;
+            const broadcastChannelManual = supabase.channel(topicEarnManual);
+            
+            const payloadEarnManual = {
+                type: 'broadcast',
+                event: 'points_earned',
+                payload: {
+                    businessId: businessId,
+                    profileId: profileData.id,
+                    businessName: business?.name || 'Comercio',
+                    points: pointsToGain,
+                    amountUSD: amount
+                }
+            };
+
+            broadcastChannelManual.subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    broadcastChannelManual.send(payloadEarnManual).catch(console.error);
+                }
+            });
+
         } catch (err) {
             console.error('[Manual] Error en registro:', err);
             showNotification('error', 'Error en Registro', err.message);
@@ -928,7 +949,10 @@ const Home = () => {
                         </div>
                         <div>
                             <h1 className="text-lg font-black tracking-tight text-slate-900 leading-tight">KPoint</h1>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">v1.2.7</p>
+                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest flex items-center gap-2">
+                                v1.3.1
+                                <span className="w-1 h-1 bg-[#ff6a00] rounded-full animate-pulse"></span>
+                            </p>
                         </div>
                     </div>
                     

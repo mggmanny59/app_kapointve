@@ -187,44 +187,28 @@ const MyPoints = () => {
         const channel = supabase
             .channel(`client-points-realtime-${user.id}`)
             .on('broadcast', { event: 'points_earned' }, (payload) => {
-                console.log('¡Broadcast de puntos recibido!', payload);
-                showNotification('success', '¡Puntos Recibidos!', `Acabas de ganar ${payload.payload.points} nuevos puntos en ${payload.payload.businessName}.`);
-                
-                // Actualización optimista del estado local
-                setLoyaltyCards(prev => prev.map(card => {
-                    if (card.businesses?.name === payload.payload.businessName) {
-                        return { 
-                            ...card, 
-                            current_points: Number(card.current_points) + Number(payload.payload.points) 
-                        };
-                    }
-                    return card;
-                }));
-
-                setTimeout(() => fetchUserData(), 1000);
-
-                // Opción: Cerrar cualquier modal abierto (como el del código QR) para que vean el saldo
+                console.log('¡Broadcast RECIBIDO!', payload);
+                fetchUserData();
+                // Notificación visual inmediata
+                if (payload.payload && payload.payload.points) {
+                    showNotification('success', '¡Puntos Recibidos!', `Has ganado ${payload.payload.points} puntos.`);
+                }
                 setShowMainQRModal(false);
             })
             .on('broadcast', { event: 'reward_redeemed' }, (payload) => {
-                console.log('¡Broadcast de CANJE recibido!', payload);
-                showNotification('success', '¡BRUTAL! ¡YA ES TUYO! 🎁✨', `¡Woooow! Acabas de canjear "${payload.payload.prizeName}" en ${payload.payload.businessName}. ¡Te lo mereces! Disfrútalo al máximo. 🥳🔥`);
-                
-                // Actualización optimista del estado local
-                setLoyaltyCards(prev => prev.map(card => {
-                    if (card.businesses?.name === payload.payload.businessName) {
-                        return { 
-                            ...card, 
-                            current_points: Math.max(0, Number(card.current_points) - Number(payload.payload.pointsSpent)) 
-                        };
-                    }
-                    return card;
-                }));
-
-                setTimeout(() => fetchUserData(), 1000);
-                
-                // Solo cerrar modal del QR de canje (no salir de la vista del comercio)
+                console.log('¡Canje RECIBIDO!', payload);
+                fetchUserData();
+                showNotification('success', '¡Canje Realizado!', 'Disfruta tu premio.');
                 setShowRedemptionQR(null);
+            })
+            .on('postgres_changes', { 
+                event: '*', 
+                schema: 'public', 
+                table: 'loyalty_cards',
+                filter: `profile_id=eq.${user.id}`
+            }, () => {
+                console.log('Cambio en puntos detectado via Postgres');
+                fetchUserData();
             })
             .on('postgres_changes', {
                 event: 'INSERT',
@@ -232,45 +216,13 @@ const MyPoints = () => {
                 table: 'transactions',
                 filter: `profile_id=eq.${user.id}`
             }, (payload) => {
-                console.log('Cambio en base de datos detectado:', payload.new);
-                
-                // Actualización optimista hiper-rápida (en línea)
-                if (payload.new && payload.new.points_amount) {
-                    setLoyaltyCards(prev => prev.map(card => {
-                        if (card.business_id === payload.new.business_id) {
-                            return {
-                                ...card,
-                                current_points: Math.max(0, Number(card.current_points) + Number(payload.new.points_amount))
-                            };
-                        }
-                        return card;
-                    }));
-                }
-
-                setTimeout(() => fetchUserData(), 1500);
-
+                console.log('Nueva transacción detectada via Postgres');
+                fetchUserData();
                 if (payload.new.type === 'EARN') {
-                    // Solo mostramos si no hemos mostrado el broadcast ya
-                    showNotification('success', '¡Saldo Actualizado!', `Has acumulado ${payload.new.points_amount} puntos.`);
-                } else if (payload.new.type === 'REDEEM') {
-                    showNotification('success', '¡Canje Procesado!', 'Tu premio ha sido procesado con éxito.');
-                    setShowRedemptionQR(null);
+                    showNotification('success', '¡Saldo Actualizado!', `+${payload.new.points_amount} puntos.`);
                 }
             })
-            .on('postgres_changes', {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'loyalty_cards',
-                filter: `profile_id=eq.${user.id}`
-            }, () => {
-                setTimeout(() => fetchUserData(), 1000);
-            })
-            .subscribe((status) => {
-                console.log('Estado canal Realtime Cliente:', status);
-                if (status === 'SUBSCRIBED') {
-                    console.log('--- Canal de Tiempo Real ACTIVADO para este cliente ---');
-                }
-            });
+            .subscribe();
 
         return () => {
             supabase.removeChannel(channel);
@@ -289,7 +241,8 @@ const MyPoints = () => {
                     .eq('profile_id', user.id);
                 
                 if (data && data.length > 0) {
-                    setPoints(data[0].current_points);
+                    // Actualizamos la lista completa de tarjetas para reflejar cambios
+                    fetchUserData();
                 }
             } catch (err) {
                 console.error("Error loading points:", err);
@@ -418,7 +371,10 @@ const MyPoints = () => {
                         </div>
                         <div>
                             <h1 className="text-lg font-black tracking-tight text-slate-900 leading-tight">Dashboard</h1>
-                            <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Tablero de Mando</p>
+                            <div className="flex items-center gap-2">
+                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Tablero de Mando</p>
+                                <span className="text-[8px] font-black text-slate-300 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">v1.3.1</span>
+                            </div>
                         </div>
                     </div>
                 </div>
