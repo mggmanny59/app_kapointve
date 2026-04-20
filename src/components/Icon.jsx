@@ -631,6 +631,25 @@ const SVG_ICONS = {
         <svg fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" {...props}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
         </svg>
+    ),
+
+    // Nuevos iconos para Marketing Hub y Categorías
+    restaurant: (props) => (
+        <svg fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" {...props}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21V2.853c0-.521-.466-.922-.987-.847a6.985 6.985 0 0 0-4.385 2.118 6.985 6.985 0 0 1-4.255 2.052c-.51-.01-.973.344-.973.854v11.53c0 .51.463.864.973.854a6.985 6.985 0 0 0 4.255 2.052c.384.05.77-.087 1.055-.365l3.29-3.29a1.056 1.056 0 0 1 1.027-.24c.732.19 1.487.35 2.257.48" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M3 21v-2.25C3 15.127 5.127 13 7.75 13h5.5c2.623 0 4.75 2.127 4.75 5.75V21" />
+        </svg>
+    ),
+    spa: (props) => (
+        <svg fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" {...props}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9s2.015-9 4.5-9m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m8.716 2.247c0 1.5-1.12 2.707-2.5 2.707s-2.5-1.207-2.5-2.707M12 16.5c0 1.5 1.12 2.707 2.5 2.707s2.5-1.207 2.5-2.707" />
+        </svg>
+    ),
+    build_circle: (props) => (
+        <svg fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" {...props}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.83-5.83m-5.83 5.83a2.652 2.652 0 11-3.75-3.75l5.83-5.83m0 9.58V10.5m0 9.58l4.47-4.47m-4.47 4.47l-4.47-4.47m4.47-4.47L10.5 4.5m4.47 4.47l-4.47-4.47m4.47 4.47l-4.47-4.47" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z" />
+        </svg>
     )
 };
 
@@ -647,8 +666,8 @@ const Icon = ({ name, className = "", style = {}, ...props }) => {
 
     // Fallback: render as font icon (should almost never happen now)
     return (
-        <span className={`material-symbols-outlined ${className}`} style={style} {...props}>
-            {name}
+        <span className={`material-symbols-outlined flex items-center justify-center overflow-hidden ${className}`} style={style} {...props}>
+            {name.replace(/_/g, ' ')}
         </span>
     );
 };

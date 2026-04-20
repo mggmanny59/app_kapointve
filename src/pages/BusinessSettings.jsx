@@ -649,15 +649,12 @@ const SettingCard = ({ icon, label, onClick }) => {
     return (
         <button
             onClick={onClick}
-            className="bg-primary border border-slate-200 rounded-[2rem] p-5 flex flex-col items-center justify-center gap-3 shadow-md hover:shadow-xl hover:-translate-y-1 active:scale-95 transition-all group overflow-hidden relative min-h-[130px]"
+            className="bg-white border-2 border-[#595A5B] rounded-[2.5rem] p-6 flex flex-col items-center justify-center gap-4 shadow-sm hover:shadow-xl hover:-translate-y-1 active:scale-95 transition-all group overflow-hidden relative min-h-[140px]"
         >
-            <div className="size-14 rounded-2xl bg-white/20 flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110 shadow-inner">
+            <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary transition-all duration-300 group-hover:scale-110 shadow-inner">
                 <Icon name={icon} className="!w-10 !h-10" />
             </div>
-            <span className="text-[12px] font-black text-white uppercase tracking-widest text-center leading-tight px-1 drop-shadow-sm">{label}</span>
-            
-            {/* Subtle Shine */}
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-tr from-white/10 to-transparent pointer-events-none"></div>
+            <span className="text-[11px] font-black text-slate-900 uppercase tracking-widest text-center leading-tight px-1">{label}</span>
         </button>
     );
 };
