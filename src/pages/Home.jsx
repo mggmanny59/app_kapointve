@@ -1337,6 +1337,39 @@ const Home = () => {
                 )}
 
 
+                {/* Botón de Rescate de Notificaciones - ACCESO PÚBLICO */}
+                <div className="bg-primary/10 rounded-2xl p-5 border-2 border-primary/20 mb-6 mt-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="size-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                                <Icon name="notifications_active" className="!w-6 !h-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-slate-900 text-xs font-black uppercase tracking-wider leading-tight">¿No recibes alertas?</h3>
+                                <p className="text-slate-500 text-[10px] font-bold leading-tight mt-0.5">Sincroniza tu dispositivo ahora</p>
+                            </div>
+                        </div>
+                        <button 
+                            onClick={async () => {
+                                const { subscribeUserToPush } = await import('../lib/pushNotifications');
+                                try {
+                                    const res = await subscribeUserToPush();
+                                    if(res) {
+                                        showNotification('success', '¡Sincronización Exitosa!', 'Dispositivo vinculado. Ya puedes recibir tus puntos y alertas.');
+                                    } else {
+                                        showNotification('warning', 'Aviso', 'No se pudo completar la sincronización. Verifica tus permisos.');
+                                    }
+                                } catch (e) {
+                                    showNotification('error', 'Error', 'Ocurrió un error al intentar sincronizar el dispositivo.');
+                                }
+                            }}
+                            className="px-5 py-2.5 bg-primary text-white text-[10px] font-black rounded-xl active:scale-95 transition-all shadow-xl shadow-primary/30"
+                        >
+                            ACTIVAR
+                        </button>
+                    </div>
+                </div>
+
                 {/* Indicadores de Gestión KPI - Solo Dueño */}
                 {userRole === 'owner' && (
                     <div className="space-y-4 py-2">
@@ -1360,7 +1393,10 @@ const Home = () => {
                 {userRole === 'owner' && (
                     <div className="pt-2">
                         <button
-                            onClick={() => setIsNotificationModalOpen(true)}
+                            onClick={() => {
+                                fetchDashboardData(); // Refrescar antes de abrir
+                                setIsNotificationModalOpen(true);
+                            }}
                             className="w-full bg-[#1E293B] hover:bg-slate-800 hover:scale-[1.01] border-2 border-[#334155] text-white h-16 rounded-2xl flex items-center justify-start px-6 gap-4 shadow-lg active:scale-[0.98] transition-all"
                         >
                             <Icon name="notifications_active" className="font-black !w-6 !h-6 shrink-0" />
@@ -1375,7 +1411,7 @@ const Home = () => {
                 {/* Activity Section */}
                 {(userRole === 'owner' || userPermissions?.can_view_clients) && (
                     <div className="space-y-4 mt-6">
-                        <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center">
                             <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest">Últimos Movimientos</h2>
                             <button className="text-xs font-black text-primary" onClick={() => navigate('/activity-history')}>Ver todo</button>
                         </div>

@@ -40,8 +40,9 @@ const SendNotificationModal = ({ isOpen, onClose, businessId, targetClient = nul
 
             // 2. Send Real Push Notification (Edge Function) if enabled
             let pushCount = 0;
-            if (sendPush && (user?.is_super_admin || user?.role === 'owner')) {
-                let recipients = [];
+            let lastResult = null; // DECLARADA AQUÍ AFUERA PARA QUE NO MUERA
+
+            if (sendPush) {
                 let businessName = 'KPoint';
                 let businessLogo = null;
 
@@ -59,44 +60,33 @@ const SendNotificationModal = ({ isOpen, onClose, businessId, targetClient = nul
                 }
 
                 if (targetClient) {
-                    recipients = [targetClient.profile_id];
+                    lastResult = await sendPushToProfile({
+                        profileId: targetClient.profile_id,
+                        title: businessId ? `${businessName}: ${title}` : title,
+                        message: message,
+                        url: '/my-points',
+                        icon: businessLogo || '/pwa-192x192.png'
+                    });
+                    if (lastResult?.success) pushCount = 1;
                 } else if (businessId) {
-                    // Fetch all clients for this business
-                    const { data } = await supabase
-                        .from('loyalty_cards')
-                        .select('profile_id')
-                        .eq('business_id', businessId);
-                    recipients = data?.map(d => d.profile_id) || [];
-                } else {
-                    // Global Push: Fetch everyone with a subscription
-                    const { data } = await supabase
-                        .from('push_subscriptions')
-                        .select('profile_id');
-                    recipients = [...new Set(data?.map(d => d.profile_id) || [])];
-                }
-
-                if (recipients.length > 0) {
-                    // Execute Push batches
-                    const pushPromises = recipients.map(pid => 
-                        sendPushToProfile({
-                            profileId: pid,
-                            title: businessId ? `${businessName}: ${title}` : title,
-                            message: message,
-                            url: '/my-points',
-                            icon: businessLogo || '/pwa-192x192.png'
-                        })
-                    );
-                    const pushResults = await Promise.all(pushPromises);
-                    pushCount = pushResults.filter(r => r.success).length;
+                    lastResult = await sendPushToProfile({
+                        businessId: businessId,
+                        title: `${businessName}: ${title}`,
+                        message: message,
+                        url: '/my-points',
+                        icon: businessLogo || '/pwa-192x192.png'
+                    });
+                    if (lastResult?.success) pushCount = 1;
                 }
             }
 
+            console.log('[DEBUG-PUSH] Mostrando mensaje de éxito...');
             showNotification(
                 'success', 
                 '¡Comunicado Enviado!', 
                 pushCount > 0 
-                    ? `Notificación interna enviada y ${pushCount} alertas Push móviles procesadas.`
-                    : 'La notificación interna ha sido enviada con éxito.'
+                    ? `Notificación interna guardada y ${pushCount} alertas Push enviadas.`
+                    : `Comunicado guardado correctamente.`
             );
             
             onClose();
@@ -105,7 +95,7 @@ const SendNotificationModal = ({ isOpen, onClose, businessId, targetClient = nul
             setType('GENERAL');
             setSendPush(false);
         } catch (err) {
-            showNotification('error', 'Error de Envío', err.message);
+            showNotification('error', 'Error de Envío', err.message || 'Error desconocido');
         } finally {
             setSending(false);
         }

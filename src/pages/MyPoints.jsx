@@ -279,6 +279,27 @@ const MyPoints = () => {
 
     // Redundancia Activa (Polling) cuando el cliente está esperando que le escaneen un premio
     useEffect(() => {
+        if (!user) return;
+        
+        const loadUserPoints = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('loyalty_cards')
+                    .select('current_points')
+                    .eq('profile_id', user.id);
+                
+                if (data && data.length > 0) {
+                    setPoints(data[0].current_points);
+                }
+            } catch (err) {
+                console.error("Error loading points:", err);
+            }
+        };
+
+        loadUserPoints();
+    }, [user, supabase]);
+
+    useEffect(() => {
         if (!showRedemptionQR || !selectedBusiness || !user) return;
 
         const checkBalanceInterval = setInterval(async () => {
@@ -465,12 +486,36 @@ const MyPoints = () => {
                             </span>
                         </div>
                         {isSubscribed ? (
-                            <button
-                                onClick={handleDisablePush}
-                                className="text-[10px] font-black bg-white/10 text-white/70 border border-white/20 px-3 py-1.5 rounded-xl hover:bg-white/20 active:scale-95 transition-all uppercase tracking-widest leading-none"
-                            >
-                                Desactivar
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={async () => {
+                                        const confirmSync = window.confirm('¿Deseas asegurar la correcta recepción de tus premios y noticias en este dispositivo?\n\nEsta acción optimizará la conexión con KPoint.');
+                                        
+                                        if (confirmSync) {
+                                            const { subscribeUserToPush } = await import('../lib/pushNotifications');
+                                            try {
+                                                const res = await subscribeUserToPush();
+                                                if(res) {
+                                                    showNotification('success', '¡Sincronización Exitosa!', 'Tu dispositivo ya está correctamente vinculado. Recibirás tus beneficios al instante.');
+                                                } else {
+                                                    showNotification('warning', 'Aviso', 'No pudimos completar la sincronización. Asegúrate de permitir las notificaciones.');
+                                                }
+                                            } catch (e) {
+                                                showNotification('error', 'Error', 'Ocurrió un error al intentar vincular este dispositivo.');
+                                            }
+                                        }
+                                    }}
+                                    className="text-[10px] font-black bg-white/25 text-white border border-white/40 px-3 py-1.5 rounded-xl hover:bg-white/40 active:scale-95 transition-all uppercase tracking-widest leading-none shadow-lg shadow-white/10"
+                                >
+                                    Sincronizar
+                                </button>
+                                <button
+                                    onClick={handleDisablePush}
+                                    className="text-[10px] font-black bg-white/10 text-white/50 border border-white/20 px-3 py-1.5 rounded-xl hover:bg-white/20 active:scale-95 transition-all uppercase tracking-widest leading-none"
+                                >
+                                    Desactivar
+                                </button>
+                            </div>
                         ) : (
                             <button
                                 onClick={handleEnablePush}

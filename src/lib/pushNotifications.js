@@ -114,6 +114,8 @@ export async function subscribeUserToPush() {
             if (existingSub) {
                 console.warn('[Push] Suscripción existente detectada. Forzando renovación para asegurar sincronización con nueva llave...');
                 await existingSub.unsubscribe();
+                // Pequeña espera para permitir al navegador limpiar el estado interno
+                await new Promise(resolve => setTimeout(resolve, 500));
             }
             
             console.log('[Push] Creando nueva suscripción definitiva...');
@@ -132,43 +134,26 @@ export async function subscribeUserToPush() {
 
         if (user) {
             const subscriptionJSON = subscription.toJSON();
-            console.log('[Push] Guardando llave en DB para:', user.id);
-
-            // Intentar insertar la nueva llave. Si ya existe, Supabase simplemente 
-            // dará un error que manejaremos suavemente.
+            // Sincronización silenciosa con base de datos
             const { error } = await supabase
                 .from('push_subscriptions')
-                .insert({
+                .upsert({
                     profile_id: user.id,
                     subscription: subscriptionJSON,
-                    user_agent: navigator.userAgent
+                    user_agent: navigator.userAgent,
+                    updated_at: new Date().toISOString()
                 });
 
             if (error) {
-                // Si el error es por duplicado, intentamos actualizar la existente
-                if (error.code === '23505') {
-                   await supabase
-                        .from('push_subscriptions')
-                        .update({ 
-                            subscription: subscriptionJSON,
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('profile_id', user.id)
-                        .eq('user_agent', navigator.userAgent);
-                } else {
-                    console.error('[Push] Error en guardado:', error.message);
-                    throw error;
-                }
+                throw error;
             }
 
-            console.log('[Push] ¡Suscripción sincronizada!');
-            return subscription;
+            return { subscription };
         }
 
         return null;
     } catch (error) {
-        console.error('Error detallado de suscripción:', error);
-        throw error; // Lanzar para que Home.jsx o MyPoints.jsx atrapen el mensaje
+        throw error; // Propagar para manejo en UI
     }
 }
 
@@ -206,11 +191,12 @@ export async function unsubscribeUserFromPush() {
 /**
  * Llama a la Edge Function para enviar una notificación push a un perfil específico
  */
-export async function sendPushToProfile({ profileId, title, message, url = '/dashboard', icon = null, image = null }) {
+export async function sendPushToProfile({ profileId = null, businessId = null, title, message, url = '/dashboard', icon = null, image = null }) {
     try {
         const { data, error } = await supabase.functions.invoke('send-push', {
             body: {
                 profile_id: profileId,
+                business_id: businessId,
                 title,
                 message,
                 url,
