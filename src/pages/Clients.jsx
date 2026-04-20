@@ -390,15 +390,13 @@ const Clients = () => {
             {selectedClient && (
                 <div className="fixed inset-0 z-[60] flex flex-col bg-white overflow-y-auto animate-in slide-in-from-right duration-300">
                     {/* Top Action Bar */}
-                    <div className="sticky top-0 left-0 right-0 p-6 flex justify-between items-center z-50 bg-white/80 backdrop-blur-md border-b border-[#595A5B]">
-                        <div className="size-11" />
+                    <div className="sticky top-0 left-0 right-0 p-6 flex items-center z-50 bg-white/80 backdrop-blur-md border-b border-[#595A5B]">
                         <div className="flex items-center gap-3">
                             <div className="bg-white p-2 shadow-sm border-2 border-[#595A5B]" style={{ borderRadius: '12px' }}>
                                 <Icon name="person_search" className="text-primary !w-5 !h-5" />
                             </div>
                             <h1 className="text-lg font-black text-slate-800 tracking-tight">Detalle del Cliente</h1>
                         </div>
-                        <div className="size-11" />
                     </div>
 
                     <div className="p-6 space-y-8 pb-32">
@@ -431,7 +429,7 @@ const Clients = () => {
                                                 <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center">
                                                     <Icon name="stars" className="!w-4 !h-4" />
                                                 </div>
-                                                <span className="text-[10px] font-black uppercase tracking-wider">Puntos Totales</span>
+                                                <span className="text-[13px] font-black uppercase tracking-tight">Puntos Totales</span>
                                             </div>
                                             <div className="space-y-1">
                                                 <p className="text-2xl font-black text-slate-900">{clientSummary.currentPoints?.toLocaleString()}</p>
@@ -447,7 +445,7 @@ const Clients = () => {
                                                 <div className="size-8 rounded-full bg-blue-50 flex items-center justify-center">
                                                     <Icon name="payments" className="!w-4 !h-4" />
                                                 </div>
-                                                <span className="text-[10px] font-black uppercase tracking-wider">Compras Totales</span>
+                                                <span className="text-[13px] font-black uppercase tracking-tight">Compras Totales</span>
                                             </div>
                                             <div className="space-y-1">
                                                 <p className="text-2xl font-black text-slate-900">${clientSummary.totalPurchasedAmount?.toLocaleString() || '0.00'}</p>
@@ -467,7 +465,7 @@ const Clients = () => {
                                             <div className="size-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#2563EB]">
                                                 <Icon name="calendar_today" className="!w-5 !h-5" />
                                             </div>
-                                            <span className="text-sm font-bold text-slate-700">Visitas Totales</span>
+                                            <span className="text-[13px] font-black uppercase tracking-tight">Visitas Totales</span>
                                         </div>
                                         <p className="text-2xl font-black text-slate-900">{clientSummary.totalPurchases}</p>
                                     </div>
