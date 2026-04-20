@@ -145,26 +145,6 @@ const Profile = () => {
                     <div className="absolute -top-10 -right-10 size-40 bg-white/10 rounded-full blur-3xl"></div>
                 </div>
 
-                {/* Subscription Section for Owners */}
-                {userRole === 'owner' && (
-                    <div className="bg-white p-6 rounded-[2.5rem] border-2 border-[#595A5B] shadow-sm flex items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom duration-700 delay-150">
-                        <div className="flex items-center gap-4">
-                            <div className="size-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                                <Icon name="payments" className="!w-8 !h-8" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Estado del Plan</p>
-                                <p className="text-sm text-slate-800 font-black">Tu Suscripción KPoint</p>
-                            </div>
-                        </div>
-                        <button 
-                            onClick={() => window.location.href = '/subscription'}
-                            className="h-12 px-6 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:scale-105 active:scale-95 transition-all"
-                        >
-                            Ver Plan
-                        </button>
-                    </div>
-                )}
 
                 {/* Edit Form */}
                 <form onSubmit={handleSave} className="bg-white p-8 rounded-[2.5rem] border-2 border-[#595A5B] shadow-sm space-y-6">
