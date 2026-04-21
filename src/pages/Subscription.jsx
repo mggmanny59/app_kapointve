@@ -7,7 +7,7 @@ import Navigation from '../components/Navigation';
 import { useNavigate } from 'react-router-dom';
 
 const Subscription = () => {
-    const { user, signOut } = useAuth();
+    const { user } = useAuth();
     const { showNotification } = useNotification();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
@@ -41,7 +41,7 @@ const Subscription = () => {
             const total = (plan.price * bcvRate).toFixed(2);
             setFormData(prev => ({ ...prev, amountVes: total }));
         }
-    }, [selectedPlan, bcvRate]);
+    }, [selectedPlan, bcvRate, plans]);
 
     // KPoint Payment Data
     const paymentData = {
@@ -118,7 +118,7 @@ const Subscription = () => {
 
     useEffect(() => {
         if (user) fetchSubscriptionData();
-    }, [user]);
+    }, [user, fetchSubscriptionData]);
 
     // Notification for blocking
     useEffect(() => {
@@ -189,7 +189,7 @@ const Subscription = () => {
     };
 
     const daysLeft = calculateDaysRemaining(business?.subscription_expiry);
-    const isPastDue = daysLeft === 0 && business?.subscription_status === 'PAST_DUE';
+
 
     if (loading) {
         return (

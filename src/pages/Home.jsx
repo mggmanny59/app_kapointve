@@ -96,8 +96,8 @@ const Home = () => {
                 setIsSubscribed(true);
                 showNotification('success', '¡Excelente!', '¡Buzón digital registrado con éxito! Tu dispositivo ya puede recibir avisos de KPoint.');
             }
-        } catch (error) {
-            showNotification('warning', 'Aviso', `No se pudieron activar las notificaciones: ${error.message}`);
+        } catch (_error) {
+            showNotification('warning', 'Aviso', 'No se pudieron activar las notificaciones en este dispositivo.');
         }
     };
 
@@ -231,7 +231,7 @@ const Home = () => {
             // 1. Fetch Profile and Business ID with Permissions
             const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
-                .select('*, business_members(business_id, role, permissions, businesses(name, registration_data, business_code, logo_url))')
+                .select('*, business_members(business_id, role, permissions, businesses(name, registration_data, business_code, logo_url, points_per_dollar))')
                 .eq('id', user.id)
                 .single();
 
@@ -425,7 +425,7 @@ const Home = () => {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [user, profile]);
+    }, [user, profile, fetchDashboardData, showNotification]);
 
     const startScanner = () => {
         setSaleStep(2);
@@ -450,8 +450,8 @@ const Home = () => {
                         onScanSuccess,
                         onScanFailure
                     );
-                } catch (err) {
-                    console.warn("Direct facingMode failed, listing cameras...", err);
+                } catch (_e) {
+                    console.warn("Direct facingMode failed, listing cameras...", _e);
                     const cameras = await Html5Qrcode.getCameras();
                     if (cameras && cameras.length > 0) {
                         const backCam = cameras.find(c =>
@@ -468,8 +468,8 @@ const Home = () => {
                         );
                     }
                 }
-            } catch (err) {
-                console.error('Final scanner error:', err);
+            } catch (_e) {
+                console.error('Final scanner error:', _e);
                 showNotification('error', 'Error de Cámara', 'No se pudo activar la cámara automáticamente.');
             }
         }, 400);
@@ -491,7 +491,7 @@ const Home = () => {
             try {
                 const qrData = JSON.parse(decodedText);
                 if (qrData.clientId) clientId = qrData.clientId;
-            } catch (e) {
+            } catch (_e) {
                 // Si no es JSON, asumimos que es el UUID directo del cliente
             }
 
@@ -509,49 +509,48 @@ const Home = () => {
 
             if (txError) throw txError;
 
-            // Success! Close everything and refresh
-            setIsModalOpen(false);
-            setAmount('');
-            setAmountBs('');
-            setSearchEmail('');
-            setSaleStep(1);
-            
-            // Aseguramos que la notificación se dispare
-            console.log('Mostrando notificación de éxito en pantalla...');
-            showNotification('success', '¡Puntos Asignados!', 'La venta se ha procesado y los puntos han sido cargados al cliente.');
-            
-            // Refrescar datos
-            fetchDashboardData();
+            // 1. Calc points before ANY state change
+            const pointsToGainVal = parseFloat(amount) * (business?.points_per_dollar || 10);
+            const ptsStr = pointsToGainVal.toFixed(0);
+            const cleanClientId = String(clientId).trim();
 
-            // 1. BROADCAST REALTIME: Envío directo al cliente para actualización INSTANTÁNEA
-            const pointsToGain = (parseFloat(amount) * (business?.points_per_dollar || 10)).toFixed(0);
+            // 2. BROADCAST REALTIME (Simplified shared room)
+            const topicEarn = `points-room-${cleanClientId}`;
+            const broadcastChannel = supabase.getChannels().find(c => c.topic === `realtime:${topicEarn}`) || supabase.channel(topicEarn);
             
-            const topicEarn = `client-points-realtime-${clientId}`;
-            const broadcastChannel = supabase.channel(topicEarn);
-            
-            const CURRENT_VERSION = '1.3.1';
             const payloadEarn = {
                 type: 'broadcast',
                 event: 'points_earned',
                 payload: {
                     businessId: businessId,
-                    points: pointsToGain,
-                    "version": "1.3.1",
+                    businessName: business?.name || 'KPoint',
+                    points: ptsStr
                 }
             };
 
-            broadcastChannel.subscribe((status) => {
-                if (status === 'SUBSCRIBED') {
-                    broadcastChannel.send(payloadEarn)
-                        .then(() => console.log('✅ Broadcast enviado con éxito'))
-                        .catch(e => console.error('❌ Error enviando broadcast:', e));
-                }
-            });
+            const doSend = () => {
+                broadcastChannel.send(payloadEarn).catch(err => console.error('[Realtime] Error envío:', err));
+            };
 
-            // 2. NOTIFICACIÓN PUSH PERSONALIZADA
-            // Esperamos un poco para que los triggers de DB procesen el saldo antes de buscar premios
-            console.log('Iniciando notifyConversion...');
-            await notifyConversion(clientId, pointsToGain);
+            if (broadcastChannel.state === 'joined') {
+                doSend();
+            } else {
+                broadcastChannel.subscribe((status) => {
+                    if (status === 'SUBSCRIBED') doSend();
+                });
+            }
+
+            // 3. UI State Reset
+            setIsModalOpen(false);
+            setAmount('');
+            setAmountBs('');
+            setSearchEmail('');
+            setSaleStep(1);
+            showNotification('success', '¡Puntos Asignados!', 'La venta se ha procesado y los puntos han sido cargados al cliente.');
+            fetchDashboardData();
+
+            // 4. PUSH (Asíncrono)
+            notifyConversion(cleanClientId, ptsStr).catch(console.error);
 
         } catch (err) {
             console.error('Error processing sale:', err);
@@ -590,8 +589,8 @@ const Home = () => {
                         onRedeemScanSuccess,
                         onScanFailure
                     );
-                } catch (err) {
-                    console.warn("Redeem facingMode failed, listing cameras...", err);
+                } catch (_e) {
+                    console.warn("Redeem facingMode failed, listing cameras...", _e);
                     const cameras = await Html5Qrcode.getCameras();
                     if (cameras && cameras.length > 0) {
                         const backCam = cameras.find(c =>
@@ -608,8 +607,8 @@ const Home = () => {
                         );
                     }
                 }
-            } catch (err) {
-                console.error('Final redeem scanner error:', err);
+            } catch (_e) {
+                console.error('Final redeem scanner error:', _e);
                 showNotification('error', 'Error de Cámara', 'No se pudo activar la cámara automáticamente.');
             }
         }, 400);
@@ -742,7 +741,7 @@ const Home = () => {
             });
 
             // 5. BROADCAST REALTIME: Envío directo al cliente para actualización INSTANTÁNEA (Canje)
-            const topicRedeem = `client-points-realtime-${client.profile_id}`;
+            const topicRedeem = `points-room-${client.profile_id}`;
             const redeemBroadcastChannel = supabase.getChannels().find(c => c.topic === `realtime:${topicRedeem}`) || supabase.channel(topicRedeem);
             
             const payloadRedeem = {
@@ -806,6 +805,12 @@ const Home = () => {
                 throw new Error(`El cliente ${profileData.full_name} no está afiliado a este comercio.`);
             }
 
+            // PRE-SUSCRIPCIÓN: Anticipamos el canal del cliente antes de que la transacción termine
+            // para que el pipe esté "caliente" al momento de enviar los puntos.
+            const preChannelId = String(profileData.id).trim();
+            const preTopic = `client-points-realtime-${preChannelId}`;
+            supabase.channel(preTopic).subscribe();
+
             // 5. Process Transaction
             const { error: txError } = await supabase
                 .from('transactions')
@@ -820,7 +825,38 @@ const Home = () => {
 
             if (txError) throw txError;
 
-            // Success!
+            // 6. BROADCAST REALTIME (Manual) - Priorizamos el envío antes de limpiar la UI
+            const ptsValManual = (parseFloat(amount) * (business?.points_per_dollar || 10)).toFixed(0);
+            const cleanIdManual = String(profileData.id).trim();
+            const topicEarnManual = `points-room-${cleanIdManual}`;
+            
+            const broadcastChannelManual = supabase.getChannels().find(c => c.topic === `realtime:${topicEarnManual}`) || 
+                                          supabase.channel(topicEarnManual);
+            
+            const payloadEarnManual = {
+                type: 'broadcast',
+                event: 'points_earned',
+                payload: {
+                    businessId: businessId,
+                    businessName: business?.name || 'KPoint',
+                    points: ptsValManual
+                }
+            };
+
+            const doSendManual = () => {
+                console.log(`[Realtime-Manual] Enviando ${ptsValManual} pts a ${profileData.full_name}...`);
+                broadcastChannelManual.send(payloadEarnManual).catch(console.error);
+            };
+
+            if (broadcastChannelManual.state === 'joined') {
+                await doSendManual();
+            } else {
+                broadcastChannelManual.subscribe(async (status) => {
+                    if (status === 'SUBSCRIBED') await doSendManual();
+                });
+            }
+
+            // 7. Success UI Feedback
             setIsModalOpen(false);
             setAmount('');
             setAmountBs('');
@@ -832,38 +868,8 @@ const Home = () => {
             
             fetchDashboardData();
 
-            // 6. Notificación Push Personalizada
-            const pointsToGain = (parseFloat(amount) * (business?.points_per_dollar || 10)).toFixed(0);
-            console.log(`[Manual] ✅ Todo OK. Intentando enviar Push a ${profileData.id}, puntos: ${pointsToGain}`);
-            
-            try {
-                await notifyConversion(profileData.id, pointsToGain);
-                console.log('[Manual] ✅ notifyConversion completado exitosamente.');
-            } catch (pushErr) {
-                console.error('[Manual] ❌ Error en notifyConversion:', pushErr.message);
-            }
-
-            // 7. BROADCAST REALTIME: Envío directo al cliente para actualización INSTANTÁNEA (Manual)
-            const topicEarnManual = `client-points-realtime-${profileData.id}`;
-            const broadcastChannelManual = supabase.channel(topicEarnManual);
-            
-            const payloadEarnManual = {
-                type: 'broadcast',
-                event: 'points_earned',
-                payload: {
-                    businessId: businessId,
-                    profileId: profileData.id,
-                    businessName: business?.name || 'Comercio',
-                    points: pointsToGain,
-                    amountUSD: amount
-                }
-            };
-
-            broadcastChannelManual.subscribe((status) => {
-                if (status === 'SUBSCRIBED') {
-                    broadcastChannelManual.send(payloadEarnManual).catch(console.error);
-                }
-            });
+            // 8. NOTIFICACIÓN PUSH - Eliminada por solicitud del usuario
+            // notifyConversion(profileData.id, ptsValManual).catch(console.error);
 
         } catch (err) {
             console.error('[Manual] Error en registro:', err);
@@ -885,7 +891,7 @@ const Home = () => {
             window.scannerInstance = null;
         }
         if (window.scannerUI) {
-            await window.scannerUI.clear().catch(() => { });
+            window.scannerUI.clear().catch(() => { });
             window.scannerUI = null;
         }
         if (window.scanner) {
@@ -950,10 +956,11 @@ const Home = () => {
                         <div>
                             <h1 className="text-lg font-black tracking-tight text-slate-900 leading-tight">KPoint</h1>
                             <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest flex items-center gap-2">
-                                v1.3.1
+                                v1.3.2
                                 <span className="w-1 h-1 bg-[#ff6a00] rounded-full animate-pulse"></span>
                             </p>
                         </div>
+                        {/* Build v1.3.2-production-ready */}
                     </div>
                     
                     <div className="flex gap-2">
@@ -1383,8 +1390,8 @@ const Home = () => {
                                     } else {
                                         showNotification('warning', 'Aviso', 'No se pudo completar la sincronización. Verifica tus permisos.');
                                     }
-                                } catch (e) {
-                                    showNotification('error', 'Error', 'Ocurrió un error al intentar sincronizar el dispositivo.');
+                                } catch (_e) {
+                                    showNotification('error', 'Error', 'Ocurrió un error al intentar vincular este dispositivo.');
                                 }
                             }}
                             className="px-5 py-2.5 bg-primary text-white text-[10px] font-black rounded-xl active:scale-95 transition-all shadow-xl shadow-primary/30"

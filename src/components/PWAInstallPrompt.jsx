@@ -11,12 +11,9 @@ import Icon from './Icon';
 const PWAInstallPrompt = () => {
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [isVisible, setIsVisible] = useState(false);
-    const [isIOS, setIsIOS] = useState(false);
+    const [isIOS, setIsIOS] = useState(() => /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream);
 
     useEffect(() => {
-        const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
-        setIsIOS(ios);
-
         // Verificar si ya está instalada como PWA
         const isStandalone =
             window.matchMedia('(display-mode: standalone)').matches ||
@@ -29,7 +26,7 @@ const PWAInstallPrompt = () => {
         if (window.deferredPWA) {
             setDeferredPrompt(window.deferredPWA);
             setIsVisible(true);
-        } else if (ios) {
+        } else if (isIOS) {
             // En iOS no hay evento, mostramos instrucciones manuales
             setIsVisible(true);
         }

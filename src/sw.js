@@ -72,7 +72,7 @@ self.addEventListener('push', (event) => {
             // Asegurar que el cuerpo del mensaje se asigne correctamente desde cualquier formato
             data.body = parsed.message || parsed.body || data.body;
             console.log('[SW] Datos del push (JSON):', data);
-        } catch (e) {
+        } catch (_e) {
             data.body = event.data.text();
             console.log('[SW] Datos del push (Text):', data.body);
         }
@@ -108,7 +108,7 @@ self.addEventListener('notificationclick', (event) => {
     const urlToOpen = event.notification.data.url || '/';
 
     event.waitUntil(
-        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
             // Si ya hay una ventana abierta con la app, enfocarla
             for (let i = 0; i < windowClients.length; i++) {
                 const client = windowClients[i];
@@ -117,8 +117,8 @@ self.addEventListener('notificationclick', (event) => {
                 }
             }
             // Si no hay ventana, abrir una nueva
-            if (clients.openWindow) {
-                return clients.openWindow(urlToOpen);
+            if (self.clients.openWindow) {
+                return self.clients.openWindow(urlToOpen);
             }
         })
     );

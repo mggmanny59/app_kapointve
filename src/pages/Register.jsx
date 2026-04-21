@@ -16,10 +16,10 @@ const Register = () => {
         phoneSuffix: '',
         email: '',
         password: '',
-        birthDate: '', // New field for both roles
-        shopCode: '', // businessName for owners
-        rif: '', // New field for owners
-        confirmEmail: '' // New validation field
+        birthDate: '', 
+        shopCode: '', 
+        rif: '', 
+        confirmEmail: '' 
     });
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -29,7 +29,6 @@ const Register = () => {
     const { checkBlocked, recordFailure, recordSuccess, remainingAttempts } = useRateLimit({ maxAttempts: 5, lockoutDuration: 60000 });
     const [acceptedTerms, setAcceptedTerms] = useState(false);
 
-    // Aggressively clearing fields on startup to prevent browser autofill
     React.useEffect(() => {
         const timer = setTimeout(() => {
             setFormData({
@@ -43,7 +42,7 @@ const Register = () => {
                 rif: '',
                 confirmEmail: ''
             });
-        }, 300); // Aumentado a 300ms para mayor seguridad
+        }, 300);
         return () => clearTimeout(timer);
     }, [activeTab]);
 
@@ -57,7 +56,6 @@ const Register = () => {
     const handleRegister = async (e) => {
         e.preventDefault();
 
-        // Rate limiting check
         const { blocked, secondsLeft } = checkBlocked();
         if (blocked) {
             showNotification('error', 'Registro Bloqueado', 
@@ -65,7 +63,6 @@ const Register = () => {
             return;
         }
 
-        // Validate Phone Suffix (7 digits)
         if (formData.phoneSuffix.length !== 7 || !/^\d+$/.test(formData.phoneSuffix)) {
             showNotification('error', 'Teléfono Inválido', 'El número de teléfono debe tener exactamente 7 dígitos.');
             return;
@@ -86,8 +83,6 @@ const Register = () => {
         const fullPhone = `${formData.phonePrefix}${formData.phoneSuffix}`;
 
         try {
-            // --- VALIDACIÓN PREVENTIVA ---
-            // 1. Verificar si el teléfono ya existe en la base de datos
             const { data: phoneCheck, error: phoneCheckError } = await supabase
                 .from('profiles')
                 .select('id')
@@ -109,20 +104,17 @@ const Register = () => {
             };
             
             const cleanEmail = formData.email.trim();
+            const dataResult = await signUp(cleanEmail, formData.password, metadata);
 
-            const data = await signUp(cleanEmail, formData.password, metadata);
-
-            if (data?.user?.identities?.length === 0) {
+            if (dataResult?.user?.identities?.length === 0) {
                 recordFailure();
                 showNotification('error', 'Cuenta Existente', 'Este correo electrónico ya está registrado. Intenta iniciar sesión.');
                 setLoading(false);
                 return;
             }
 
-            const userId = data.user.id;
+            const userId = dataResult.user.id;
 
-            // 1. Update profile with phone number
-            // NOTE: is_super_admin is handled server-side via DB trigger (security best practice)
             await supabase
                 .from('profiles')
                 .update({
@@ -133,18 +125,14 @@ const Register = () => {
                 })
                 .eq('id', userId);
 
-            // 2. Business Logic based on Role
             if (activeTab === 'admin') {
-                // Owner Registration - Create Business
                 if (!formData.shopCode || !formData.rif) {
                     throw new Error('El nombre del negocio y el RIF son obligatorios.');
                 }
 
-                // Calculate initial subscription expiry (30 days from now)
                 const initialExpiry = new Date();
                 initialExpiry.setDate(initialExpiry.getDate() + 30);
 
-                // Create the Business Entry
                 const { data: newBiz, error: bizError } = await supabase
                     .from('businesses')
                     .insert({
@@ -152,8 +140,8 @@ const Register = () => {
                         rif: formData.rif,
                         owner_id: userId,
                         is_active: true,
-                        registration_status: 'PENDING', // All new businesses require admin approval
-                        subscription_plan: 'BASIC', // Consistent with user request
+                        registration_status: 'PENDING',
+                        subscription_plan: 'BASIC',
                         subscription_expiry: initialExpiry.toISOString()
                     })
                     .select()
@@ -161,7 +149,6 @@ const Register = () => {
 
                 if (bizError) throw bizError;
 
-                // Insert into business_members
                 await supabase
                     .from('business_members')
                     .insert({
@@ -170,28 +157,17 @@ const Register = () => {
                         role: 'owner'
                     });
 
-                if (isPlatformOwner) {
-                    showNotification('success', '¡Acceso Maestro Activado!', 'Has sido registrado como el Administrador Global de la plataforma.');
-                } else {
-                    showNotification('success', '¡Registro Recibido!', 'Tu solicitud de registro ha sido enviada. Un administrador verificará tus datos y activará tu cuenta pronto.');
-                }
+                showNotification('success', '¡Registro Recibido!', 'Tu solicitud de registro ha sido enviada. Un administrador verificará tus datos pronto.');
 
             } else {
-                // Client Registration - Decoupled Flow
-                // No automatic business affiliation. 
-                // Enhanced profile is already created.
-
-                showNotification('success', '¡Cuenta Creada!', 'Tu cuenta ha sido creada exitosamente. Escanea el código QR de un comercio para unirte a su programa de fidelidad.');
+                showNotification('success', '¡Cuenta Creada!', 'Tu cuenta ha sido creada exitosamente.');
             }
 
             recordSuccess();
             navigate('/login');
         } catch (err) {
             recordFailure();
-            let friendlyMessage = getSafeErrorMessage(err);
-            if (remainingAttempts <= 2 && remainingAttempts > 0) {
-                friendlyMessage += ` (${remainingAttempts} intentos restantes)`;
-            }
+            const friendlyMessage = getSafeErrorMessage(err);
             showNotification('error', 'Error en Registro', friendlyMessage);
         } finally {
             setLoading(false);
@@ -200,7 +176,6 @@ const Register = () => {
 
     return (
         <div className="h-[100dvh] w-full flex flex-col bg-white text-slate-900 font-display overflow-y-auto relative">
-            {/* Fondo con imagen original y degradado ampliado hacia blanco puro */}
             <div className="absolute inset-0 z-0 overflow-hidden">
                 <img
                     src="/BannerLogin.png"
@@ -212,7 +187,6 @@ const Register = () => {
 
             <div className="relative z-10 flex flex-col flex-1 px-6 pt-[6vh] pb-6 justify-between overflow-hidden">
                 <div className="flex flex-col flex-1 overflow-hidden">
-                    {/* Logo / Brand Header */}
                     <div className="flex flex-col items-center mb-4 shrink-0">
                         <div className="bg-white p-3 rounded-[24px] shadow-xl border border-white/50 flex flex-col items-center gap-1">
                             <img
@@ -228,14 +202,12 @@ const Register = () => {
                         </div>
                     </div>
 
-                    {/* Register Card (Stitch Inspired) */}
                     <div className="max-w-[440px] w-full mx-auto bg-white/95 backdrop-blur-sm rounded-[40px] shadow-[0_30px_90px_-12px_rgba(0,0,0,0.75)] p-10 border border-white flex flex-col overflow-hidden">
                         <div className="text-center mb-6 shrink-0">
                             <h2 className="text-xl font-bold text-slate-900 leading-tight">¡Únete ahora!</h2>
                             <p className="text-sm text-slate-500 font-medium mt-1">Crea tu cuenta en segundos</p>
                         </div>
 
-                        {/* Role Tabs */}
                         <div className="flex bg-slate-50 p-1 rounded-2xl border-2 border-[#595A5B] mb-4 text-xs shrink-0">
                             <button
                                 type="button"
@@ -261,14 +233,12 @@ const Register = () => {
                             </button>
                         </div>
 
-                        {/* Formulario con scroll y key para reinicio total */}
                         <form 
                             key={activeTab}
                             onSubmit={handleRegister} 
                             className="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar" 
                             autoComplete="off"
                         >
-                            {/* Nombre Completo */}
                             <div className="flex flex-col gap-1">
                                 <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">
                                     {activeTab === 'admin' ? 'Nombre del Representante' : 'Nombre Completo'}
@@ -287,7 +257,6 @@ const Register = () => {
                                 </div>
                             </div>
 
-                            {/* Teléfono */}
                             <div className="flex flex-col gap-1">
                                 <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">Número de Teléfono</label>
                                 <div className="flex gap-2">
@@ -327,7 +296,6 @@ const Register = () => {
                                 </div>
                             </div>
 
-                            {/* Email */}
                             <div className="flex flex-col gap-1">
                                 <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">Correo Electrónico</label>
                                 <div className="relative group text-sm">
@@ -346,7 +314,6 @@ const Register = () => {
                                 </div>
                             </div>
 
-                            {/* Confirmar Email */}
                             <div className="flex flex-col gap-1">
                                 <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">Confirmar Correo Electrónico</label>
                                 <div className="relative group text-sm">
@@ -365,7 +332,6 @@ const Register = () => {
                                 </div>
                             </div>
 
-                            {/* Fecha de Nacimiento */}
                             <div className="flex flex-col gap-1">
                                 <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">Fecha de Nacimiento</label>
                                 <div className="relative group text-sm">
@@ -381,7 +347,6 @@ const Register = () => {
                                 </div>
                             </div>
 
-                            {/* Password */}
                             <div className="flex flex-col gap-1">
                                 <label className="text-slate-900 text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">Contraseña</label>
                                 <div className="relative group text-sm">
@@ -405,7 +370,6 @@ const Register = () => {
                                 </div>
                             </div>
 
-                            {/* Campos Específicos para Dueño */}
                             {activeTab === 'admin' && (
                                 <>
                                     <div className="flex flex-col gap-1">
@@ -444,7 +408,6 @@ const Register = () => {
                                 </>
                             )}
 
-                            {/* Legal Accept Checkbox */}
                             <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-100 flex items-start gap-3 mt-4">
                                 <button
                                     type="button"
@@ -457,7 +420,7 @@ const Register = () => {
                                     {acceptedTerms && <Icon name="check" className="!w-4 !h-4" />}
                                 </button>
                                 <div className="text-[11px] leading-relaxed text-slate-600 font-medium">
-                                    Acepto los <Link to="/terms" className="text-[#ff6a00] font-bold hover:underline">Términos y Condiciones</Link> y reconozco que mis datos serán tratados según la <Link to="/privacy" className="text-[#ff6a00] font-bold hover:underline">Política de Privacidad</Link> ajustada al marco legal venezolano.
+                                    Acepto los <Link to="/terms" className="text-[#ff6a00] font-bold hover:underline">Términos y Condiciones</Link> y el tratamiento de mis datos.
                                 </div>
                             </div>
 
@@ -486,13 +449,10 @@ const Register = () => {
                     </div>
                 </div>
 
-                {/* Footer Credits */}
                 <div className="max-w-[440px] w-full mx-auto pb-2 text-center shrink-0 flex flex-col gap-4">
                     <p className="text-black text-[10px] font-bold uppercase tracking-widest">
                         Desarrollado por CloudNets 2026 - Venezuela
                     </p>
-
-                    {/* Banner Naranja */}
                     <div className="bg-[#ff6a00] h-3 w-full rounded-full shadow-lg shadow-[#ff6a00]/30"></div>
                 </div>
             </div>

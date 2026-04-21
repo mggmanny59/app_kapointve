@@ -126,7 +126,9 @@ const MyPoints = () => {
     };
 
     useEffect(() => {
-        if (user) fetchUserData();
+        if (user) {
+            fetchUserData();
+        }
     }, [user]);
 
     useEffect(() => {
@@ -180,77 +182,70 @@ const MyPoints = () => {
         }
     };
 
+    // Efecto para refrescar datos cuando la app vuelve al primer plano (foreground)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                console.log('[App] Volviendo al modo activo... Refrescando puntos.');
+                fetchUserData();
+            }
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, []);
+
     useEffect(() => {
         if (!user) return;
 
-        // Listener de Doble Seguridad: Broadcast Directo + Postgres Changes
+        // VERSIÓN 1.3.2 - ESCUCHA UNIVERSAL ROBUSTA
+        console.log(`[Realtime] Iniciando Monitor de Puntos VIP para: ${user.id}`);
+        
         const channel = supabase
-            .channel(`client-points-realtime-${user.id}`)
+            .channel(`universal-sync-${user.id}`)
             .on('broadcast', { event: 'points_earned' }, (payload) => {
-                console.log('¡Broadcast RECIBIDO!', payload);
-                fetchUserData();
-                // Notificación visual inmediata
-                if (payload.payload && payload.payload.points) {
+                if (payload.payload?.points) {
                     showNotification('success', '¡Puntos Recibidos!', `Has ganado ${payload.payload.points} puntos.`);
+                    fetchUserData();
                 }
-                setShowMainQRModal(false);
             })
             .on('broadcast', { event: 'reward_redeemed' }, (payload) => {
-                console.log('¡Canje RECIBIDO!', payload);
-                fetchUserData();
-                showNotification('success', '¡Canje Realizado!', 'Disfruta tu premio.');
+                console.log('[Realtime] ¡Canje recibido!', payload);
+                showNotification('success', '¡Canje Exitoso!', `Premio canjeado correctamente.`);
                 setShowRedemptionQR(null);
+                fetchUserData();
             })
             .on('postgres_changes', { 
                 event: '*', 
                 schema: 'public', 
-                table: 'loyalty_cards',
-                filter: `profile_id=eq.${user.id}`
-            }, () => {
-                console.log('Cambio en puntos detectado via Postgres');
-                fetchUserData();
-            })
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'transactions',
-                filter: `profile_id=eq.${user.id}`
+                table: 'loyalty_cards'
             }, (payload) => {
-                console.log('Nueva transacción detectada via Postgres');
-                fetchUserData();
-                if (payload.new.type === 'EARN') {
-                    showNotification('success', '¡Saldo Actualizado!', `+${payload.new.points_amount} puntos.`);
+                // Filtramos manualmente para evitar errores de filtro de servidor
+                const isMyChange = payload.new?.profile_id === user.id || payload.old?.profile_id === user.id;
+
+                if (isMyChange) {
+                    console.log('[Realtime] ¡Cambio detectado en tus puntos!');
+                    fetchUserData();
                 }
             })
-            .subscribe();
+            .subscribe(async (status) => {
+                console.log(`[Realtime] Conexión: ${status}`);
+                if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+                    console.log('[Realtime] Reconectando...');
+                    setTimeout(() => channel.subscribe(), 5000);
+                }
+            });
 
         return () => {
             supabase.removeChannel(channel);
         };
     }, [user]);
 
-    // Redundancia Activa (Polling) cuando el cliente está esperando que le escaneen un premio
+    // Redundancia Activa (Polling opcional o sincronización inicial)
     useEffect(() => {
         if (!user) return;
-        
-        const loadUserPoints = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from('loyalty_cards')
-                    .select('current_points')
-                    .eq('profile_id', user.id);
-                
-                if (data && data.length > 0) {
-                    // Actualizamos la lista completa de tarjetas para reflejar cambios
-                    fetchUserData();
-                }
-            } catch (err) {
-                console.error("Error loading points:", err);
-            }
-        };
-
-        loadUserPoints();
-    }, [user, supabase]);
+        // Solo verificamos si hay cambios al montar o al cambiar usuario
+        fetchUserData();
+    }, [user, supabase, fetchUserData]);
 
     useEffect(() => {
         if (!showRedemptionQR || !selectedBusiness || !user) return;
@@ -290,7 +285,7 @@ const MyPoints = () => {
         }, 2000); // 2 segundos
 
         return () => clearInterval(checkBalanceInterval);
-    }, [showRedemptionQR, selectedBusiness, user, loyaltyCards]);
+    }, [showRedemptionQR, selectedBusiness, user, loyaltyCards, fetchUserData, showNotification]);
 
     const startScanner = () => {
         setIsScannerOpen(true);
@@ -373,7 +368,7 @@ const MyPoints = () => {
                             <h1 className="text-lg font-black tracking-tight text-slate-900 leading-tight">Dashboard</h1>
                             <div className="flex items-center gap-2">
                                 <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Tablero de Mando</p>
-                                <span className="text-[8px] font-black text-slate-300 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">v1.3.1</span>
+                                <span className="text-[8px] font-black text-slate-300 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">v1.3.2</span>
                             </div>
                         </div>
                     </div>
@@ -456,7 +451,7 @@ const MyPoints = () => {
                                                 } else {
                                                     showNotification('warning', 'Aviso', 'No pudimos completar la sincronización. Asegúrate de permitir las notificaciones.');
                                                 }
-                                            } catch (e) {
+                                            } catch (_e) {
                                                 showNotification('error', 'Error', 'Ocurrió un error al intentar vincular este dispositivo.');
                                             }
                                         }
@@ -677,10 +672,10 @@ const MyPoints = () => {
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex gap-4 overflow-x-auto pb-6 px-[7.5vw] snap-x snap-mandatory">
+                                <div className="flex gap-4 overflow-x-auto pb-6 px-4 snap-x snap-mandatory scroll-smooth custom-scrollbar-hide">
                                     {businessPromotions.map(promo => (
-                                        <div key={promo.id} className="w-[85vw] min-w-[85vw] max-w-[85vw] lg:w-[320px] lg:min-w-[320px] lg:max-w-[320px] shrink-0 bg-white border-2 border-slate-200 rounded-[2.5rem] overflow-hidden shadow-xl shadow-slate-100/50 flex flex-col snap-center">
-                                            <div className="h-[220px] w-full relative bg-slate-50 border-b border-slate-100">
+                                        <div key={promo.id} className="w-[82vw] min-w-[82vw] max-w-[82vw] lg:w-[320px] lg:min-w-[320px] lg:max-w-[320px] shrink-0 bg-white border-2 border-slate-200 rounded-[2.5rem] overflow-hidden shadow-xl shadow-slate-100/50 flex flex-col snap-center transition-transform active:scale-[0.98]">
+                                            <div className="h-[200px] w-full relative bg-slate-50 border-b border-slate-100">
                                                 <img 
                                                     src={promo.image_url.startsWith('http') ? promo.image_url : `/${promo.image_url}`} 
                                                     alt={promo.title} 
