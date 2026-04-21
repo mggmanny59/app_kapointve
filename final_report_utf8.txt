@@ -1,0 +1,314 @@
+﻿
+> fidelityapp-mvp@1.3.2 lint
+> eslint .
+
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\App.jsx
+   1:8   warning  'React' is defined but never used                     no-unused-vars
+   1:17  warning  'useState' is defined but never used                  no-unused-vars
+   2:27  warning  'Router' is defined but never used                    no-unused-vars
+   2:35  warning  'Routes' is defined but never used                    no-unused-vars
+   2:43  warning  'Route' is defined but never used                     no-unused-vars
+   2:50  warning  'Navigate' is defined but never used                  no-unused-vars
+   3:8   warning  'Login' is defined but never used                     no-unused-vars
+   4:8   warning  'Register' is defined but never used                  no-unused-vars
+   5:8   warning  'Home' is defined but never used                      no-unused-vars
+   6:8   warning  'Clients' is defined but never used                   no-unused-vars
+   7:8   warning  'MyPoints' is defined but never used                  no-unused-vars
+   8:8   warning  'PrizeDesigner' is defined but never used             no-unused-vars
+   9:8   warning  'BusinessSettings' is defined but never used          no-unused-vars
+  10:8   warning  'StaffManagement' is defined but never used           no-unused-vars
+  11:8   warning  'PlatformControl' is defined but never used           no-unused-vars
+  12:8   warning  'KPIDashboard' is defined but never used              no-unused-vars
+  13:8   warning  'ForgotPassword' is defined but never used            no-unused-vars
+  14:8   warning  'ResetPassword' is defined but never used             no-unused-vars
+  15:8   warning  'ActivityHistory' is defined but never used           no-unused-vars
+  16:8   warning  'Subscription' is defined but never used              no-unused-vars
+  17:8   warning  'Terms' is defined but never used                     no-unused-vars
+  18:8   warning  'Privacy' is defined but never used                   no-unused-vars
+  19:8   warning  'Profile' is defined but never used                   no-unused-vars
+  21:8   warning  'BackNavigationHandler' is defined but never used     no-unused-vars
+  22:8   warning  'PWAInstallPrompt' is defined but never used          no-unused-vars
+  23:7   warning  'ProtectedRoute' is assigned a value but never used   no-unused-vars
+  38:7   warning  'AdminRoute' is assigned a value but never used       no-unused-vars
+  43:9   warning  'isExpired' is assigned a value but never used        no-unused-vars
+  59:7   warning  'SuperAdminRoute' is assigned a value but never used  no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\components\AuthLayout.jsx
+  1:8   warning  'React' is defined but never used  no-unused-vars
+  2:8   warning  'Icon' is defined but never used   no-unused-vars
+  3:10  warning  'Link' is defined but never used   no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\components\BackNavigationHandler.jsx
+   1:8   warning  'React' is defined but never used  no-unused-vars
+   2:8   warning  'Icon' is defined but never used   no-unused-vars
+  24:33  warning  'e' is defined but never used      no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\components\Icon.jsx
+  1:8  warning  'React' is defined but never used  no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\components\MarketingHub.jsx
+   1:8  warning  'React' is defined but never used                                                                                  no-unused-vars
+   2:8  warning  'Icon' is defined but never used                                                                                   no-unused-vars
+  26:8  warning  React Hook useEffect has a missing dependency: 'fetchTemplates'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\components\MessageCenter.jsx
+  1:8   warning  'React' is defined but never used             no-unused-vars
+  2:8   warning  'Icon' is defined but never used              no-unused-vars
+  6:65  warning  'loading' is assigned a value but never used  no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\components\Navigation.jsx
+   1:8   warning  'React' is defined but never used  no-unused-vars
+   6:8   warning  'Icon' is defined but never used   no-unused-vars
+  73:38  warning  'idx' is defined but never used    no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\components\NavigationAdmin.jsx
+  1:8  warning  'React' is defined but never used  no-unused-vars
+  4:8  warning  'Icon' is defined but never used   no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\components\Notification.jsx
+  1:8   warning  'React' is defined but never used              no-unused-vars
+  2:8   warning  'Icon' is defined but never used               no-unused-vars
+  4:68  warning  'duration' is assigned a value but never used  no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\components\PWAInstallPrompt.jsx
+   1:8   warning  'React' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            no-unused-vars
+   2:8   warning  'Icon' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             no-unused-vars
+  18:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  16 |     useEffect(() => {
+  17 |         const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
+> 18 |         setIsIOS(ios);
+     |         ^^^^^^^^ Avoid calling setState() directly within an effect
+  19 |
+  20 |         // Verificar si ya est├í instalada como PWA
+  21 |         const isStandalone =  react-hooks/set-state-in-effect
+  55:17  warning  'outcome' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\components\PWAReloadPrompt.jsx
+  2:10  warning  'useEffect' is defined but never used  no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\components\PrizeCalculator.jsx
+   1:8  warning  'React' is defined but never used                                                                             no-unused-vars
+   2:8  warning  'Icon' is defined but never used                                                                              no-unused-vars
+  63:8  warning  React Hook useEffect has a missing dependency: 'calculate'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\components\SendNotificationModal.jsx
+  1:8  warning  'React' is defined but never used  no-unused-vars
+  2:8  warning  'Icon' is defined but never used   no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\components\StaffSection.jsx
+    1:8  warning  'React' is defined but never used                                                                                  no-unused-vars
+    2:8  warning  'Icon' is defined but never used                                                                                   no-unused-vars
+   54:8  warning  React Hook useEffect has a missing dependency: 'fetchStaffList'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  437:7  warning  'PermissionToggle' is assigned a value but never used                                                              no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\components\SupportSection.jsx
+   1:8   warning  'React' is defined but never used                           no-unused-vars
+   2:8   warning  'Icon' is defined but never used                            no-unused-vars
+  76:11  warning  'handleWhatsAppSupport' is assigned a value but never used  no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\context\AuthContext.jsx
+    1:8   warning  'React' is defined but never used                                                                                               no-unused-vars
+  115:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\context\MessageContext.jsx
+    1:8   warning  'React' is defined but never used                                                                                               no-unused-vars
+  137:19  warning  'now' is assigned a value but never used                                                                                        no-unused-vars
+  210:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\context\NotificationContext.jsx
+   1:8   warning  'React' is defined but never used                                                                                               no-unused-vars
+   2:8   warning  'Notification' is defined but never used                                                                                        no-unused-vars
+  30:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\lib\pushNotifications.js
+  65:17  warning  'e' is defined but never used  no-unused-vars
+  84:5   warning  Unnecessary try/catch wrapper  no-useless-catch
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\main.jsx
+   1:10  warning  'StrictMode' is defined but never used            no-unused-vars
+   4:8   warning  'App' is defined but never used                   no-unused-vars
+   5:10  warning  'AuthProvider' is defined but never used          no-unused-vars
+   6:10  warning  'NotificationProvider' is defined but never used  no-unused-vars
+   7:10  warning  'MessageProvider' is defined but never used       no-unused-vars
+  11:7   warning  'updateSW' is assigned a value but never used     no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\ActivityHistory.jsx
+    1:8   warning  'React' is defined but never used                                                                                        no-unused-vars
+    2:8   warning  'Icon' is defined but never used                                                                                         no-unused-vars
+    7:8   warning  'Navigation' is defined but never used                                                                                   no-unused-vars
+    8:8   warning  'MessageCenter' is defined but never used                                                                                no-unused-vars
+   11:19  warning  'signOut' is assigned a value but never used                                                                             no-unused-vars
+   12:11  warning  'navigate' is assigned a value but never used                                                                            no-unused-vars
+   34:12  warning  'userBizId' is assigned a value but never used                                                                           no-unused-vars
+  128:8   warning  React Hook useEffect has a missing dependency: 'fetchAllTransactions'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\BusinessSettings.jsx
+    1:8   warning  'React' is defined but never used                                                                                   no-unused-vars
+    2:8   warning  'Icon' is defined but never used                                                                                    no-unused-vars
+    7:8   warning  'Navigation' is defined but never used                                                                              no-unused-vars
+    8:8   warning  'MarketingHub' is defined but never used                                                                            no-unused-vars
+    9:8   warning  'SupportSection' is defined but never used                                                                          no-unused-vars
+   10:8   warning  'StaffSection' is defined but never used                                                                            no-unused-vars
+   13:19  warning  'signOut' is assigned a value but never used                                                                        no-unused-vars
+   61:8   warning  React Hook useEffect has a missing dependency: 'fetchPromotions'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  648:7   warning  'SettingCard' is assigned a value but never used                                                                    no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\Clients.jsx
+    1:8   warning  'React' is defined but never used                  no-unused-vars
+    2:8   warning  'Icon' is defined but never used                   no-unused-vars
+    6:8   warning  'Navigation' is defined but never used             no-unused-vars
+    7:8   warning  'SendNotificationModal' is defined but never used  no-unused-vars
+   10:11  warning  'navigate' is assigned a value but never used      no-unused-vars
+   11:19  warning  'signOut' is assigned a value but never used       no-unused-vars
+  195:11  warning  'colors' is assigned a value but never used        no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\ForgotPassword.jsx
+  1:8   warning  'React' is defined but never used  no-unused-vars
+  2:8   warning  'Icon' is defined but never used   no-unused-vars
+  4:23  warning  'Link' is defined but never used   no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\Home.jsx
+     5:10  warning  'Html5QrcodeScanner' is defined but never used                                                                                                                                                           no-unused-vars
+     6:10  warning  'QRCodeSVG' is defined but never used                                                                                                                                                                    no-unused-vars
+     9:8   warning  'Navigation' is defined but never used                                                                                                                                                                   no-unused-vars
+    10:8   warning  'MessageCenter' is defined but never used                                                                                                                                                                no-unused-vars
+    11:8   warning  'SendNotificationModal' is defined but never used                                                                                                                                                        no-unused-vars
+    13:10  warning  'forceAppUpdate' is defined but never used                                                                                                                                                               no-unused-vars
+    14:8   warning  'Icon' is defined but never used                                                                                                                                                                         no-unused-vars
+    41:12  warning  'isRateSuccessful' is assigned a value but never used                                                                                                                                                    no-unused-vars
+    48:12  warning  'selectedReward' is assigned a value but never used                                                                                                                                                      no-unused-vars
+    48:28  warning  'setSelectedReward' is assigned a value but never used                                                                                                                                                   no-unused-vars
+    99:18  warning  '_error' is defined but never used                                                                                                                                                                       no-unused-vars
+   229:11  warning  The 'fetchDashboardData' function makes the dependencies of useEffect Hook (at line 428) change on every render. To fix this, wrap the definition of 'fetchDashboardData' in its own useCallback() Hook  react-hooks/exhaustive-deps
+   356:18  warning  'err' is defined but never used                                                                                                                                                                          no-unused-vars
+   384:8   warning  React Hook useEffect has missing dependencies: 'fetchBCVRate' and 'fetchDashboardData'. Either include them or remove the dependency array                                                               react-hooks/exhaustive-deps
+   391:8   warning  React Hook useEffect has a missing dependency: 'fetchBCVRate'. Either include it or remove the dependency array                                                                                          react-hooks/exhaustive-deps
+   494:22  warning  '_e' is defined but never used                                                                                                                                                                           no-unused-vars
+   564:28  warning  'error' is defined but never used                                                                                                                                                                        no-unused-vars
+   639:22  warning  'e' is defined but never used                                                                                                                                                                            no-unused-vars
+  1393:42  warning  '_e' is defined but never used                                                                                                                                                                           no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\KPIDashboard.jsx
+    1:8   warning  'React' is defined but never used                                                                           no-unused-vars
+    2:8   warning  'Icon' is defined but never used                                                                            no-unused-vars
+    7:5   warning  'BarChart' is defined but never used                                                                        no-unused-vars
+    7:15  warning  'Bar' is defined but never used                                                                             no-unused-vars
+    7:20  warning  'XAxis' is defined but never used                                                                           no-unused-vars
+    7:27  warning  'YAxis' is defined but never used                                                                           no-unused-vars
+    7:45  warning  'RechartsTooltip' is defined but never used                                                                 no-unused-vars
+    7:62  warning  'ResponsiveContainer' is defined but never used                                                             no-unused-vars
+    8:5   warning  'PieChart' is defined but never used                                                                        no-unused-vars
+    8:15  warning  'Pie' is defined but never used                                                                             no-unused-vars
+    8:20  warning  'Cell' is defined but never used                                                                            no-unused-vars
+    8:26  warning  'Legend' is defined but never used                                                                          no-unused-vars
+   10:8   warning  'Navigation' is defined but never used                                                                      no-unused-vars
+   14:19  warning  'signOut' is assigned a value but never used                                                                no-unused-vars
+   27:11  warning  'PIE_COLORS' is assigned a value but never used                                                             no-unused-vars
+  172:8   warning  React Hook useEffect has a missing dependency: 'loading'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  175:11  warning  'CustomTooltip' is assigned a value but never used                                                          no-unused-vars
+  192:56  warning  'innerRadius' is defined but never used                                                                     no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\Login.jsx
+   1:8   warning  'React' is defined but never used               no-unused-vars
+   3:23  warning  'Link' is defined but never used                no-unused-vars
+   7:8   warning  'Icon' is defined but never used                no-unused-vars
+  15:30  warning  'user' is assigned a value but never used       no-unused-vars
+  78:27  warning  'isExpired' is assigned a value but never used  no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\MyPoints.jsx
+    1:8   warning  'React' is defined but never used                                                                                                                                                                                                     no-unused-vars
+    5:10  warning  'QRCodeSVG' is defined but never used                                                                                                                                                                                                 no-unused-vars
+    9:8   warning  'MessageCenter' is defined but never used                                                                                                                                                                                             no-unused-vars
+   10:8   warning  'Navigation' is defined but never used                                                                                                                                                                                                no-unused-vars
+   11:31  warning  'sendPushToProfile' is defined but never used                                                                                                                                                                                         no-unused-vars
+   12:10  warning  'forceAppUpdate' is defined but never used                                                                                                                                                                                            no-unused-vars
+   13:8   warning  'Icon' is defined but never used                                                                                                                                                                                                      no-unused-vars
+   24:12  warning  'loadingPrizes' is assigned a value but never used                                                                                                                                                                                    no-unused-vars
+   30:13  warning  'unreadCount' is assigned a value but never used                                                                                                                                                                                      no-unused-vars
+   32:12  warning  'isProcessingScanner' is assigned a value but never used                                                                                                                                                                              no-unused-vars
+   95:11  warning  The 'fetchUserData' function makes the dependencies of useEffect Hook (at line 288) change on every render. To fix this, wrap the definition of 'fetchUserData' in its own useCallback() Hook                                         react-hooks/exhaustive-deps
+  132:8   warning  React Hook useEffect has a missing dependency: 'fetchUserData'. Either include it or remove the dependency array                                                                                                                      react-hooks/exhaustive-deps
+  180:18  warning  'error' is defined but never used                                                                                                                                                                                                     no-unused-vars
+  195:8   warning  React Hook useEffect has a missing dependency: 'fetchUserData'. Either include it or remove the dependency array                                                                                                                      react-hooks/exhaustive-deps
+  241:8   warning  React Hook useEffect has missing dependencies: 'fetchUserData' and 'showNotification'. Either include them or remove the dependency array                                                                                             react-hooks/exhaustive-deps
+  248:8   warning  React Hook useEffect has an unnecessary dependency: 'supabase'. Either exclude it or remove the dependency array. Outer scope values like 'supabase' aren't valid dependencies because mutating them doesn't re-render the component  react-hooks/exhaustive-deps
+  454:54  warning  '_e' is defined but never used                                                                                                                                                                                                        no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\NotificationPreview.jsx
+  1:8  warning  'React' is defined but never used         no-unused-vars
+  2:8  warning  'Icon' is defined but never used          no-unused-vars
+  3:8  warning  'Notification' is defined but never used  no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\PlatformControl.jsx
+    1:8   warning  'React' is defined but never used                                                                                   no-unused-vars
+    2:8   warning  'Icon' is defined but never used                                                                                    no-unused-vars
+    9:8   warning  'NavigationAdmin' is defined but never used                                                                         no-unused-vars
+   10:8   warning  'SendNotificationModal' is defined but never used                                                                   no-unused-vars
+   58:18  warning  'err' is defined but never used                                                                                     no-unused-vars
+  116:8   warning  React Hook useEffect has a missing dependency: 'fetchBusinesses'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  165:18  warning  'err' is defined but never used                                                                                     no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\Privacy.jsx
+  1:8  warning  'React' is defined but never used  no-unused-vars
+  2:8  warning  'Icon' is defined but never used   no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\PrizeDesigner.jsx
+   1:8   warning  'React' is defined but never used                                                                               no-unused-vars
+   2:8   warning  'Icon' is defined but never used                                                                                no-unused-vars
+   5:8   warning  'PrizeCalculator' is defined but never used                                                                     no-unused-vars
+   8:8   warning  'Navigation' is defined but never used                                                                          no-unused-vars
+  11:19  warning  'signOut' is assigned a value but never used                                                                    no-unused-vars
+  12:11  warning  'navigate' is assigned a value but never used                                                                   no-unused-vars
+  63:8   warning  React Hook useEffect has a missing dependency: 'fetchPrizes'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\Profile.jsx
+   1:8  warning  'React' is defined but never used                                                                                    no-unused-vars
+   2:8  warning  'Icon' is defined but never used                                                                                     no-unused-vars
+   6:8  warning  'Navigation' is defined but never used                                                                               no-unused-vars
+   7:8  warning  'SupportSection' is defined but never used                                                                           no-unused-vars
+  60:8  warning  React Hook useEffect has a missing dependency: 'showNotification'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\Register.jsx
+   2:8   warning  'Icon' is defined but never used                        no-unused-vars
+   5:23  warning  'Link' is defined but never used                        no-unused-vars
+  29:57  warning  'remainingAttempts' is assigned a value but never used  no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\ResetPassword.jsx
+  1:8  warning  'React' is defined but never used  no-unused-vars
+  2:8  warning  'Icon' is defined but never used   no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\StaffManagement.jsx
+    1:8   warning  'React' is defined but never used                      no-unused-vars
+    2:8   warning  'Icon' is defined but never used                       no-unused-vars
+    7:8   warning  'Navigation' is defined but never used                 no-unused-vars
+   10:19  warning  'signOut' is assigned a value but never used           no-unused-vars
+   11:11  warning  'navigate' is assigned a value but never used          no-unused-vars
+  109:25  warning  'data' is assigned a value but never used              no-unused-vars
+  174:21  warning  'data' is assigned a value but never used              no-unused-vars
+  203:21  warning  'data' is assigned a value but never used              no-unused-vars
+  572:7   warning  'PermissionToggle' is assigned a value but never used  no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\Subscription.jsx
+   1:8   warning  'React' is defined but never used                                                                                                                                                                              no-unused-vars
+   2:8   warning  'Icon' is defined but never used                                                                                                                                                                               no-unused-vars
+   6:8   warning  'Navigation' is defined but never used                                                                                                                                                                         no-unused-vars
+  32:11  warning  The 'plans' array makes the dependencies of useEffect Hook (at line 44) change on every render. To fix this, wrap the initialization of 'plans' in its own useMemo() Hook                                      react-hooks/exhaustive-deps
+  62:11  warning  The 'fetchSubscriptionData' function makes the dependencies of useEffect Hook (at line 121) change on every render. To fix this, wrap the definition of 'fetchSubscriptionData' in its own useCallback() Hook  react-hooks/exhaustive-deps
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\pages\Terms.jsx
+  1:8  warning  'React' is defined but never used  no-unused-vars
+  2:8  warning  'Icon' is defined but never used   no-unused-vars
+
+D:\Antigravity_WorkSpace\FidelityApp-MVP\src\sw.js
+  75:18  warning  '_e' is defined but never used  no-unused-vars
+
+Ô£û 215 problems (1 error, 214 warnings)
+
